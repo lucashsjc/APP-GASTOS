@@ -221,31 +221,141 @@ p {
 .menu-fundo {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
   z-index: 20;
   animation: aparecer 0.2s ease;
 }
 
+/* Painel flutuante, inspirado em painéis "glass" escuros com brilho colorido nas bordas. */
 .menu-lateral {
+  --brilho-1: #8a2be2;
+  --brilho-2: #e5142b;
   position: absolute;
-  inset: 0 auto 0 0;
-  width: min(300px, 82vw);
+  top: calc(var(--seguro-topo) + 10px);
+  bottom: calc(var(--seguro-baixo) + 10px);
+  left: 10px;
+  width: min(292px, calc(100vw - 56px));
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+  padding: 18px 14px 14px;
+  border-radius: 30px;
+  border: 1px solid #26262b;
+  background:
+    radial-gradient(120% 45% at 0% 0%, rgba(138, 43, 226, 0.16), transparent 70%),
+    linear-gradient(180deg, #19191c, #141416);
+  box-shadow:
+    0 24px 60px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  animation: entrar-esquerda 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.menu-topo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 4px 10px;
+}
+
+.menu-topo strong {
+  flex: 1;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Logo: os dois quadradinhos (roxo e vermelho) dentro de um quadrado com degradê. */
+.menu-marca {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #2a2a30, #18181b);
+  border: 1px solid #34343a;
+  box-shadow: 0 6px 18px rgba(138, 43, 226, 0.25);
+  flex: none;
+}
+
+.menu-marca span {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border-radius: 5px;
+}
+
+.menu-marca span:first-child {
+  top: 8px;
+  left: 8px;
+  background: var(--nubank);
+}
+
+.menu-marca span:last-child {
+  bottom: 8px;
+  right: 8px;
+  background: var(--caju);
+  box-shadow: 0 0 0 2px #1f1f23;
+}
+
+.menu-icone-ajustes {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  border: 1px solid #2c2c31;
+  color: var(--texto-2);
+}
+
+/* Brilho: linha de luz no topo da borda e um reflexo suave por dentro. */
+.brilho {
+  position: relative;
+  isolation: isolate;
+}
+
+.brilho::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 14%;
+  right: 30%;
+  height: 2px;
+  border-radius: 99px;
+  background: linear-gradient(90deg, transparent, var(--brilho-1), var(--brilho-2), transparent);
+  box-shadow: 0 0 12px 1px rgba(170, 60, 200, 0.55);
+  z-index: 1;
+}
+
+.brilho::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(70% 100% at 40% 0%, rgba(150, 40, 200, 0.3), transparent 70%);
+  z-index: -1;
+}
+
+.menu-novo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
-  background: var(--card);
-  border-right: 1px solid var(--borda);
-  padding: calc(var(--seguro-topo) + 20px) 12px calc(var(--seguro-baixo) + 20px);
-  animation: entrar-esquerda 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+  margin: 2px 0 8px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid #2c2c31;
+  background: #1c1c20;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .menu-lateral h2 {
-  font-size: 13px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--texto-2);
-  padding: 0 12px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #6c6c74;
+  padding: 10px 8px 4px;
 }
 
 .menu-lateral ul {
@@ -254,35 +364,100 @@ p {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;
+  gap: 2px;
 }
 
-.menu-lateral a {
+.menu-lateral ul a {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 14px 12px;
+  gap: 12px;
+  padding: 7px 8px;
   border-radius: 14px;
-  font-weight: 700;
-  font-size: 16px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  font-size: 15px;
+  color: #b4b4bc;
+}
+
+.menu-icone {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  border: 1px solid #2c2c31;
+  background: #18181b;
+  color: #c8c8d0;
+  flex: none;
+}
+
+.menu-lateral ul a.ativo {
+  color: var(--texto);
+  background: #1e1e22;
+  border-color: #2c2c31;
+}
+
+.menu-lateral ul a.ativo .menu-icone {
+  color: #fff;
+  border-color: #3a3a42;
+  background: #232328;
+}
+
+.menu-resumo {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border-radius: 22px;
+  border: 1px solid #2c2c31;
+  background: linear-gradient(160deg, #241a2c, #1a1418 60%, #170f12);
+}
+
+.menu-resumo::after {
+  background: radial-gradient(80% 70% at 50% 0%, rgba(229, 20, 43, 0.18), transparent 70%);
+}
+
+.menu-resumo small {
+  font-size: 12px;
+  font-weight: 600;
   color: var(--texto-2);
 }
 
-.menu-lateral a.ativo {
-  background: var(--card-2);
-  color: var(--texto);
+.menu-resumo div {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 13px;
+  color: #c8c8d0;
 }
 
-.menu-lateral .menu-ajustes {
-  border-top: 1px solid var(--borda);
-  border-radius: 0;
-  padding-top: 18px;
+.menu-resumo strong {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.menu-resumo strong.negativo {
+  color: var(--negativo);
+}
+
+.menu-resumo-link {
+  align-self: center;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  padding: 8px 16px;
+  border-radius: 99px;
+  border: 1px solid #3a3a42;
+  background: #1c1c20;
+  font-size: 13px;
+  font-weight: 700;
 }
 
 @keyframes entrar-esquerda {
   from {
-    transform: translateX(-100%);
+    transform: translateX(-110%);
   }
 }
 
