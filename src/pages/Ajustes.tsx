@@ -4,6 +4,8 @@ import { IconeProximo } from '../componentes/icones'
 import { modoDemonstracao, repo } from '../data/repo'
 import { supabase } from '../data/supabaseRepo'
 import { useEstado } from '../estado'
+import { exportacaoFaculdade } from '../faculdade/regras'
+import { repoFaculdade } from '../faculdade/repo'
 import { montarExportacao } from '../lib/exportar'
 import { gerarXlsx } from '../lib/xlsx'
 
@@ -24,10 +26,15 @@ function baixar(bytes: Uint8Array, nome: string) {
 export default function Ajustes({ email }: { email: string | null }) {
   const { dados, hoje, executar, avisar } = useEstado()
   const [confirmandoRestaurar, setConfirmandoRestaurar] = useState(false)
-  const total = dados.gastos.length + dados.recorrencias.length + dados.recebidos.length + dados.depositos.length
 
-  const exportar = () => {
-    baixar(gerarXlsx(montarExportacao(dados)), `gastos-${hoje}.xlsx`)
+  const exportar = async () => {
+    const abas = montarExportacao(dados)
+    try {
+      abas.push(...exportacaoFaculdade(await repoFaculdade.carregar()))
+    } catch {
+      // Sem as tabelas da Faculdade ainda: exporta só os gastos.
+    }
+    baixar(gerarXlsx(abas), `minha-rotina-${hoje}.xlsx`)
     avisar('Planilha baixada.')
   }
 
@@ -63,7 +70,7 @@ export default function Ajustes({ email }: { email: string | null }) {
             <button type="button" onClick={exportar}>
               <span>
                 <strong>Exportar .xlsx</strong>
-                <small>Cópia de segurança de tudo ({total} registros).</small>
+                <small>Cópia de segurança de tudo: gastos e faculdade.</small>
               </span>
               <IconeProximo />
             </button>

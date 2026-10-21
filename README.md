@@ -69,11 +69,16 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - Gráfico de rosca por categoria, os principais gastos de cada categoria, barras dos últimos
   meses e o gasto que mais se repetiu ("Uber: 10 vezes, R$ 160,81").
 
+**Faculdade** (pelo menu ☰, junto com Trabalho, Banco e Projetos)
+- **Notas** por disciplina, com média ponderada e aviso de acima ou abaixo da média mínima.
+- **Faltas** por disciplina, com o limite, quantas aulas ainda pode perder e o botão "Faltei hoje".
+- **Atividades** com data de entrega: atrasadas, para hoje e próximas, e marcar como entregue.
+
 **Planilha**
 - **Importar** o histórico da planilha antiga, lida no próprio celular, com um resumo antes de
   gravar. Os meses futuros viram sugestões de gastos certos (todo mês ou parcela), que eu confirmo.
   Importar de novo não duplica nada.
-- **Exportar** todos os dados num arquivo .xlsx, como cópia de segurança.
+- **Exportar** todos os dados (gastos e faculdade) num arquivo .xlsx, como cópia de segurança.
 
 ## Tecnologias
 
@@ -126,6 +131,7 @@ src/
   componentes/  folha de novo gasto, item deslizável, seletor de mês, ícones…
   data/         tipos, acesso a dados (Supabase ou modo demonstração) e dados de exemplo
   lib/          regras de cálculo, datas, dinheiro, categorias, .xlsx e importação (com testes)
+  faculdade/    área Faculdade: notas, faltas, atividades, regras (com testes) e dados
   estado.tsx    dados carregados, mês escolhido e "hoje"
 supabase/       esquema do banco (SQL) com RLS
 public/         ícones e manifest do PWA
@@ -149,9 +155,11 @@ exemplo fictícios que ficam só no navegador (em Ajustes dá para voltar a eles
 <summary><strong>Configurar o banco (Supabase) e publicar (Vercel)</strong></summary>
 
 1. Crie um projeto em [supabase.com](https://supabase.com) (região São Paulo, de preferência).
-2. Em **SQL Editor → New query**, cole e rode [`supabase/schema.sql`](supabase/schema.sql). Ele
-   pode rodar mais de uma vez sem duplicar nada. Para conferir, rode também
-   [`supabase/002_conferir_rls.sql`](supabase/002_conferir_rls.sql): as quatro tabelas devem
+2. Em **SQL Editor → New query**, cole e rode, nesta ordem,
+   [`supabase/schema.sql`](supabase/schema.sql) (gastos) e
+   [`supabase/003_faculdade.sql`](supabase/003_faculdade.sql) (faculdade). Eles podem rodar mais
+   de uma vez sem duplicar nada. Para conferir, rode também
+   [`supabase/002_conferir_rls.sql`](supabase/002_conferir_rls.sql): todas as tabelas devem
    aparecer com `rls_ligado = true`.
 3. Em **Authentication → Sign In / Providers**, desligue **Allow new users to sign up**.
 4. Em **Authentication → Users → Add user → Create new user**, crie o seu usuário (e-mail e

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { Logo } from './componentes/icones'
+import { IconeAtividades, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
+import { ProvedorFaculdade } from './faculdade/estado'
+import PaginaFaculdade from './faculdade/PaginaFaculdade'
 import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
 import Certos from './pages/Certos'
@@ -42,7 +44,19 @@ export default function App() {
             <Route path="/caju/para-onde" element={<ParaOnde aba="caju" />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />
             <Route path="/ajustes/importar" element={<Importar />} />
-            <Route path="/faculdade" element={<EmBreve titulo="Faculdade" />} />
+            <Route
+              path="/faculdade"
+              element={
+                <ProvedorFaculdade>
+                  <Outlet />
+                </ProvedorFaculdade>
+              }
+            >
+              <Route index element={<Navigate to="notas" replace />} />
+              <Route path="notas" element={<PaginaFaculdade secao="notas" />} />
+              <Route path="faltas" element={<PaginaFaculdade secao="faltas" />} />
+              <Route path="atividades" element={<PaginaFaculdade secao="atividades" />} />
+            </Route>
             <Route path="/trabalho" element={<EmBreve titulo="Trabalho" />} />
             <Route path="/projetos" element={<EmBreve titulo="Projetos" />} />
             <Route path="*" element={<Navigate to="/nubank" replace />} />
@@ -50,6 +64,7 @@ export default function App() {
         </main>
         <ErroEAviso />
         <BarraCartoes />
+        <BarraFaculdade />
       </BrowserRouter>
     </ProvedorDeDados>
   )
@@ -69,6 +84,29 @@ function BarraCartoes() {
         <Logo aba="caju" tamanho={28} />
         <span>Caju</span>
       </NavLink>
+    </nav>
+  )
+}
+
+/** Barra Notas/Faltas/Atividades: só dentro da Faculdade. */
+function BarraFaculdade() {
+  const { pathname } = useLocation()
+  if (!pathname.startsWith('/faculdade')) return null
+  const itens = [
+    { rota: '/faculdade/notas', nome: 'Notas', Icone: IconeNotas },
+    { rota: '/faculdade/faltas', nome: 'Faltas', Icone: IconeFaltas },
+    { rota: '/faculdade/atividades', nome: 'Atividades', Icone: IconeAtividades },
+  ]
+  return (
+    <nav className="barra-abas barra-faculdade" aria-label="Faculdade">
+      {itens.map(({ rota, nome, Icone }) => (
+        <NavLink key={rota} to={rota}>
+          <span className="aba-icone">
+            <Icone tamanho={18} />
+          </span>
+          <span>{nome}</span>
+        </NavLink>
+      ))}
     </nav>
   )
 }

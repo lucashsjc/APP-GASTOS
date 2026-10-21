@@ -111,3 +111,31 @@ export const IconeProjetos = (p: Props) => (
     <path d="M12 3l2.6 5.6L20 9.5l-4 4 1 5.5-5-2.7-5 2.7 1-5.5-4-4 5.4-.9z" />
   </Svg>
 )
+
+export const IconeNotas = (p: Props) => (
+  <Svg {...p}>
+    <path d="M4 20V10M10 20V4M16 20v-7M22 20H2" />
+  </Svg>
+)
+
+export const IconeFaltas = (p: Props) => (
+  <Svg {...p}>
+    <rect x="3" y="5" width="18" height="16" rx="3" />
+    <path d="M3 10h18M8 3v4M16 3v4M10 13.5l4 4M14 13.5l-4 4" />
+  </Svg>
+)
+
+export const IconeAtividades = (p: Props) => (
+  <Svg {...p}>
+    <path d="M9 6h11M9 12h11M9 18h11" />
+    <path d="M3.5 6l1.5 1.5L7.5 5M3.5 12l1.5 1.5 2.5-2.5" />
+    <circle cx="5" cy="18" r="1.2" />
+  </Svg>
+)
+
+export const IconeLivros = (p: Props) => (
+  <Svg {...p}>
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" />
+    <path d="M4 19.5A2.5 2.5 0 0 0 6.5 22H20v-5" />
+  </Svg>
+)
