@@ -204,6 +204,107 @@ p {
   background: var(--caju);
 }
 
+/* ---------- Menu lateral (áreas da rotina) ---------- */
+
+.topo-com-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.botao-menu {
+  margin-left: -8px;
+  color: var(--texto);
+}
+
+.menu-fundo {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 20;
+  animation: aparecer 0.2s ease;
+}
+
+.menu-lateral {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: min(300px, 82vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--card);
+  border-right: 1px solid var(--borda);
+  padding: calc(var(--seguro-topo) + 20px) 12px calc(var(--seguro-baixo) + 20px);
+  animation: entrar-esquerda 0.25s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+
+.menu-lateral h2 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--texto-2);
+  padding: 0 12px 8px;
+}
+
+.menu-lateral ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.menu-lateral a {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--texto-2);
+}
+
+.menu-lateral a.ativo {
+  background: var(--card-2);
+  color: var(--texto);
+}
+
+.menu-lateral .menu-ajustes {
+  border-top: 1px solid var(--borda);
+  border-radius: 0;
+  padding-top: 18px;
+}
+
+@keyframes entrar-esquerda {
+  from {
+    transform: translateX(-100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-lateral,
+  .menu-fundo {
+    animation: none;
+  }
+}
+
+.em-breve {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.em-breve p {
+  color: var(--texto-2);
+}
+
 /* ---------- Logos (simplificados, não oficiais) ---------- */
 
 .logo {

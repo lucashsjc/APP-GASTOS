@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
-import { BrowserRouter, Navigate, NavLink, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, NavLink, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
+import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
 import Certos from './pages/Certos'
+import EmBreve from './pages/EmBreve'
 import Importar from './pages/Importar'
 import Login from './pages/Login'
 import PaginaAba from './pages/PaginaAba'
@@ -40,22 +42,34 @@ export default function App() {
             <Route path="/caju/para-onde" element={<ParaOnde aba="caju" />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />
             <Route path="/ajustes/importar" element={<Importar />} />
+            <Route path="/faculdade" element={<EmBreve titulo="Faculdade" />} />
+            <Route path="/trabalho" element={<EmBreve titulo="Trabalho" />} />
+            <Route path="/projetos" element={<EmBreve titulo="Projetos" />} />
             <Route path="*" element={<Navigate to="/nubank" replace />} />
           </Routes>
         </main>
         <ErroEAviso />
-        <nav className="barra-abas" aria-label="Cartões">
-          <NavLink to="/nubank" className="aba-nubank">
-            <Logo aba="nubank" tamanho={28} />
-            <span>Nubank</span>
-          </NavLink>
-          <NavLink to="/caju" className="aba-caju">
-            <Logo aba="caju" tamanho={28} />
-            <span>Caju</span>
-          </NavLink>
-        </nav>
+        <BarraCartoes />
       </BrowserRouter>
     </ProvedorDeDados>
+  )
+}
+
+/** Barra Nubank/Caju: só dentro da área Banco. */
+function BarraCartoes() {
+  const { pathname } = useLocation()
+  if (!ehAreaBanco(pathname)) return null
+  return (
+    <nav className="barra-abas" aria-label="Cartões">
+      <NavLink to="/nubank" className="aba-nubank">
+        <Logo aba="nubank" tamanho={28} />
+        <span>Nubank</span>
+      </NavLink>
+      <NavLink to="/caju" className="aba-caju">
+        <Logo aba="caju" tamanho={28} />
+        <span>Caju</span>
+      </NavLink>
+    </nav>
   )
 }
 

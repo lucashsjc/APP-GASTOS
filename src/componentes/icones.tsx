@@ -78,3 +78,36 @@ export function Logo({ aba, tamanho = 26 }: { aba: Aba; tamanho?: number }) {
     </span>
   )
 }
+
+export const IconeMenu = (p: Props) => (
+  <Svg {...p}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Svg>
+)
+
+export const IconeFaculdade = (p: Props) => (
+  <Svg {...p}>
+    <path d="M2 9l10-5 10 5-10 5z" />
+    <path d="M6 11v5c3 2.5 9 2.5 12 0v-5" />
+  </Svg>
+)
+
+export const IconeTrabalho = (p: Props) => (
+  <Svg {...p}>
+    <rect x="3" y="7" width="18" height="13" rx="2" />
+    <path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18" />
+  </Svg>
+)
+
+export const IconeBanco = (p: Props) => (
+  <Svg {...p}>
+    <rect x="2" y="5" width="20" height="14" rx="3" />
+    <path d="M2 10h20M6 15h4" />
+  </Svg>
+)
+
+export const IconeProjetos = (p: Props) => (
+  <Svg {...p}>
+    <path d="M12 3l2.6 5.6L20 9.5l-4 4 1 5.5-5-2.7-5 2.7 1-5.5-4-4 5.4-.9z" />
+  </Svg>
+)
