@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaValor } from '../componentes/FolhaValor'
 import { IconeLapis, IconeProximo, IconeSeta, Logo } from '../componentes/icones'
@@ -25,14 +25,6 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const { dados, hoje, mes, executar, carregando } = useEstado()
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
-  const [parametros, setParametros] = useSearchParams()
-
-  // "Novo gasto" do menu lateral chega como ?novo=1.
-  useEffect(() => {
-    if (parametros.get('novo') !== '1') return
-    setFolha({ aba, origem: 'topo' })
-    setParametros({}, { replace: true })
-  }, [parametros, setParametros, aba])
 
   const certos = certosDoMes(dados, aba, mes, hoje)
   const resumoCertos = resumirCertos(certos)

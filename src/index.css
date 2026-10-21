@@ -338,20 +338,6 @@ p {
   z-index: -1;
 }
 
-.menu-novo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 2px 0 8px;
-  padding: 12px;
-  border-radius: 16px;
-  border: 1px solid #2c2c31;
-  background: #1c1c20;
-  font-weight: 700;
-  font-size: 15px;
-}
-
 .menu-lateral h2 {
   font-size: 12px;
   font-weight: 600;

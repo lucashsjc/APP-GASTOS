@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useEstado } from '../estado'
 import { ehAreaBanco } from '../lib/areas'
 import { resumoNubank, saldoCajuEm } from '../lib/calculos'
@@ -9,12 +9,10 @@ import {
   IconeAjustes,
   IconeBanco,
   IconeFaculdade,
-  IconeMais,
   IconeMenu,
   IconeProjetos,
   IconeSeta,
   IconeTrabalho,
-  Logo,
 } from './icones'
 
 // As áreas da rotina. "Banco" é a parte de gastos (Nubank e Caju); as outras ainda vão ganhar conteúdo.
@@ -60,19 +58,11 @@ export function BotaoMenu() {
 
 function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
   const { pathname } = useLocation()
-  const navegar = useNavigate()
   const { dados, hoje } = useEstado()
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
   const saldoCaju = saldoCajuEm(dados, hoje, hoje)
 
   const ativa = (rota: string) => (rota === '/nubank' ? ehAreaBanco(pathname) : pathname.startsWith(rota))
-
-  const novoGasto = () => {
-    // No Caju, o gasto novo é do Caju; no resto, do Nubank.
-    const aba = pathname.startsWith('/caju') ? 'caju' : 'nubank'
-    aoFechar()
-    navegar(`/${aba}?novo=1`)
-  }
 
   return (
     <nav className="menu-lateral" aria-label="Menu" onClick={(e) => e.stopPropagation()}>
@@ -87,11 +77,6 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
         </Link>
       </div>
 
-      <button type="button" className="menu-novo brilho" onClick={novoGasto}>
-        <IconeMais tamanho={16} />
-        Novo gasto
-      </button>
-
       <h2>Áreas</h2>
       <ul>
         {AREAS.map(({ rota, nome, Icone }) => (
@@ -101,20 +86,6 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
                 <Icone tamanho={18} />
               </span>
               <span>{nome}</span>
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-
-      <h2>Cartões</h2>
-      <ul>
-        {(['nubank', 'caju'] as const).map((aba) => (
-          <li key={aba}>
-            <NavLink to={`/${aba}`} end className={({ isActive }) => (isActive ? 'ativo' : '')} onClick={aoFechar}>
-              <span className="menu-icone">
-                <Logo aba={aba} tamanho={22} />
-              </span>
-              <span>{aba === 'nubank' ? 'Nubank' : 'Caju'}</span>
             </NavLink>
           </li>
         ))}
