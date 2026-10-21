@@ -74,6 +74,9 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - **Faltas** por disciplina, com o limite, quantas aulas ainda pode perder e o botão "Faltei hoje".
 - **Atividades** com data de entrega: atrasadas, para hoje e próximas, e marcar como entregue.
 
+**Projetos**
+- Perfil do GitHub e os apps publicados, com o README de cada um lido ao vivo do GitHub.
+
 **Planilha**
 - **Importar** o histórico da planilha antiga, lida no próprio celular, com um resumo antes de
   gravar. Os meses futuros viram sugestões de gastos certos (todo mês ou parcela), que eu confirmo.
@@ -132,6 +135,7 @@ src/
   data/         tipos, acesso a dados (Supabase ou modo demonstração) e dados de exemplo
   lib/          regras de cálculo, datas, dinheiro, categorias, .xlsx e importação (com testes)
   faculdade/    área Faculdade: notas, faltas, atividades, regras (com testes) e dados
+  projetos/     área Projetos: perfil do GitHub e README dos apps
   estado.tsx    dados carregados, mês escolhido e "hoje"
 supabase/       esquema do banco (SQL) com RLS
 public/         ícones e manifest do PWA

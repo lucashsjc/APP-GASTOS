@@ -9,6 +9,8 @@ import { ProvedorFaculdade } from './faculdade/estado'
 import PaginaFaculdade from './faculdade/PaginaFaculdade'
 import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
+import PaginaProjetos from './projetos/PaginaProjetos'
+import PaginaReadme from './projetos/PaginaReadme'
 import Certos from './pages/Certos'
 import EmBreve from './pages/EmBreve'
 import Importar from './pages/Importar'
@@ -58,7 +60,8 @@ export default function App() {
               <Route path="atividades" element={<PaginaFaculdade secao="atividades" />} />
             </Route>
             <Route path="/trabalho" element={<EmBreve titulo="Trabalho" />} />
-            <Route path="/projetos" element={<EmBreve titulo="Projetos" />} />
+            <Route path="/projetos" element={<PaginaProjetos />} />
+            <Route path="/projetos/:repo" element={<PaginaReadme />} />
             <Route path="*" element={<Navigate to="/nubank" replace />} />
           </Routes>
         </main>

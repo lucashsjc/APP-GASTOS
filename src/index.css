@@ -1961,3 +1961,249 @@ p {
   width: 4ch;
   text-align: center;
 }
+
+/* ---------- Projetos ---------- */
+
+.perfil-github {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  --brilho-1: #8a2be2;
+  --brilho-2: #e5142b;
+}
+
+.perfil-github img {
+  width: 56px;
+  height: 56px;
+  border-radius: 18px;
+  border: 1px solid var(--borda);
+  background: var(--card-2);
+}
+
+.perfil-github > span:nth-child(2) {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.perfil-github strong {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.perfil-github small {
+  color: var(--texto-2);
+  font-size: 13px;
+}
+
+.botao-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 99px;
+  border: 1px solid #3a3a42;
+  background: var(--card-2);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.lista-projetos {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.card-projeto {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background:
+    radial-gradient(90% 60% at 0% 0%, color-mix(in srgb, var(--cor-projeto) 18%, transparent), transparent 70%),
+    var(--card);
+}
+
+.card-projeto p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: #b4b4bc;
+}
+
+.card-projeto-corpo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.card-projeto-corpo > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-projeto-corpo strong {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.card-projeto-corpo small {
+  font-size: 12px;
+  color: var(--texto-2);
+  font-family: ui-monospace, monospace;
+}
+
+.projeto-marca {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: var(--cor-projeto);
+  color: #fff;
+  font-weight: 800;
+  font-size: 20px;
+  flex: none;
+}
+
+.chip-fixo {
+  cursor: default;
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+a.botao-secundario {
+  text-align: center;
+}
+
+/* README renderizado */
+.markdown {
+  font-size: 15px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.markdown > :first-child {
+  margin-top: 0;
+}
+
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+  line-height: 1.25;
+  margin: 1.4em 0 0.5em;
+  font-weight: 800;
+}
+
+.markdown h1 {
+  font-size: 24px;
+}
+
+.markdown h2 {
+  font-size: 19px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.markdown h3 {
+  font-size: 16px;
+}
+
+.markdown p,
+.markdown ul,
+.markdown ol,
+.markdown table,
+.markdown pre,
+.markdown details {
+  margin: 0 0 1em;
+}
+
+.markdown ul,
+.markdown ol {
+  padding-left: 1.3em;
+}
+
+.markdown li + li {
+  margin-top: 4px;
+}
+
+.markdown a {
+  color: #8ab4ff;
+}
+
+.markdown img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  vertical-align: middle;
+}
+
+/* Selos (badges) lado a lado */
+.markdown p > img[src*='shields.io'] {
+  border-radius: 4px;
+  margin: 0 4px 4px 0;
+}
+
+.markdown code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.88em;
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 6px;
+  padding: 1px 5px;
+}
+
+.markdown pre {
+  background: var(--fundo);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 12px;
+  overflow-x: auto;
+}
+
+.markdown pre code {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 13px;
+}
+
+.markdown table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.markdown th,
+.markdown td {
+  border: 1px solid var(--borda);
+  padding: 6px 10px;
+  text-align: left;
+}
+
+.markdown th {
+  background: var(--card-2);
+}
+
+.markdown hr {
+  border: none;
+  border-top: 1px solid var(--borda);
+  margin: 1.5em 0;
+}
+
+.markdown details {
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.markdown summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.markdown sub {
+  color: var(--texto-2);
+}
