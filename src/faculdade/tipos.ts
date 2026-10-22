@@ -17,7 +17,8 @@ export interface Nota {
   disciplina_id: string
   /** Ex.: "P1", "Trabalho". */
   descricao: string
-  valor: number
+  /** Null = avaliação que ainda não aconteceu (entra no "quanto preciso tirar"). */
+  valor: number | null
   peso: number
   data: string | null
 }

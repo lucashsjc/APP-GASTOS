@@ -174,7 +174,9 @@ export function FolhaNota({
     nota?.disciplina_id ?? disciplinaInicial ?? dados.disciplinas[0]?.id ?? null,
   )
   const [descricao, setDescricao] = useState(nota?.descricao ?? '')
-  const [valor, setValor] = useState(nota ? formatarNota(nota.valor) : '')
+  const [valor, setValor] = useState(nota?.valor != null ? formatarNota(nota.valor) : '')
+  // Avaliação que ainda não aconteceu: guarda sem nota, para o "quanto preciso tirar".
+  const [futura, setFutura] = useState(nota ? nota.valor === null : false)
   const [peso, setPeso] = useState(nota ? formatarNota(nota.peso) : '1')
   const [data, setData] = useState(nota?.data ?? hoje)
   const [erro, setErro] = useState<string | null>(null)
@@ -185,11 +187,17 @@ export function FolhaNota({
     const v = lerNota(valor)
     const p = lerNota(peso)
     if (!disciplina) return setErro('Escolha a disciplina.')
-    if (v === null) return setErro('Nota inválida (ex.: 7,5).')
+    if (!futura && v === null) return setErro('Nota inválida (ex.: 7,5). Se ainda não saiu, marque "Ainda não saiu".')
     if (!descricao.trim()) return setErro('Escreva o que é a nota (ex.: P1, Trabalho).')
     if (p === null || p <= 0) return setErro('Peso inválido (ex.: 1 ou 2).')
     setSalvando(true)
-    const campos = { disciplina_id: disciplina, descricao: descricao.trim(), valor: v, peso: p, data: data || null }
+    const campos = {
+      disciplina_id: disciplina,
+      descricao: descricao.trim(),
+      valor: futura ? null : v,
+      peso: p,
+      data: data || null,
+    }
     const ok = await executar(() =>
       nota ? repoFaculdade.atualizar('notas', nota.id, campos) : repoFaculdade.criar('notas', campos),
     )
@@ -198,25 +206,34 @@ export function FolhaNota({
   }
 
   return (
-    <Folha titulo={nota ? 'Editar nota' : 'Nova nota'} aoFechar={aoFechar}>
+    <Folha titulo={nota ? (futura ? 'Editar avaliação' : 'Editar nota') : futura ? 'Nova avaliação' : 'Nova nota'} aoFechar={aoFechar}>
       <form className="form-gasto" onSubmit={salvar} noValidate>
-        <label className="campo-valor">
-          <span>Nota</span>
-          <div>
-            <input
-              inputMode="decimal"
-              placeholder="0"
-              value={valor}
-              onChange={(e) => setValor(e.target.value.replace(/[^\d.,]/g, ''))}
-              autoFocus={!nota}
-              aria-label="Nota"
-              className="input-nota"
-            />
-          </div>
+        {!futura && (
+          <label className="campo-valor">
+            <span>Nota</span>
+            <div>
+              <input
+                inputMode="decimal"
+                placeholder="0"
+                value={valor}
+                onChange={(e) => setValor(e.target.value.replace(/[^\d.,]/g, ''))}
+                autoFocus={!nota}
+                aria-label="Nota"
+                className="input-nota"
+              />
+            </div>
+          </label>
+        )}
+        <label className="alternar">
+          <input type="checkbox" checked={futura} onChange={(e) => setFutura(e.target.checked)} />
+          <span>
+            Ainda não saiu
+            <small>Cadastre a prova ou trabalho que vem (com o peso) para ver quanto precisa tirar.</small>
+          </span>
         </label>
         <EscolhaDisciplina valor={disciplina} aoMudar={setDisciplina} />
         <label className="campo">
-          <span>O que foi</span>
+          <span>{futura ? 'Avaliação' : 'O que foi'}</span>
           <input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: P1, Trabalho, Lista 2" />
         </label>
         <div className="chips">
@@ -237,7 +254,7 @@ export function FolhaNota({
           </label>
         </div>
         {erro && <p className="erro">{erro}</p>}
-        <Botao salvando={salvando} texto={nota ? 'Salvar alterações' : 'Salvar nota'} />
+        <Botao salvando={salvando} texto={nota ? 'Salvar alterações' : futura ? 'Salvar avaliação' : 'Salvar nota'} />
       </form>
     </Folha>
   )

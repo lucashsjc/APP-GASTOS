@@ -4,6 +4,7 @@ import {
   formatarNota,
   lerNota,
   mediaPonderada,
+  notaNecessaria,
   ordenarAtividades,
   prazoAtividade,
   proximaCor,
@@ -115,5 +116,52 @@ describe('disciplinas', () => {
     const ids = new Set(d.disciplinas.map((x) => x.id))
     expect([...d.notas, ...d.faltas].every((x) => ids.has(x.disciplina_id))).toBe(true)
     expect(d.atividades.every((a) => a.disciplina_id === null || ids.has(a.disciplina_id))).toBe(true)
+  })
+})
+
+describe('quanto preciso tirar', () => {
+  const n = (valor: number | null, peso = 1, descricao = 'P') => ({ valor, peso, descricao })
+
+  it('sem avaliações futuras, calcula para a próxima (peso 1)', () => {
+    // 5 e 6 → precisa de 7 na próxima para fechar com 6.
+    expect(notaNecessaria([n(5), n(6)], 6)).toEqual({ tipo: 'precisa', valor: 7, nasFuturas: [] })
+    // Sem nota nenhuma: precisa da própria média mínima.
+    expect(notaNecessaria([], 6)).toEqual({ tipo: 'precisa', valor: 6, nasFuturas: [] })
+  })
+
+  it('já acima da mínima e nada futuro cadastrado: ok', () => {
+    expect(notaNecessaria([n(8), n(7)], 6)).toEqual({ tipo: 'ok' })
+  })
+
+  it('com avaliações futuras, usa os pesos delas', () => {
+    // P1 = 5 (peso 1); P2 ainda vai acontecer (peso 2): 6·3 − 5 = 13 → 13/2 = 6,5.
+    expect(notaNecessaria([n(5, 1, 'P1'), n(null, 2, 'P2')], 6)).toEqual({
+      tipo: 'precisa',
+      valor: 6.5,
+      nasFuturas: ['P2'],
+    })
+    // Dízima sobe para o centésimo: (6·4 − 5) / 3 = 6,333… → 6,34.
+    expect(notaNecessaria([n(5), n(null), n(null), n(null)], 6)).toEqual({
+      tipo: 'precisa',
+      valor: 6.34,
+      nasFuturas: ['P', 'P', 'P'],
+    })
+  })
+
+  it('garantido quando nem precisa pontuar no que falta', () => {
+    expect(notaNecessaria([n(10, 3), n(null, 1)], 6)).toEqual({ tipo: 'garantido' })
+  })
+
+  it('impossível quando nem 10 em tudo resolve', () => {
+    expect(notaNecessaria([n(1, 3), n(null, 1)], 6)).toEqual({ tipo: 'impossivel', maximo: 10 })
+  })
+
+  it('escala de 0 a 100 quando a média mínima passa de 10', () => {
+    expect(notaNecessaria([n(50), n(null)], 60)).toEqual({ tipo: 'precisa', valor: 70, nasFuturas: ['P'] })
+  })
+
+  it('a média ignora avaliações que ainda não aconteceram', () => {
+    expect(mediaPonderada([n(8), n(null, 5)])).toBe(8)
+    expect(mediaPonderada([n(null)])).toBeNull()
   })
 })

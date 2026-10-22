@@ -9,6 +9,7 @@ import {
   IconeAjustes,
   IconeBanco,
   IconeFaculdade,
+  IconeHoje,
   IconeMenu,
   IconeProjetos,
   IconeSeta,
@@ -17,6 +18,7 @@ import {
 
 // As áreas da rotina. "Banco" é a parte de gastos (Nubank e Caju); as outras ainda vão ganhar conteúdo.
 const AREAS = [
+  { rota: '/', nome: 'Hoje', Icone: IconeHoje },
   { rota: '/faculdade', nome: 'Faculdade', Icone: IconeFaculdade },
   { rota: '/trabalho', nome: 'Trabalho', Icone: IconeTrabalho },
   { rota: '/nubank', nome: 'Banco', Icone: IconeBanco },
@@ -62,7 +64,8 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
   const saldoCaju = saldoCajuEm(dados, hoje, hoje)
 
-  const ativa = (rota: string) => (rota === '/nubank' ? ehAreaBanco(pathname) : pathname.startsWith(rota))
+  const ativa = (rota: string) =>
+    rota === '/' ? pathname === '/' : rota === '/nubank' ? ehAreaBanco(pathname) : pathname.startsWith(rota)
 
   return (
     <nav className="menu-lateral" aria-label="Menu" onClick={(e) => e.stopPropagation()}>

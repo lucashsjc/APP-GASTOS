@@ -14,7 +14,7 @@ interface EstadoFaculdade {
 const VAZIO: DadosFaculdade = { disciplinas: [], notas: [], faltas: [], atividades: [] }
 const Contexto = createContext<EstadoFaculdade | null>(null)
 
-/** Carrega os dados da Faculdade ao entrar na área (fica em volta das rotas /faculdade). */
+/** Dados da Faculdade, usados na própria área e na tela Hoje. */
 export function ProvedorFaculdade({ children }: { children: ReactNode }) {
   const { avisar } = useEstado()
   const [dados, setDados] = useState<DadosFaculdade>(VAZIO)

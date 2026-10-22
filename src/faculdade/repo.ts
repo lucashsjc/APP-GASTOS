@@ -44,6 +44,10 @@ function erro(e: { code?: string; message: string } | null) {
   if (e.code === 'PGRST205' || e.code === '42P01') {
     throw new Error('As tabelas da Faculdade ainda não existem. Rode o supabase/003_faculdade.sql no Supabase.')
   }
+  // Nota vazia (avaliação futura) antes do SQL 004.
+  if (e.code === '23502' && e.message.includes('valor')) {
+    throw new Error('Para guardar avaliação sem nota, rode o supabase/004_avaliacoes_futuras.sql no Supabase.')
+  }
   throw new Error(e.message)
 }
 
@@ -65,7 +69,7 @@ function criarRepoSupabase(): RepoFaculdade {
       // O Postgres devolve "numeric" como texto.
       return {
         disciplinas: disciplinas.map((d) => ({ ...d, media_minima: Number(d.media_minima) })),
-        notas: notas.map((n) => ({ ...n, valor: Number(n.valor), peso: Number(n.peso) })),
+        notas: notas.map((n) => ({ ...n, valor: n.valor === null ? null : Number(n.valor), peso: Number(n.peso) })),
         faltas,
         atividades,
       }

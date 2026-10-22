@@ -23,6 +23,7 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
       { id: 'n3', disciplina_id: 'd-prog', descricao: 'P1', valor: 9, peso: 2, data: dia(22) },
       { id: 'n4', disciplina_id: 'd-prog', descricao: 'Projeto', valor: 8.5, peso: 1, data: dia(15) },
       { id: 'n5', disciplina_id: 'd-fis', descricao: 'P1', valor: 4.5, peso: 1, data: dia(24) },
+      { id: 'n6', disciplina_id: 'd-fis', descricao: 'P2', valor: null, peso: 2, data: null },
     ],
     faltas: [
       { id: 'f1', disciplina_id: 'd-calc', data: dia(3), quantidade: 2 },

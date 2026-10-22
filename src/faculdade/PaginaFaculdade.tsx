@@ -6,7 +6,7 @@ import { useEstado } from '../estado'
 import { dataCurta } from '../lib/datas'
 import { useFaculdade } from './estado'
 import { FolhaAtividade, FolhaDisciplinas, FolhaFalta, FolhaNota } from './Folhas'
-import { formatarNota, mediaPonderada, ordenarAtividades, prazoAtividade, resumoFaltas, situacaoNota } from './regras'
+import { formatarNota, mediaPonderada, notaNecessaria, ordenarAtividades, prazoAtividade, resumoFaltas, situacaoNota } from './regras'
 import { repoFaculdade } from './repo'
 import type { Atividade, Disciplina, Falta, Nota } from './tipos'
 
@@ -106,7 +106,8 @@ function SecaoNotas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
       {dados.disciplinas.map((d) => {
         const notas = dados.notas
           .filter((n) => n.disciplina_id === d.id)
-          .sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+          // As que já saíram por data; as que ainda vão acontecer no fim.
+          .sort((a, b) => Number(a.valor === null) - Number(b.valor === null) || (a.data ?? '').localeCompare(b.data ?? ''))
         const media = mediaPonderada(notas)
         const situacao = situacaoNota(media, d.media_minima)
         return (
@@ -119,17 +120,22 @@ function SecaoNotas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
             </CabecalhoDisciplina>
             <p className="disciplina-legenda">
               {situacao === 'sem_notas'
-                ? `Nenhuma nota ainda · precisa de ${formatarNota(d.media_minima)}`
+                ? `Nenhuma nota ainda · média mínima ${formatarNota(d.media_minima)}`
                 : situacao === 'acima'
                   ? `Acima da média mínima (${formatarNota(d.media_minima)})`
                   : `Abaixo da média mínima (${formatarNota(d.media_minima)})`}
             </p>
+            <QuantoPreciso notas={notas} minima={d.media_minima} />
             {notas.length > 0 && (
               <ul className="lista lista-interna">
                 {notas.map((n) => (
                   <li key={n.id}>
                     <ItemDeslizavel
-                      pergunta={`Apagar a nota “${n.descricao}” (${formatarNota(n.valor)})?`}
+                      pergunta={
+                        n.valor === null
+                          ? `Apagar a avaliação “${n.descricao}”?`
+                          : `Apagar a nota “${n.descricao}” (${formatarNota(n.valor)})?`
+                      }
                       aoEditar={() => abrir({ tipo: 'nota', nota: n })}
                       aoApagar={() => executar(() => repoFaculdade.excluir('notas', n.id))}
                       aoTocar={() => abrir({ tipo: 'nota', nota: n })}
@@ -142,9 +148,13 @@ function SecaoNotas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
                             {n.peso !== 1 && ` · peso ${formatarNota(n.peso)}`}
                           </small>
                         </span>
-                        <strong className={n.valor >= d.media_minima ? 'positivo' : 'negativo-texto'}>
-                          {formatarNota(n.valor)}
-                        </strong>
+                        {n.valor === null ? (
+                          <span className="prazo">ainda não saiu</span>
+                        ) : (
+                          <strong className={n.valor >= d.media_minima ? 'positivo' : 'negativo-texto'}>
+                            {formatarNota(n.valor)}
+                          </strong>
+                        )}
                       </div>
                     </ItemDeslizavel>
                   </li>
@@ -158,6 +168,27 @@ function SecaoNotas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
         )
       })}
     </div>
+  )
+}
+
+function QuantoPreciso({ notas, minima }: { notas: Nota[]; minima: number }) {
+  const r = notaNecessaria(notas, minima)
+  if (r.tipo === 'ok') return null
+  const texto =
+    r.tipo === 'garantido'
+      ? 'A média mínima já está garantida, mesmo tirando zero no que falta.'
+      : r.tipo === 'impossivel'
+        ? `Nem com ${r.maximo} no que falta dá para chegar em ${formatarNota(minima)}.`
+        : r.nasFuturas.length === 0
+          ? `Na próxima avaliação (peso 1), precisa tirar ${formatarNota(r.valor)}.`
+          : r.nasFuturas.length === 1
+            ? `Precisa tirar ${formatarNota(r.valor)} na ${r.nasFuturas[0]}.`
+            : `Precisa de média ${formatarNota(r.valor)} em ${r.nasFuturas.join(', ')}.`
+  return (
+    <p className={`quanto-preciso quanto-${r.tipo}`}>
+      <strong>Quanto preciso tirar</strong>
+      {texto}
+    </p>
   )
 }
 

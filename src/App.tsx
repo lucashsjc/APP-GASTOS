@@ -7,6 +7,7 @@ import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
 import { ProvedorFaculdade } from './faculdade/estado'
 import PaginaFaculdade from './faculdade/PaginaFaculdade'
+import PaginaHoje from './hoje/PaginaHoje'
 import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
 import PaginaProjetos from './projetos/PaginaProjetos'
@@ -33,11 +34,12 @@ export default function App() {
 
   return (
     <ProvedorDeDados key={sessao?.user.id ?? 'demo'}>
+      <ProvedorFaculdade>
       <BrowserRouter>
         {modoDemonstracao && <div className="aviso-demo">Modo demonstração: dados de exemplo, só neste aparelho.</div>}
         <main className="conteudo">
           <Routes>
-            <Route path="/" element={<Navigate to="/nubank" replace />} />
+            <Route path="/" element={<PaginaHoje />} />
             <Route path="/nubank" element={<PaginaAba aba="nubank" />} />
             <Route path="/caju" element={<PaginaAba aba="caju" />} />
             <Route path="/nubank/certos" element={<Certos aba="nubank" />} />
@@ -48,11 +50,7 @@ export default function App() {
             <Route path="/ajustes/importar" element={<Importar />} />
             <Route
               path="/faculdade"
-              element={
-                <ProvedorFaculdade>
-                  <Outlet />
-                </ProvedorFaculdade>
-              }
+              element={<Outlet />}
             >
               <Route index element={<Navigate to="notas" replace />} />
               <Route path="notas" element={<PaginaFaculdade secao="notas" />} />
@@ -62,13 +60,14 @@ export default function App() {
             <Route path="/trabalho" element={<EmBreve titulo="Trabalho" />} />
             <Route path="/projetos" element={<PaginaProjetos />} />
             <Route path="/projetos/:repo" element={<PaginaReadme />} />
-            <Route path="*" element={<Navigate to="/nubank" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
         <ErroEAviso />
         <BarraCartoes />
         <BarraFaculdade />
       </BrowserRouter>
+      </ProvedorFaculdade>
     </ProvedorDeDados>
   )
 }
