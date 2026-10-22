@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { dadosDeExemplo } from '../data/exemplo'
 import type { DadosFaculdade } from '../faculdade/tipos'
-import { alertasFaculdade, atividadesUrgentes, certosProximos, dataPorExtenso, saudacao, somarDias } from './resumo'
+import { alertasFaculdade, atividadesUrgentes, dataPorExtenso, saudacao, somarDias } from './resumo'
 
 describe('tela Hoje', () => {
   it('saudação pela hora de São Paulo', () => {
@@ -17,16 +16,6 @@ describe('tela Hoje', () => {
 
   it('soma dias atravessando o mês', () => {
     expect(somarDias('2026-10-28', 7)).toBe('2026-11-04')
-  })
-
-  it('certos que vão cair nos próximos 7 dias, inclusive no mês seguinte', () => {
-    const dados = dadosDeExemplo('2026-10-21')
-    // PORTO (10), Spotify (15), iCloud (20) já caíram; Clube iFood (Caju, dia 25) vai cair.
-    expect(certosProximos(dados, '2026-10-21').map((c) => [c.descricao, c.data, c.aba])).toEqual([
-      ['Clube iFood', '2026-10-25', 'caju'],
-    ])
-    // Em 30/10, a semana alcança novembro: Tampa PS5 (dia 1) e nada que já caiu.
-    expect(certosProximos(dados, '2026-10-30').map((c) => [c.descricao, c.data])).toEqual([['Tampa PS5', '2026-11-01']])
   })
 
   it('atividades atrasadas e da próxima semana', () => {

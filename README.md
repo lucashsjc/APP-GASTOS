@@ -17,7 +17,7 @@ neste mês e **quanto tem de saldo** no Caju.
 É um projeto pessoal e de portfólio, feito com a mesma base do
 [app da doceria](https://github.com/lucashsjc/APP-DOCERIA).
 
-![Telas do app: Nubank, Caju, certos do mês, para onde foi o dinheiro e novo gasto](docs/telas/app.png)
+![Telas do app: Nubank, Caju, fixos e parcelas, para onde foi o dinheiro e novo gasto](docs/telas/app.png)
 
 <sub>Telas do modo demonstração, com dados fictícios.</sub>
 
@@ -44,13 +44,14 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 ## Funcionalidades
 
 **Aba Nubank**
-- **Livre para gastar** no mês = recebido − certos do mês − outros gastos (fica vermelho se
+- **Livre para gastar** no mês = recebido − tudo o que foi gasto no mês (fica vermelho se
   passar do recebido).
 - Quanto foi no crédito e quanto no débito, e o valor recebido do mês, editável.
 - **PAGO / NÃO PAGO** em cada compra, com o total pago e o que falta pagar no mês e um botão
   para marcar tudo como pago.
-- **Certos do mês**: o que já se sabe que vai cair (todo mês, parcelas e gastos só deste mês),
-  separado em **já caiu** e **vai cair**.
+- **Gastos do mês** numa lista só, com o total: as compras registradas e também os fixos (todo
+  mês) e as parcelas, que entram sozinhos em cada mês. Os fixos e parcelados ficam numa página
+  própria para editar ou encerrar.
 
 **Aba Caju**
 - **Saldo no cartão**, que acumula de um mês para o outro, e **quanto dá para gastar por dia**
@@ -107,7 +108,7 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - **Dinheiro em centavos inteiros.** Todos os valores são guardados e somados como números
   inteiros de centavos, nunca em ponto flutuante (`0,1 + 0,2` não vira `0,30000000000000004`).
   A conversão para reais só acontece na hora de mostrar ([`src/lib/dinheiro.ts`](src/lib/dinheiro.ts)).
-- **Regras de cálculo em funções puras, com testes.** Livre, certos do mês, saldo do Caju, por
+- **Regras de cálculo em funções puras, com testes.** Livre, fixos e parcelas do mês, saldo do Caju, por
   dia, parcelas e recorrências ficam em [`src/lib/calculos.ts`](src/lib/calculos.ts), sem React
   nem banco, e são cobertas por testes automatizados. Os testes conferem os números com a
   planilha antiga: outubro com 17 gastos somando R$ 1.019,05, novembro com R$ 485,10 já certos.
@@ -137,7 +138,7 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 
 ```
 src/
-  pages/        telas (abas Nubank e Caju, certos do mês, para onde foi, ajustes, importar, login)
+  pages/        telas (abas Nubank e Caju, fixos e parcelas, para onde foi, ajustes, importar, login)
   componentes/  folha de novo gasto, item deslizável, seletor de mês, ícones…
   data/         tipos, acesso a dados (Supabase ou modo demonstração) e dados de exemplo
   lib/          regras de cálculo, datas, dinheiro, categorias, .xlsx e importação (com testes)

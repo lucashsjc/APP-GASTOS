@@ -1,8 +1,6 @@
 // O que a tela "Hoje" mostra: funções puras, com testes em resumo.test.ts.
 
-import type { Aba, Dados } from '../data/types'
-import { certosDoMes } from '../lib/calculos'
-import { FUSO, mesDe, somarMeses } from '../lib/datas'
+import { FUSO } from '../lib/datas'
 import { notaNecessaria, mediaPonderada, ordenarAtividades, resumoFaltas, situacaoNota } from '../faculdade/regras'
 import type { Atividade, DadosFaculdade, Disciplina } from '../faculdade/tipos'
 
@@ -23,26 +21,6 @@ export function dataPorExtenso(hoje: string): string {
   return new Intl.DateTimeFormat('pt-BR', { weekday: 'long', day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
     new Date(Date.UTC(a, m - 1, d)),
   )
-}
-
-export interface CertoProximo {
-  chave: string
-  aba: Aba
-  descricao: string
-  valor_centavos: number
-  data: string
-}
-
-/** Certos (Nubank e Caju) que ainda vão cair de hoje até `dias` dias depois, por data. */
-export function certosProximos(dados: Dados, hoje: string, dias = 7): CertoProximo[] {
-  const ate = somarDias(hoje, dias)
-  const meses = [mesDe(hoje)]
-  if (mesDe(ate) !== mesDe(hoje)) meses.push(somarMeses(mesDe(hoje), 1))
-  return (['nubank', 'caju'] as const)
-    .flatMap((aba) => meses.flatMap((mes) => certosDoMes(dados, aba, mes, hoje)))
-    .filter((c) => !c.caiu && c.data >= hoje && c.data <= ate)
-    .map((c) => ({ chave: c.chave, aba: c.aba, descricao: c.descricao, valor_centavos: c.valor_centavos, data: c.data }))
-    .sort((a, b) => a.data.localeCompare(b.data))
 }
 
 /** Atividades pendentes atrasadas ou com entrega até `dias` dias. */

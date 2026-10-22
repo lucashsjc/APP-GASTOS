@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaValor } from '../componentes/FolhaValor'
 import { IconeLapis, IconeProximo, IconeSeta, Logo } from '../componentes/icones'
@@ -11,17 +12,8 @@ import { repo } from '../data/repo'
 import { definirPago } from '../data/acoes'
 import type { Aba, Gasto } from '../data/types'
 import { useEstado } from '../estado'
-import {
-  cardCaju,
-  certosDoMes,
-  outrosDoMes,
-  resumirCertos,
-  resumoNubank,
-  resumoPagamento,
-  type Certo,
-  type ResumoCertos,
-} from '../lib/calculos'
-import { dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
+import { cardCaju, certosDoMes, outrosDoMes, resumoNubank, resumoPagamento, type Certo } from '../lib/calculos'
+import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 
 const NOMES: Record<Aba, string> = { nubank: 'Nubank', caju: 'Caju' }
@@ -37,8 +29,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
 
   const certos = certosDoMes(dados, aba, mes, hoje)
-  const resumoCertos = resumirCertos(certos)
   const outros = outrosDoMes(dados, aba, mes)
+  // Tudo o que foi gasto no mês numa lista só, do mais recente para o mais antigo.
+  const itens: (Certo | Gasto)[] = [...certos, ...outros].sort((a, b) => b.data.localeCompare(a.data))
+  const totalDoMes = itens.reduce((s, i) => s + i.valor_centavos, 0)
+  const acoesCerto = useAcoesCerto(aba, setFolha)
   const depositos = aba === 'caju' ? dados.depositos.filter((d) => mesDe(d.data) === mes) : []
   const recebido = dados.recebidos.find((r) => r.mes === mes)?.valor_centavos ?? 0
 
@@ -52,38 +47,65 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         <CardCajuPrincipal aoDepositar={() => setFolhaValor('deposito')} />
       )}
 
-      <CardCertos aba={aba} resumo={resumoCertos} quantidade={certos.length} />
-
       <CardPagamentos certos={certos} outros={outros} />
 
       <section className="secao">
-        <h2>{aba === 'nubank' ? 'Outros gastos' : 'Gastos do mês'}</h2>
+        <h2>
+          Gastos de {nomeDoMes(mes)} <span>{formatarReais(totalDoMes)}</span>
+        </h2>
         {carregando ? (
           <p className="vazio">Carregando…</p>
-        ) : outros.length === 0 ? (
-          <p className="vazio">Nenhum gasto de uma vez em {nomeDoMes(mes)}. Toque no + lá em cima para registrar.</p>
+        ) : itens.length === 0 ? (
+          <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
         ) : (
           <ul className="lista">
-            {outros.map((g) => (
-              <li key={g.id}>
-                <ItemDeslizavel
-                  pergunta={`Apagar “${g.descricao}” (${formatarReais(g.valor_centavos)})?`}
-                  aoEditar={() => setFolha({ aba, gasto: g })}
-                  aoApagar={() => executar(() => repo.excluirGastos([g.id]))}
-                  aoTocar={() => setFolha({ aba, gasto: g })}
-                >
-                  <LinhaGasto
-                    {...g}
-                    forma={aba === 'nubank' ? g.forma : null}
-                    aoAlternarPago={() => executar(() => definirPago(g, !g.pago))}
-                  />
-                </ItemDeslizavel>
-              </li>
-            ))}
+            {itens.map((item) =>
+              'chave' in item ? (
+                <li key={item.chave}>
+                  <ItemDeslizavel
+                    pergunta={acoesCerto.pergunta(item)}
+                    rotuloApagar={acoesCerto.rotuloApagar(item)}
+                    aoEditar={() => acoesCerto.editar(item)}
+                    aoApagar={() => acoesCerto.apagar(item)}
+                    aoTocar={() => acoesCerto.editar(item)}
+                  >
+                    <LinhaGasto
+                      {...item}
+                      forma={aba === 'nubank' ? item.forma : null}
+                      detalhe={`${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
+                      aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
+                    />
+                  </ItemDeslizavel>
+                </li>
+              ) : (
+                <li key={item.id}>
+                  <ItemDeslizavel
+                    pergunta={`Apagar “${item.descricao}” (${formatarReais(item.valor_centavos)})?`}
+                    aoEditar={() => setFolha({ aba, gasto: item })}
+                    aoApagar={() => executar(() => repo.excluirGastos([item.id]))}
+                    aoTocar={() => setFolha({ aba, gasto: item })}
+                  >
+                    <LinhaGasto
+                      {...item}
+                      forma={aba === 'nubank' ? item.forma : null}
+                      aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
+                    />
+                  </ItemDeslizavel>
+                </li>
+              ),
+            )}
           </ul>
         )}
-        {outros.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
+        {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
       </section>
+
+      <Link to={`/${aba}/certos`} className="card link-fixos">
+        <span>
+          <strong>Fixos e parcelas</strong>
+          <small>Gastos de todo mês (PORTO, Spotify…) e compras parceladas, que entram sozinhos em cada mês.</small>
+        </span>
+        <IconeProximo tamanho={18} />
+      </Link>
 
       {aba === 'caju' && depositos.length > 0 && (
         <section className="secao">
@@ -145,12 +167,11 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
       </div>
       <Valor centavos={r.livre} className={r.livre < 0 ? 'negativo' : ''} />
       <div className="barra barra-clara" aria-hidden="true">
-        <span style={{ width: porcento(r.certos.total, r.recebido) }} />
-        <span className="barra-outros" style={{ width: porcento(r.outros, r.recebido) }} />
+        <span style={{ width: porcento(r.certos.total + r.outros, r.recebido) }} />
       </div>
       <div className="card-principal-legenda">
-        <span>Certos {formatarReais(r.certos.total)}</span>
-        <span>Outros {formatarReais(r.outros)}</span>
+        <span>Gasto no mês {formatarReais(r.certos.total + r.outros)}</span>
+        <span>{r.recebido > 0 ? `${Math.round(((r.certos.total + r.outros) / r.recebido) * 100)}% do recebido` : ''}</span>
       </div>
       <div className="card-principal-rodape">
         <button type="button" className="recebido" onClick={aoEditarRecebido}>
@@ -199,7 +220,7 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
           )}
         </p>
       )}
-      {c.modo === 'futuro' && <p className="aviso-por-dia">Saldo de hoje menos os certos do Caju até lá.</p>}
+      {c.modo === 'futuro' && <p className="aviso-por-dia">Saldo de hoje menos os fixos e parcelas do Caju até lá.</p>}
       <div className="card-principal-rodape">
         <button type="button" className="botao-claro" onClick={aoDepositar}>
           + Registrar depósito
@@ -262,36 +283,5 @@ function CardPagamentos({ certos, outros }: { certos: Certo[]; outros: Gasto[] }
         </div>
       )}
     </section>
-  )
-}
-
-function CardCertos({ aba, resumo, quantidade }: { aba: Aba; resumo: ResumoCertos; quantidade: number }) {
-  return (
-    <Link to={`/${aba}/certos`} className="card card-certos">
-      <div className="card-certos-topo">
-        <h2>Certos do mês</h2>
-        <span>
-          {formatarReais(resumo.total)} <IconeProximo tamanho={16} />
-        </span>
-      </div>
-      {quantidade === 0 ? (
-        <p className="vazio">Nenhum gasto certo neste mês. Toque para adicionar.</p>
-      ) : (
-        <>
-          <div className="barra" aria-hidden="true">
-            <span className="barra-caiu" style={{ width: porcento(resumo.jaCaiu, resumo.total) }} />
-            <span className="barra-vai-cair" style={{ width: porcento(resumo.vaiCair, resumo.total) }} />
-          </div>
-          <div className="card-certos-legenda">
-            <span>
-              <i className="ponto ponto-caiu" /> Já caiu <strong>{formatarReais(resumo.jaCaiu)}</strong>
-            </span>
-            <span>
-              <i className="ponto ponto-vai-cair" /> Vai cair <strong>{formatarReais(resumo.vaiCair)}</strong>
-            </span>
-          </div>
-        </>
-      )}
-    </Link>
   )
 }

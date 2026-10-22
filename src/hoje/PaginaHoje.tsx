@@ -6,9 +6,9 @@ import { useFaculdade } from '../faculdade/estado'
 import { prazoAtividade } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
 import { cardCaju, resumoNubank } from '../lib/calculos'
-import { dataCurta, diaDe, mesDe } from '../lib/datas'
+import { mesDe } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
-import { alertasFaculdade, atividadesUrgentes, certosProximos, dataPorExtenso, saudacao } from './resumo'
+import { alertasFaculdade, atividadesUrgentes, dataPorExtenso, saudacao } from './resumo'
 
 /** Tela inicial: o resumo do dia (dinheiro, o que vai cair e a faculdade). */
 export default function PaginaHoje() {
@@ -16,7 +16,6 @@ export default function PaginaHoje() {
   const faculdade = useFaculdade()
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
   const caju = cardCaju(dados, mesDe(hoje), hoje)
-  const proximos = certosProximos(dados, hoje)
   const atividades = atividadesUrgentes(faculdade.dados.atividades, hoje)
   const alertas = alertasFaculdade(faculdade.dados)
   const semFaculdade = !faculdade.carregando && !faculdade.erro && !faculdade.dados.disciplinas.length && !faculdade.dados.atividades.length
@@ -49,28 +48,6 @@ export default function PaginaHoje() {
           </small>
         </Link>
       </section>
-
-      {proximos.length > 0 && (
-        <section className="secao">
-          <h2>Vai cair nos próximos 7 dias</h2>
-          <ul className="lista">
-            {proximos.map((c) => (
-              <li key={c.chave}>
-                <Link to={`/${c.aba}/certos`} className="linha-simples linha-hoje">
-                  <span className="linha-hoje-esq">
-                    <Logo aba={c.aba} tamanho={26} />
-                    <span>
-                      <strong>{c.descricao}</strong>
-                      <small>{c.data === hoje ? 'hoje' : `dia ${diaDe(c.data)} · ${dataCurta(c.data)}`}</small>
-                    </span>
-                  </span>
-                  <strong>{formatarReais(c.valor_centavos)}</strong>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       <section className="secao">
         <h2>

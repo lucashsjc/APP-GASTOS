@@ -1,5 +1,5 @@
 import { categoria as dadosCategoria } from '../lib/categorias'
-import { dataCurta, diaDe } from '../lib/datas'
+import { dataCurta } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 import type { Forma } from '../data/types'
 
@@ -11,9 +11,6 @@ interface Props {
   forma?: Forma | null
   /** Texto extra abaixo da descrição (ex.: "2 de 2"). */
   detalhe?: string
-  /** Para os certos: já caiu ou vai cair. */
-  status?: 'caiu' | 'vai_cair'
-  aoTocarStatus?: () => void
   positivo?: boolean
   /** Troca o ícone da categoria (ex.: depósito). */
   icone?: { simbolo: string; cor: string }
@@ -22,7 +19,7 @@ interface Props {
   aoAlternarPago?: () => void
 }
 
-export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, status, aoTocarStatus, positivo, icone, pago, aoAlternarPago }: Props) {
+export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, positivo, icone, pago, aoAlternarPago }: Props) {
   const base = dadosCategoria(categoria)
   const cat = icone ? { ...base, icone: icone.simbolo, cor: icone.cor } : base
   const partes = [detalhe ?? dataCurta(data), forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
@@ -61,20 +58,6 @@ export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, 
             title={aoAlternarPago ? (pago ? 'Marcar como não pago' : 'Marcar como pago') : undefined}
           >
             {pago ? 'PAGO' : 'NÃO PAGO'}
-          </button>
-        )}
-        {status && (
-          <button
-            type="button"
-            className={`status status-${status}`}
-            onClick={(e) => {
-              e.stopPropagation()
-              aoTocarStatus?.()
-            }}
-            disabled={!aoTocarStatus}
-            title={aoTocarStatus ? (status === 'caiu' ? 'Desmarcar como caído' : 'Marcar como já caído') : undefined}
-          >
-            {status === 'caiu' ? 'caiu' : `dia ${diaDe(data)}`}
           </button>
         )}
         </span>

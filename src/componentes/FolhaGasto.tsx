@@ -102,7 +102,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [categoriaEscolhida, setCategoriaEscolhida] = useState(Boolean(inicial.categoria))
   const [forma, setForma] = useState<Forma>(inicial.forma)
   const [formaEscolhida, setFormaEscolhida] = useState(Boolean(gastoEditado || recEditada))
-  const [certo, setCerto] = useState(inicial.certo)
+  // "Uma vez" aberto pela página de fixos vira um previsto só deste mês.
+  const [certo] = useState(inicial.certo)
   const [parcelas, setParcelas] = useState(inicial.parcelas)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
@@ -308,16 +309,6 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             Parcela {gastoEditado.parcela_numero} de {gastoEditado.parcela_total}. As outras parcelas desta compra
             não estão no app, então só esta é editada.
           </p>
-        )}
-
-        {tipo === 'uma' && (!gastoEditado || gastoEditado.tipo !== 'parcela') && (
-          <label className="alternar">
-            <input type="checkbox" checked={certo} onChange={(e) => setCerto(e.target.checked)} />
-            <span>
-              Gasto certo deste mês
-              <small>Aparece em "Certos do mês", e não em outros gastos.</small>
-            </span>
-          </label>
         )}
 
         {aba === 'nubank' && (

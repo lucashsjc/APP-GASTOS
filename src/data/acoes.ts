@@ -36,16 +36,6 @@ function ajusteVazio(g: Gasto, mudanca: Partial<Gasto>): boolean {
   return Boolean(g.recorrencia_id) && !final.caiu_manual && !final.pago
 }
 
-/** Marca (ou desmarca) à mão um certo como já caído. */
-export async function alternarCaiu(c: Certo) {
-  if (c.gasto) {
-    const mudanca = { caiu_manual: !c.gasto.caiu_manual }
-    if (ajusteVazio(c.gasto, mudanca)) return repo.excluirGastos([c.gasto.id])
-    return repo.atualizarGasto(c.gasto.id, mudanca)
-  }
-  if (c.recorrencia) await repo.criarGastos([ajusteDeRecorrencia(c, { caiu_manual: true })])
-}
-
 /** Marca um gasto (ou um certo) como pago ou não pago. */
 export async function definirPago(item: Gasto | Certo, pago: boolean) {
   const gasto = 'chave' in item ? item.gasto : item
