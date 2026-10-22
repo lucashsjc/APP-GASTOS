@@ -98,6 +98,7 @@ export function dadosDeExemplo(hoje: string): Dados {
     parcela_numero: null,
     parcela_total: null,
     caiu_manual: null,
+    pago: false,
   })
 
   const gastos: Gasto[] = [
@@ -116,7 +117,7 @@ export function dadosDeExemplo(hoje: string): Dados {
         parcelas: 2,
       },
       'ex-grupo-ps5',
-    ).map((p) => ({ ...p, id: id() })),
+    ).map((p) => ({ ...p, id: id(), pago: false })),
   ]
 
   const recorrencia = (aba: Aba, descricao: string, centavos: number, dia: number, categoria: string) => ({

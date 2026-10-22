@@ -17,9 +17,12 @@ interface Props {
   positivo?: boolean
   /** Troca o ícone da categoria (ex.: depósito). */
   icone?: { simbolo: string; cor: string }
+  /** Selo PAGO / NÃO PAGO (sem o selo quando não informado). */
+  pago?: boolean
+  aoAlternarPago?: () => void
 }
 
-export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, status, aoTocarStatus, positivo, icone }: Props) {
+export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, status, aoTocarStatus, positivo, icone, pago, aoAlternarPago }: Props) {
   const base = dadosCategoria(categoria)
   const cat = icone ? { ...base, icone: icone.simbolo, cor: icone.cor } : base
   const partes = [detalhe ?? dataCurta(data), forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
@@ -44,6 +47,22 @@ export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, 
           {positivo ? '+' : ''}
           {formatarReais(valor_centavos)}
         </strong>
+        <span className="selos">
+        {pago !== undefined && (
+          <button
+            type="button"
+            className={`selo-pago${pago ? ' pago' : ''}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              aoAlternarPago?.()
+            }}
+            disabled={!aoAlternarPago}
+            aria-pressed={pago}
+            title={aoAlternarPago ? (pago ? 'Marcar como não pago' : 'Marcar como pago') : undefined}
+          >
+            {pago ? 'PAGO' : 'NÃO PAGO'}
+          </button>
+        )}
         {status && (
           <button
             type="button"
@@ -58,6 +77,7 @@ export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, 
             {status === 'caiu' ? 'caiu' : `dia ${diaDe(data)}`}
           </button>
         )}
+        </span>
       </span>
     </div>
   )

@@ -8,7 +8,12 @@ const CHAVE = 'gastos-demo'
 function ler(): Dados {
   try {
     const salvo = localStorage.getItem(CHAVE)
-    if (salvo) return { gastos: [], recorrencias: [], recebidos: [], depositos: [], ...JSON.parse(salvo) }
+    if (salvo) {
+      const dados: Dados = { gastos: [], recorrencias: [], recebidos: [], depositos: [], ...JSON.parse(salvo) }
+      // Dados guardados antes do "pago" existir.
+      dados.gastos = dados.gastos.map((g) => ({ ...g, pago: g.pago ?? false }))
+      return dados
+    }
   } catch {
     // sem armazenamento: usa os dados de exemplo
   }
@@ -38,7 +43,7 @@ export function criarRepoLocal(): Repo {
     },
 
     async criarGastos(novos) {
-      const criados: Gasto[] = novos.map((g) => ({ ...g, id: crypto.randomUUID() }))
+      const criados: Gasto[] = novos.map((g) => ({ ...g, pago: g.pago ?? false, id: crypto.randomUUID() }))
       alterar((d) => d.gastos.push(...criados))
       return criados
     },

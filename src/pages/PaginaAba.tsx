@@ -8,9 +8,19 @@ import { LinhaGasto } from '../componentes/LinhaGasto'
 import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
 import { repo } from '../data/repo'
-import type { Aba } from '../data/types'
+import { definirPago } from '../data/acoes'
+import type { Aba, Gasto } from '../data/types'
 import { useEstado } from '../estado'
-import { cardCaju, certosDoMes, outrosDoMes, resumirCertos, resumoNubank, type ResumoCertos } from '../lib/calculos'
+import {
+  cardCaju,
+  certosDoMes,
+  outrosDoMes,
+  resumirCertos,
+  resumoNubank,
+  resumoPagamento,
+  type Certo,
+  type ResumoCertos,
+} from '../lib/calculos'
 import { dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 
@@ -44,6 +54,8 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
 
       <CardCertos aba={aba} resumo={resumoCertos} quantidade={certos.length} />
 
+      <CardPagamentos certos={certos} outros={outros} />
+
       <section className="secao">
         <h2>{aba === 'nubank' ? 'Outros gastos' : 'Gastos do mês'}</h2>
         {carregando ? (
@@ -60,7 +72,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
                   aoApagar={() => executar(() => repo.excluirGastos([g.id]))}
                   aoTocar={() => setFolha({ aba, gasto: g })}
                 >
-                  <LinhaGasto {...g} forma={aba === 'nubank' ? g.forma : null} />
+                  <LinhaGasto
+                    {...g}
+                    forma={aba === 'nubank' ? g.forma : null}
+                    aoAlternarPago={() => executar(() => definirPago(g, !g.pago))}
+                  />
                 </ItemDeslizavel>
               </li>
             ))}
@@ -192,6 +208,59 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
           Para onde foi <IconeSeta tamanho={16} />
         </Link>
       </div>
+    </section>
+  )
+}
+
+/** Quanto do mês já está pago e quanto falta, com o atalho para marcar tudo como pago. */
+function CardPagamentos({ certos, outros }: { certos: Certo[]; outros: Gasto[] }) {
+  const { executar, avisar } = useEstado()
+  const [confirmando, setConfirmando] = useState(false)
+  const itens = [...certos, ...outros]
+  if (!itens.length) return null
+  const r = resumoPagamento(itens)
+  const pendentes = itens.filter((i) => !i.pago)
+
+  const marcarTudo = async () => {
+    setConfirmando(false)
+    const ok = await executar(async () => {
+      for (const item of pendentes) await definirPago(item, true)
+    })
+    if (ok) avisar(`${pendentes.length} ${pendentes.length === 1 ? 'gasto marcado' : 'gastos marcados'} como pago.`)
+  }
+
+  return (
+    <section className="card card-pagamentos">
+      <div className="card-pagamentos-linha">
+        <span>
+          <small>Pago</small>
+          <strong className="positivo">{formatarReais(r.pago)}</strong>
+        </span>
+        <span>
+          <small>Não pago</small>
+          <strong className={r.naoPago > 0 ? 'negativo-texto' : undefined}>{formatarReais(r.naoPago)}</strong>
+        </span>
+        {pendentes.length > 0 && !confirmando && (
+          <button type="button" className="botao-secundario" onClick={() => setConfirmando(true)}>
+            Marcar tudo como pago
+          </button>
+        )}
+      </div>
+      {confirmando && (
+        <div className="confirmar-pagamento">
+          <span>
+            Marcar {pendentes.length} {pendentes.length === 1 ? 'gasto' : 'gastos'} deste mês como pago?
+          </span>
+          <div>
+            <button type="button" className="botao-texto" onClick={() => setConfirmando(false)}>
+              Não
+            </button>
+            <button type="button" className="botao-confirmar" onClick={marcarTudo}>
+              Marcar
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

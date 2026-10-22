@@ -47,6 +47,8 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - **Livre para gastar** no mês = recebido − certos do mês − outros gastos (fica vermelho se
   passar do recebido).
 - Quanto foi no crédito e quanto no débito, e o valor recebido do mês, editável.
+- **PAGO / NÃO PAGO** em cada compra, com o total pago e o que falta pagar no mês e um botão
+  para marcar tudo como pago.
 - **Certos do mês**: o que já se sabe que vai cair (todo mês, parcelas e gastos só deste mês),
   separado em **já caiu** e **vai cair**.
 
@@ -168,7 +170,8 @@ exemplo fictícios que ficam só no navegador (em Ajustes dá para voltar a eles
 2. Em **SQL Editor → New query**, cole e rode, nesta ordem,
    [`supabase/schema.sql`](supabase/schema.sql) (gastos),
    [`supabase/003_faculdade.sql`](supabase/003_faculdade.sql) (faculdade) e
-   [`supabase/004_avaliacoes_futuras.sql`](supabase/004_avaliacoes_futuras.sql). Eles podem rodar mais
+   [`supabase/004_avaliacoes_futuras.sql`](supabase/004_avaliacoes_futuras.sql) e
+   [`supabase/005_pago.sql`](supabase/005_pago.sql). Eles podem rodar mais
    de uma vez sem duplicar nada. Para conferir, rode também
    [`supabase/002_conferir_rls.sql`](supabase/002_conferir_rls.sql): todas as tabelas devem
    aparecer com `rls_ligado = true`.

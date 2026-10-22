@@ -5,7 +5,7 @@ import { IconeAnterior, IconeMais } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
 import { SeletorMes } from '../componentes/SeletorMes'
-import { aplicarPlanoRecorrencia, alternarCaiu } from '../data/acoes'
+import { aplicarPlanoRecorrencia, alternarCaiu, definirPago } from '../data/acoes'
 import { repo } from '../data/repo'
 import type { Aba } from '../data/types'
 import { useEstado } from '../estado'
@@ -134,6 +134,7 @@ export default function Certos({ aba }: { aba: Aba }) {
                       detalhe={c.parcela_numero ? `${c.parcela_numero} de ${c.parcela_total}` : undefined}
                       status={c.caiu ? 'caiu' : 'vai_cair'}
                       aoTocarStatus={podeAlternar(c) ? () => executar(() => alternarCaiu(c)) : undefined}
+                      aoAlternarPago={() => executar(() => definirPago(c, !c.pago))}
                     />
                   </ItemDeslizavel>
                 </li>

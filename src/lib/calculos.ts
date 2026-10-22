@@ -33,6 +33,8 @@ export interface Certo {
   recorrencia: Recorrencia | null
   parcela_numero: number | null
   parcela_total: number | null
+  /** Pago ou não (para um "todo mês", vem do ajuste daquele mês, se houver). */
+  pago: boolean
 }
 
 /** Já caiu = data até hoje, ou marcado à mão como caído. */
@@ -64,6 +66,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       caiu: jaCaiu(data, hoje, ajuste?.caiu_manual),
       gasto: ajuste,
       recorrencia: r,
+      pago: ajuste?.pago ?? false,
       parcela_numero: null,
       parcela_total: null,
     })
@@ -88,6 +91,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       caiu: jaCaiu(g.data, hoje, g.caiu_manual),
       gasto: g,
       recorrencia: null,
+      pago: g.pago,
       parcela_numero: g.parcela_numero,
       parcela_total: g.parcela_total,
     })
@@ -106,6 +110,14 @@ export function resumirCertos(certos: Certo[]): ResumoCertos {
   const jaCaiuTotal = somar(certos.filter((c) => c.caiu).map((c) => c.valor_centavos))
   const total = somar(certos.map((c) => c.valor_centavos))
   return { total, jaCaiu: jaCaiuTotal, vaiCair: total - jaCaiuTotal }
+}
+
+// ---------- Pago / não pago ----------
+
+/** Quanto do mês (certos + outros gastos) já está pago e quanto falta pagar. */
+export function resumoPagamento(itens: { valor_centavos: number; pago: boolean }[]): { pago: number; naoPago: number } {
+  const pago = somar(itens.filter((i) => i.pago).map((i) => i.valor_centavos))
+  return { pago, naoPago: somar(itens.map((i) => i.valor_centavos)) - pago }
 }
 
 // ---------- Outros gastos ----------

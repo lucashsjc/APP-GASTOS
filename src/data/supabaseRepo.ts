@@ -16,7 +16,7 @@ function erro(e: { message: string } | null) {
 // Colunas lidas (o user_id fica de fora: quem filtra é o RLS).
 const COLUNAS = {
   gastos:
-    'id, aba, forma, descricao, valor_centavos, data, categoria, tipo, recorrencia_id, grupo_id, parcela_numero, parcela_total, caiu_manual',
+    'id, aba, forma, descricao, valor_centavos, data, categoria, tipo, recorrencia_id, grupo_id, parcela_numero, parcela_total, caiu_manual, pago',
   recorrencias: 'id, aba, forma, descricao, valor_centavos, dia, categoria, inicio, fim',
   recebidos: 'id, aba, mes, valor_centavos',
   depositos: 'id, aba, data, valor_centavos',
@@ -26,6 +26,13 @@ const PAGINA = 1000
 
 export function criarRepoSupabase(): Repo {
   const db = supabase!
+  // A coluna "pago" só existe depois do SQL 005. Até lá o app funciona, tratando tudo como não pago.
+  let temPago = true
+  const semPago = <T extends { pago?: boolean }>(g: T) => {
+    if (temPago) return g
+    const { pago: _pago, ...resto } = g
+    return resto
+  }
 
   /** Lê a tabela inteira, de 1000 em 1000 linhas (limite padrão da API). */
   async function tudo<T>(tabela: keyof typeof COLUNAS): Promise<T[]> {
@@ -33,9 +40,13 @@ export function criarRepoSupabase(): Repo {
     for (let de = 0; ; de += PAGINA) {
       const { data, error } = await db
         .from(tabela)
-        .select(COLUNAS[tabela])
+        .select(tabela === 'gastos' && !temPago ? COLUNAS.gastos.replace(', pago', '') : COLUNAS[tabela])
         .order('id')
         .range(de, de + PAGINA - 1)
+      if (error?.code === '42703' && tabela === 'gastos' && temPago) {
+        temPago = false
+        return tudo<T>(tabela)
+      }
       erro(error)
       linhas.push(...((data ?? []) as T[]))
       if (!data || data.length < PAGINA) return linhas
@@ -50,16 +61,25 @@ export function criarRepoSupabase(): Repo {
         tudo<Recebido>('recebidos'),
         tudo<Deposito>('depositos'),
       ])
-      return { gastos, recorrencias, recebidos, depositos }
+      return { gastos: gastos.map((g) => ({ ...g, pago: g.pago ?? false })), recorrencias, recebidos, depositos }
     },
 
     async criarGastos(novos) {
       if (!novos.length) return []
-      const { data, error } = await db.from('gastos').insert(novos).select(COLUNAS.gastos)
+      if (!temPago && novos.some((g) => g.pago)) {
+        throw new Error('Para marcar como pago, rode o supabase/005_pago.sql no Supabase.')
+      }
+      const { data, error } = await db
+        .from('gastos')
+        .insert(novos.map(semPago))
+        .select(temPago ? COLUNAS.gastos : COLUNAS.gastos.replace(', pago', ''))
       erro(error)
-      return data as unknown as Gasto[]
+      return (data as unknown as Gasto[]).map((g) => ({ ...g, pago: g.pago ?? false }))
     },
     async atualizarGasto(id, dados) {
+      if ('pago' in dados && !temPago) {
+        throw new Error('Para marcar como pago, rode o supabase/005_pago.sql no Supabase.')
+      }
       const { error } = await db.from('gastos').update(dados).eq('id', id)
       erro(error)
     },

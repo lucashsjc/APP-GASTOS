@@ -11,7 +11,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
   return [
     {
       nome: 'Gastos',
-      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)'],
+      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)', 'Pago'],
       linhas: [...dados.gastos]
         .sort((a, b) => a.data.localeCompare(b.data))
         .map((g) => [
@@ -24,6 +24,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
           g.forma ? FORMA[g.forma] : '',
           g.parcela_numero ? `${g.parcela_numero} de ${g.parcela_total}` : '',
           g.caiu_manual ? 'Sim' : '',
+          g.pago ? 'Pago' : 'Não pago',
         ]),
     },
     {

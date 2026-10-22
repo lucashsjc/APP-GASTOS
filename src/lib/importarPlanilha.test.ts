@@ -250,12 +250,12 @@ describe('plano de importação', () => {
     const meses = lerPlanilhaDeGastos(planilhaSintetica())
     const primeira = planejarImportacao(meses, dados, HOJE)
     let n = 0
-    dados.gastos.push(...primeira.gastos.map((g) => ({ id: `g${++n}`, ...g })))
+    dados.gastos.push(...primeira.gastos.map((g) => ({ id: `g${++n}`, ...g, pago: false })))
     dados.recebidos.push(...primeira.recebidos.map((r) => ({ id: `r${++n}`, aba: 'nubank' as const, ...r })))
     for (const s of primeira.sugestoes) {
       const { recorrencia, gastos } = gravacaoDaSugestao(s, 'grupo')
       if (recorrencia) dados.recorrencias.push({ id: `r${++n}`, ...recorrencia })
-      dados.gastos.push(...gastos.map((g) => ({ id: `g${++n}`, ...g })))
+      dados.gastos.push(...gastos.map((g) => ({ id: `g${++n}`, ...g, pago: false })))
     }
 
     const segunda = planejarImportacao(meses, dados, HOJE)

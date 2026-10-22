@@ -15,6 +15,7 @@ import {
   porDiaCaju,
   resumirCertos,
   resumoNubank,
+  resumoPagamento,
   saldoCajuEm,
 } from './calculos'
 import { diasRestantesNoMes, hojeSP } from './datas'
@@ -42,6 +43,7 @@ function gasto(dados: Partial<Gasto>): Gasto {
     parcela_numero: null,
     parcela_total: null,
     caiu_manual: null,
+    pago: false,
     ...dados,
   }
 }
@@ -406,5 +408,27 @@ describe('dinheiro em centavos inteiros', () => {
       (x) => x.valor_centavos,
     )
     expect(valores.every(Number.isInteger)).toBe(true)
+  })
+})
+
+describe('pago / não pago', () => {
+  it('soma o que já está pago e o que falta pagar no mês', () => {
+    const dados = vazio()
+    dados.recorrencias.push(recorrencia({ valor_centavos: 1290, dia: 15 }))
+    dados.gastos.push(gasto({ valor_centavos: 2000, data: '2026-10-05', pago: true }))
+    dados.gastos.push(gasto({ valor_centavos: 3050, data: '2026-10-07' }))
+    const itens = [...certosDoMes(dados, 'nubank', '2026-10', HOJE), ...outrosDoMes(dados, 'nubank', '2026-10')]
+    expect(resumoPagamento(itens)).toEqual({ pago: 2000, naoPago: 3050 + 1290 })
+  })
+
+  it('o "pago" de um todo mês vale só para o mês do ajuste', () => {
+    const dados = vazio()
+    const r = recorrencia({ dia: 10 })
+    dados.recorrencias.push(r)
+    dados.gastos.push(gasto({ tipo: 'certo_unico', recorrencia_id: r.id, data: '2026-10-10', pago: true }))
+    expect(certosDoMes(dados, 'nubank', '2026-10', HOJE)[0].pago).toBe(true)
+    expect(certosDoMes(dados, 'nubank', '2026-11', HOJE)[0].pago).toBe(false)
+    // E não duplica a ocorrência daquele mês.
+    expect(certosDoMes(dados, 'nubank', '2026-10', HOJE)).toHaveLength(1)
   })
 })

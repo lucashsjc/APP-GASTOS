@@ -29,9 +29,12 @@ export interface Gasto {
   parcela_total: number | null
   /** Marcado à mão como já caído (mesmo com data futura). */
   caiu_manual: boolean | null
+  /** Controle do Lucas: já pagou (ex.: a fatura) ou não. */
+  pago: boolean
 }
 
-export type NovoGasto = Omit<Gasto, 'id'>
+/** Ao criar, "pago" é opcional (começa como não pago). */
+export type NovoGasto = Omit<Gasto, 'id' | 'pago'> & { pago?: boolean }
 
 export interface Recorrencia {
   id: string

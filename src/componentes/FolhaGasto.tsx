@@ -161,9 +161,13 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         await aplicarPlanoRecorrencia(recEditada, planejarEdicaoRecorrencia(dados, recEditada, alteracoes, aPartirDe))
       } else if (gastoEditado && tipo === 'parcelado') {
         // Refaz a compra inteira com o novo total e número de parcelas.
+        // Mantém o "pago" de cada parcela que continua existindo.
+        const pagas = new Set(grupo.filter((g) => g.pago).map((g) => g.parcela_numero))
         await repo.excluirGastos(grupo.map((g) => g.id))
         await repo.criarGastos(
-          gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, gastoEditado.grupo_id ?? crypto.randomUUID()),
+          gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, gastoEditado.grupo_id ?? crypto.randomUUID()).map(
+            (p) => ({ ...p, pago: pagas.has(p.parcela_numero) }),
+          ),
         )
       } else if (gastoEditado) {
         const tipoGasto = gastoEditado.tipo === 'parcela' ? 'parcela' : certo ? 'certo_unico' : 'unico'

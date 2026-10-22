@@ -2356,3 +2356,91 @@ a.botao-secundario {
   color: var(--texto-2);
   flex: none;
 }
+
+/* ---------- Pago / não pago ---------- */
+
+.selos {
+  display: flex;
+  gap: 4px;
+}
+
+.selo-pago {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  border-radius: 99px;
+  padding: 2px 8px;
+  color: #ff9b9b;
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.25);
+}
+
+.selo-pago.pago {
+  color: var(--verde);
+  background: rgba(60, 207, 142, 0.14);
+  border-color: rgba(60, 207, 142, 0.3);
+}
+
+.selo-pago:disabled {
+  opacity: 1;
+}
+
+.card-pagamentos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card-pagamentos-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 24px;
+}
+
+.card-pagamentos-linha > span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-pagamentos-linha small {
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.card-pagamentos-linha strong {
+  font-size: 17px;
+  white-space: nowrap;
+}
+
+.card-pagamentos-linha .botao-secundario {
+  flex-basis: 100%;
+  font-size: 14px;
+}
+
+.confirmar-pagamento {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(60, 207, 142, 0.1);
+}
+
+.confirmar-pagamento div {
+  display: flex;
+  gap: 6px;
+  flex: none;
+}
+
+.botao-confirmar {
+  background: var(--verde);
+  color: #0b2a1c;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: 8px 12px;
+}
