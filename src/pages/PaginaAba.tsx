@@ -108,7 +108,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
             À parte <span>{formatarReais(totalAParte)}</span>
           </h2>
           <ul className="lista">{aParte.map(linha)}</ul>
-          <p className="dica">Não somam com os gastos do mês nem com o livre.</p>
+          <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
         </section>
       )}
 
@@ -181,10 +181,17 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
       <Valor centavos={r.livre} className={r.livre < 0 ? 'negativo' : ''} />
       <div className="barra barra-clara" aria-hidden="true">
         <span style={{ width: porcento(r.certos.total + r.outros, r.recebido) }} />
+        {r.aParte > 0 && <span className="barra-outros" style={{ width: porcento(r.aParte, r.recebido) }} />}
       </div>
       <div className="card-principal-legenda">
         <span>Gasto no mês {formatarReais(r.certos.total + r.outros)}</span>
-        <span>{r.recebido > 0 ? `${Math.round(((r.certos.total + r.outros) / r.recebido) * 100)}% do recebido` : ''}</span>
+        <span>
+          {r.aParte > 0
+            ? `À parte ${formatarReais(r.aParte)}`
+            : r.recebido > 0
+              ? `${Math.round(((r.certos.total + r.outros) / r.recebido) * 100)}% do recebido`
+              : ''}
+        </span>
       </div>
       <div className="card-principal-rodape">
         <button type="button" className="recebido" onClick={aoEditarRecebido}>

@@ -439,7 +439,7 @@ describe('pago / não pago', () => {
 })
 
 describe('gasto à parte', () => {
-  it('não soma com os outros nem entra no livre', () => {
+  it('não soma com os outros gastos do mês, mas desconta do livre', () => {
     const dados = vazio()
     dados.recebidos.push({ id: 'x', aba: 'nubank', mes: '2026-10', valor_centavos: 180000 })
     dados.recorrencias.push(recorrencia({ descricao: 'PORTO', valor_centavos: 36792, dia: 1, separado: true }))
@@ -450,7 +450,8 @@ describe('gasto à parte', () => {
     expect(r.aParte).toBe(36792 + 5000)
     expect(r.certos.total).toBe(1290)
     expect(r.outros).toBe(2000)
-    expect(r.livre).toBe(180000 - 1290 - 2000)
+    expect(r.livre).toBe(180000 - 1290 - 2000 - 36792 - 5000)
+    expect(r.credito).toBe(1290 + 2000 + 36792 + 5000)
     expect(gastosDoMes(dados, 'nubank', '2026-10', HOJE).map((g) => g.valor_centavos).sort()).toEqual([1290, 2000])
   })
 

@@ -50,7 +50,7 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - **Observação** em cada compra (ex.: com qual dinheiro foi pago), mostrada embaixo dela, com
   sugestões das mais usadas.
 - **Gasto à parte** (ex.: o PORTO): aparece numa seção separada, com o total dele, e não soma com
-  os outros gastos do mês nem com o livre.
+  os outros gastos do mês, mas continua descontando do livre para gastar.
 - **PAGO / NÃO PAGO** em cada compra, com o total pago e o que falta pagar no mês e um botão
   para marcar tudo como pago.
 - **Gastos do mês** numa lista só, com o total: as compras registradas e também os fixos (todo

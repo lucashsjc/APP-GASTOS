@@ -33,7 +33,7 @@ export interface Gasto {
   pago: boolean
   /** Anotação livre, mostrada embaixo do gasto (ex.: com qual dinheiro foi pago). */
   observacao: string
-  /** Gasto "à parte": aparece separado e não soma com os outros gastos do mês nem entra no livre. */
+  /** Gasto "à parte": aparece separado e não soma com os outros gastos do mês (mas desconta do livre). */
   separado: boolean
 }
 

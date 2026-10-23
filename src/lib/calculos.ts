@@ -146,11 +146,11 @@ export interface ResumoNubank {
   recebido: number
   certos: ResumoCertos
   outros: number
-  /** Recebido − certos − outros (sem os gastos à parte). Pode ser negativo. */
+  /** Recebido − certos − outros − gastos à parte. Pode ser negativo. */
   livre: number
   credito: number
   debito: number
-  /** Total dos gastos à parte do mês (fora das outras contas). */
+  /** Total dos gastos à parte do mês (fora do total do mês, mas descontado do livre). */
   aParte: number
 }
 
@@ -162,16 +162,19 @@ export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNub
   const recebido = recebidoDoMes(dados, mes)
   const resumo = resumirCertos(certos)
   const totalOutros = somar(outros.map((g) => g.valor_centavos))
-  const todos = [...certos, ...outros]
+  const todos = [...todosCertos, ...todosOutros]
+  const aParte = somar(todos.filter((g) => g.separado).map((g) => g.valor_centavos))
+  // Crédito e débito contam tudo o que passou no cartão, inclusive os gastos à parte.
   const debito = somar(todos.filter((g) => g.forma === 'debito').map((g) => g.valor_centavos))
+  const total = resumo.total + totalOutros + aParte
   return {
     recebido,
     certos: resumo,
     outros: totalOutros,
-    livre: recebido - resumo.total - totalOutros,
-    credito: resumo.total + totalOutros - debito,
+    livre: recebido - total,
+    credito: total - debito,
     debito,
-    aParte: somar([...todosCertos, ...todosOutros].filter((g) => g.separado).map((g) => g.valor_centavos)),
+    aParte,
   }
 }
 

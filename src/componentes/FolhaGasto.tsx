@@ -360,7 +360,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           <input type="checkbox" checked={separado} onChange={(e) => setSeparado(e.target.checked)} />
           <span>
             Gasto à parte
-            <small>Aparece separado e não soma com os outros gastos do mês nem com o livre.</small>
+            <small>Aparece separado e não soma com os outros gastos do mês (mas desconta do livre).</small>
           </span>
         </label>
 
