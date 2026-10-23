@@ -38,7 +38,8 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const somaDasContas = (lista: (Certo | Gasto)[]) =>
     lista.filter((i) => !(aba === 'nubank' && i.dinheiro_a_parte)).reduce((s, i) => s + i.valor_centavos, 0)
   const totalDoMes = somaDasContas(normais)
-  const totalAParte = somaDasContas(aParte)
+  // A seção "à parte" já fica fora do total do mês: mostra a soma de tudo o que está nela.
+  const totalAParte = aParte.reduce((s, i) => s + i.valor_centavos, 0)
 
   const acoesCerto = useAcoesCerto(aba, setFolha)
   const linha = (item: Certo | Gasto) =>
