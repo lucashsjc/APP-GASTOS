@@ -51,6 +51,8 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
   sugestões das mais usadas.
 - **Gasto à parte** (ex.: o PORTO): aparece numa seção separada, com o total dele, e não soma com
   os outros gastos do mês, mas continua descontando do livre para gastar.
+- **Paguei com dinheiro à parte**: a compra fica na lista, marcada, mas fora das contas do card
+  (livre, barra e gasto no mês).
 - **PAGO / NÃO PAGO** em cada compra, com o total pago e o que falta pagar no mês e um botão
   para marcar tudo como pago.
 - **Gastos do mês** numa lista só, com o total: as compras registradas e também os fixos (todo
@@ -181,8 +183,9 @@ exemplo fictícios que ficam só no navegador (em Ajustes dá para voltar a eles
    [`supabase/schema.sql`](supabase/schema.sql) (gastos),
    [`supabase/003_faculdade.sql`](supabase/003_faculdade.sql) (faculdade) e
    [`supabase/004_avaliacoes_futuras.sql`](supabase/004_avaliacoes_futuras.sql),
-   [`supabase/005_pago.sql`](supabase/005_pago.sql) e
-   [`supabase/006_observacao_e_a_parte.sql`](supabase/006_observacao_e_a_parte.sql). Eles podem rodar mais
+   [`supabase/005_pago.sql`](supabase/005_pago.sql),
+   [`supabase/006_observacao_e_a_parte.sql`](supabase/006_observacao_e_a_parte.sql) e
+   [`supabase/007_dinheiro_a_parte.sql`](supabase/007_dinheiro_a_parte.sql). Eles podem rodar mais
    de uma vez sem duplicar nada. Para conferir, rode também
    [`supabase/002_conferir_rls.sql`](supabase/002_conferir_rls.sql): todas as tabelas devem
    aparecer com `rls_ligado = true`.

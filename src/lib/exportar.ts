@@ -11,7 +11,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
   return [
     {
       nome: 'Gastos',
-      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)', 'Pago', 'Observação', 'À parte'],
+      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)', 'Pago', 'Observação', 'À parte', 'Dinheiro à parte'],
       linhas: [...dados.gastos]
         .sort((a, b) => a.data.localeCompare(b.data))
         .map((g) => [
@@ -27,11 +27,12 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
           g.pago ? 'Pago' : 'Não pago',
           g.observacao,
           g.separado ? 'Sim' : '',
+          g.dinheiro_a_parte ? 'Sim' : '',
         ]),
     },
     {
       nome: 'Todo mês',
-      colunas: ['Cartão', 'Descrição', 'Valor', 'Dia', 'Categoria', 'Forma', 'Início', 'Fim', 'Observação', 'À parte'],
+      colunas: ['Cartão', 'Descrição', 'Valor', 'Dia', 'Categoria', 'Forma', 'Início', 'Fim', 'Observação', 'À parte', 'Dinheiro à parte'],
       linhas: dados.recorrencias.map((r) => [
         ABA[r.aba],
         r.descricao,
@@ -43,6 +44,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
         r.fim ?? '',
         r.observacao,
         r.separado ? 'Sim' : '',
+        r.dinheiro_a_parte ? 'Sim' : '',
       ]),
     },
     {

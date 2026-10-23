@@ -64,6 +64,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         categoria: recEditada.categoria,
         observacao: recEditada.observacao,
         separado: recEditada.separado,
+        dinheiroAParte: recEditada.dinheiro_a_parte,
         forma: recEditada.forma ?? 'credito',
         certo: true,
         parcelas: 2,
@@ -79,6 +80,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         categoria: gastoEditado.categoria,
         observacao: gastoEditado.observacao,
         separado: gastoEditado.separado,
+        dinheiroAParte: gastoEditado.dinheiro_a_parte,
         forma: gastoEditado.forma ?? 'credito',
         certo: gastoEditado.tipo !== 'unico',
         parcelas: gastoEditado.parcela_total ?? 2,
@@ -94,6 +96,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       categoria: '',
       observacao: '',
       separado: false,
+      dinheiroAParte: false,
       forma: 'credito' as Forma,
       certo: origem === 'certos',
       parcelas: 2,
@@ -121,6 +124,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const sugestoesObs = useMemo(() => observacoesMaisUsadas(dados), [dados])
   const [observacao, setObservacao] = useState(inicial.observacao)
   const [separado, setSeparado] = useState(inicial.separado)
+  const [dinheiroAParte, setDinheiroAParte] = useState(inicial.dinheiroAParte)
   const aPartirDe = mes > mesAtual ? mes : mesAtual
 
   /** Ao escrever a descrição, sugere a categoria e a forma usadas da última vez. */
@@ -153,7 +157,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       descricao: descricao.trim(),
       categoria: categoria || sugerirCategoria(descricao),
     }
-    const extras = { observacao: observacao.trim(), separado }
+    const extras = { observacao: observacao.trim(), separado, dinheiro_a_parte: aba === 'nubank' && dinheiroAParte }
     const unico = (tipoGasto: NovoGasto['tipo']): NovoGasto => ({
       ...comum,
       ...extras,
@@ -354,6 +358,21 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
               </button>
             ))}
           </div>
+        )}
+
+        {aba === 'nubank' && (
+          <button
+            type="button"
+            className={`botao-dinheiro${dinheiroAParte ? ' ativo' : ''}`}
+            aria-pressed={dinheiroAParte}
+            onClick={() => setDinheiroAParte((v) => !v)}
+          >
+            <span className="botao-dinheiro-icone">{dinheiroAParte ? '✓' : '💵'}</span>
+            <span>
+              Paguei com dinheiro à parte
+              <small>Fica na lista, mas não entra no livre para gastar nem na barra do card.</small>
+            </span>
+          </button>
         )}
 
         <label className="alternar">

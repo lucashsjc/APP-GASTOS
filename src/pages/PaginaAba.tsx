@@ -34,8 +34,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const itens: (Certo | Gasto)[] = [...certos, ...outros].sort((a, b) => b.data.localeCompare(a.data))
   const normais = itens.filter((i) => !i.separado)
   const aParte = itens.filter((i) => i.separado)
-  const totalDoMes = normais.reduce((s, i) => s + i.valor_centavos, 0)
-  const totalAParte = aParte.reduce((s, i) => s + i.valor_centavos, 0)
+  // Os totais deixam de fora o que foi pago com dinheiro à parte (como o card).
+  const somaDasContas = (lista: (Certo | Gasto)[]) =>
+    lista.filter((i) => !(aba === 'nubank' && i.dinheiro_a_parte)).reduce((s, i) => s + i.valor_centavos, 0)
+  const totalDoMes = somaDasContas(normais)
+  const totalAParte = somaDasContas(aParte)
 
   const acoesCerto = useAcoesCerto(aba, setFolha)
   const linha = (item: Certo | Gasto) =>
@@ -193,6 +196,9 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
               : ''}
         </span>
       </div>
+      {r.dinheiroAParte > 0 && (
+        <p className="card-principal-nota">💵 Pago com dinheiro à parte: {formatarReais(r.dinheiroAParte)} (fora da conta)</p>
+      )}
       <div className="card-principal-rodape">
         <button type="button" className="recebido" onClick={aoEditarRecebido}>
           <small>Recebido</small>

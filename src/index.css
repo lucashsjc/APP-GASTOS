@@ -2484,3 +2484,65 @@ a.botao-secundario {
 .secao-a-parte h2 {
   color: #c9a8f5;
 }
+
+/* ---------- Pago com dinheiro à parte ---------- */
+
+.linha-texto .linha-dinheiro {
+  color: #f5d76e;
+  font-weight: 700;
+}
+
+.card-principal-nota {
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0.9;
+  margin-top: -4px;
+}
+
+.botao-dinheiro {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--borda);
+  background: var(--fundo);
+  text-align: left;
+}
+
+.botao-dinheiro > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.botao-dinheiro small {
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.botao-dinheiro-icone {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--card-2);
+  font-size: 18px;
+  flex: none;
+}
+
+.botao-dinheiro.ativo {
+  border-color: #f5d76e;
+  background: rgba(245, 215, 110, 0.1);
+}
+
+.botao-dinheiro.ativo .botao-dinheiro-icone {
+  background: #f5d76e;
+  color: #2a2205;
+  font-weight: 800;
+}

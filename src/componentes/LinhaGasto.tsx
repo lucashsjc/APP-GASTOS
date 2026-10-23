@@ -16,12 +16,14 @@ interface Props {
   icone?: { simbolo: string; cor: string }
   /** Anotação mostrada embaixo (ex.: com qual dinheiro foi pago). */
   observacao?: string
+  /** Pago com dinheiro à parte (marca embaixo do gasto). */
+  dinheiro_a_parte?: boolean
   /** Selo PAGO / NÃO PAGO (sem o selo quando não informado). */
   pago?: boolean
   aoAlternarPago?: () => void
 }
 
-export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, positivo, icone, pago, aoAlternarPago, observacao }: Props) {
+export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, positivo, icone, pago, aoAlternarPago, observacao, dinheiro_a_parte }: Props) {
   const base = dadosCategoria(categoria)
   const cat = icone ? { ...base, icone: icone.simbolo, cor: icone.cor } : base
   const partes = [detalhe ?? dataCurta(data), forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
@@ -40,6 +42,7 @@ export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, 
             </span>
           ))}
         </small>
+        {dinheiro_a_parte && <small className="linha-dinheiro">💵 Dinheiro à parte</small>}
         {observacao && <small className="linha-obs">💬 {observacao}</small>}
       </span>
       <span className="linha-valor">

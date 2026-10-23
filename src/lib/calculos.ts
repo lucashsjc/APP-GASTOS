@@ -36,8 +36,10 @@ export interface Certo {
   /** Pago ou não (para um "todo mês", vem do ajuste daquele mês, se houver). */
   pago: boolean
   observacao: string
-  /** "À parte": não soma com os outros gastos do mês nem entra no livre. */
+  /** "À parte": aparece separado e não soma com os outros gastos do mês (mas desconta do livre). */
   separado: boolean
+  /** Pago com dinheiro à parte: fora das contas do card. */
+  dinheiro_a_parte: boolean
 }
 
 /** Já caiu = data até hoje, ou marcado à mão como caído. */
@@ -72,6 +74,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       pago: ajuste?.pago ?? false,
       observacao: ajuste?.observacao || r.observacao,
       separado: r.separado,
+      dinheiro_a_parte: r.dinheiro_a_parte,
       parcela_numero: null,
       parcela_total: null,
     })
@@ -99,6 +102,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       pago: g.pago,
       observacao: g.observacao,
       separado: g.separado,
+      dinheiro_a_parte: g.dinheiro_a_parte,
       parcela_numero: g.parcela_numero,
       parcela_total: g.parcela_total,
     })
@@ -152,11 +156,16 @@ export interface ResumoNubank {
   debito: number
   /** Total dos gastos à parte do mês (fora do total do mês, mas descontado do livre). */
   aParte: number
+  /** Total pago com dinheiro à parte (fora de todas as contas do card). */
+  dinheiroAParte: number
 }
 
 export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNubank {
-  const todosCertos = certosDoMes(dados, 'nubank', mes, hoje)
-  const todosOutros = outrosDoMes(dados, 'nubank', mes)
+  // O que foi pago com dinheiro à parte fica fora de todas as contas abaixo.
+  const doMes = [...certosDoMes(dados, 'nubank', mes, hoje), ...outrosDoMes(dados, 'nubank', mes)]
+  const dinheiroAParte = somar(doMes.filter((g) => g.dinheiro_a_parte).map((g) => g.valor_centavos))
+  const todosCertos = certosDoMes(dados, 'nubank', mes, hoje).filter((c) => !c.dinheiro_a_parte)
+  const todosOutros = outrosDoMes(dados, 'nubank', mes).filter((g) => !g.dinheiro_a_parte)
   const certos = todosCertos.filter((c) => !c.separado)
   const outros = todosOutros.filter((g) => !g.separado)
   const recebido = recebidoDoMes(dados, mes)
@@ -175,6 +184,7 @@ export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNub
     credito: total - debito,
     debito,
     aParte,
+    dinheiroAParte,
   }
 }
 

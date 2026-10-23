@@ -12,8 +12,9 @@ function ler(): Dados {
     if (salvo) {
       const dados: Dados = { gastos: [], recorrencias: [], recebidos: [], depositos: [], ...JSON.parse(salvo) }
       // Dados guardados antes do "pago" existir.
-      dados.gastos = dados.gastos.map((g) => ({ ...g, pago: g.pago ?? false, observacao: g.observacao ?? '', separado: g.separado ?? false }))
-      dados.recorrencias = dados.recorrencias.map((r) => ({ ...r, observacao: r.observacao ?? '', separado: r.separado ?? false }))
+      // Dados guardados antes dos campos novos: completa com os valores padrão.
+      dados.gastos = dados.gastos.map((g) => completarGasto(g, g.id))
+      dados.recorrencias = dados.recorrencias.map((r) => completarRecorrencia(r, r.id))
       return dados
     }
   } catch {

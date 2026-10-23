@@ -3,9 +3,22 @@
 import type { Gasto, NovaRecorrencia, NovoGasto, Recorrencia } from './types'
 
 export function completarGasto(g: NovoGasto, id: string): Gasto {
-  return { ...g, id, pago: g.pago ?? false, observacao: g.observacao ?? '', separado: g.separado ?? false }
+  return {
+    ...g,
+    id,
+    pago: g.pago ?? false,
+    observacao: g.observacao ?? '',
+    separado: g.separado ?? false,
+    dinheiro_a_parte: g.dinheiro_a_parte ?? false,
+  }
 }
 
 export function completarRecorrencia(r: NovaRecorrencia, id: string): Recorrencia {
-  return { ...r, id, observacao: r.observacao ?? '', separado: r.separado ?? false }
+  return {
+    ...r,
+    id,
+    observacao: r.observacao ?? '',
+    separado: r.separado ?? false,
+    dinheiro_a_parte: r.dinheiro_a_parte ?? false,
+  }
 }

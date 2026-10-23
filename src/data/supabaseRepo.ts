@@ -32,6 +32,7 @@ const COLUNAS = {
     'pago',
     'observacao',
     'separado',
+    'dinheiro_a_parte',
   ],
   recorrencias: [
     'id',
@@ -45,6 +46,7 @@ const COLUNAS = {
     'fim',
     'observacao',
     'separado',
+    'dinheiro_a_parte',
   ],
   recebidos: ['id', 'aba', 'mes', 'valor_centavos'],
   depositos: ['id', 'aba', 'data', 'valor_centavos'],
@@ -60,6 +62,7 @@ const OPCIONAIS: Record<string, { sql: string; uso: string }> = {
   pago: { sql: '005_pago.sql', uso: 'marcar como pago' },
   observacao: { sql: '006_observacao_e_a_parte.sql', uso: 'guardar a observação' },
   separado: { sql: '006_observacao_e_a_parte.sql', uso: 'separar o gasto dos outros' },
+  dinheiro_a_parte: { sql: '007_dinheiro_a_parte.sql', uso: 'marcar como pago com dinheiro à parte' },
 }
 
 const PAGINA = 1000
@@ -97,10 +100,11 @@ export function criarRepoSupabase(): Repo {
     return copia as T
   }
 
-  const comPadroes = <T extends { observacao?: string; separado?: boolean }>(linha: T) => ({
+  const comPadroes = <T extends { observacao?: string; separado?: boolean; dinheiro_a_parte?: boolean }>(linha: T) => ({
     ...linha,
     observacao: linha.observacao ?? '',
     separado: linha.separado ?? false,
+    dinheiro_a_parte: linha.dinheiro_a_parte ?? false,
   })
 
   /** Lê a tabela inteira, de 1000 em 1000 linhas (limite padrão da API). */

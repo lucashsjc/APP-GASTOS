@@ -47,6 +47,7 @@ function gasto(dados: Partial<Gasto>): Gasto {
     pago: false,
     observacao: '',
     separado: false,
+    dinheiro_a_parte: false,
     ...dados,
   }
 }
@@ -64,6 +65,7 @@ function recorrencia(dados: Partial<Recorrencia>): Recorrencia {
     fim: null,
     observacao: '',
     separado: false,
+    dinheiro_a_parte: false,
     ...dados,
   }
 }
@@ -469,5 +471,21 @@ describe('gasto à parte', () => {
     dados.depositos.push({ id: 'd', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
     dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-02', valor_centavos: 3000, separado: true }))
     expect(saldoCajuEm(dados, HOJE, HOJE)).toBe(7000)
+  })
+})
+
+describe('pago com dinheiro à parte', () => {
+  it('fica fora do livre, do gasto do mês e do crédito/débito', () => {
+    const dados = vazio()
+    dados.recebidos.push({ id: 'x', aba: 'nubank', mes: '2026-10', valor_centavos: 100000 })
+    dados.gastos.push(gasto({ valor_centavos: 2000, data: '2026-10-05' }))
+    dados.gastos.push(gasto({ valor_centavos: 9000, data: '2026-10-06', dinheiro_a_parte: true }))
+    dados.recorrencias.push(recorrencia({ valor_centavos: 36792, dia: 1, separado: true, dinheiro_a_parte: true }))
+    const r = resumoNubank(dados, '2026-10', HOJE)
+    expect(r.dinheiroAParte).toBe(9000 + 36792)
+    expect(r.outros).toBe(2000)
+    expect(r.aParte).toBe(0)
+    expect(r.livre).toBe(100000 - 2000)
+    expect(r.credito + r.debito).toBe(2000)
   })
 })

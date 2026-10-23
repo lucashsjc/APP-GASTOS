@@ -35,13 +35,16 @@ export interface Gasto {
   observacao: string
   /** Gasto "à parte": aparece separado e não soma com os outros gastos do mês (mas desconta do livre). */
   separado: boolean
+  /** Pago com dinheiro à parte: fica na lista, mas fora das contas do card (livre, barra, gasto no mês). */
+  dinheiro_a_parte: boolean
 }
 
-/** Ao criar, "pago", "observacao" e "separado" são opcionais (não pago, vazia, não separado). */
-export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado'> & {
+/** Ao criar, os campos de controle são opcionais (não pago, sem observação, nada à parte). */
+export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte'> & {
   pago?: boolean
   observacao?: string
   separado?: boolean
+  dinheiro_a_parte?: boolean
 }
 
 export interface Recorrencia {
@@ -60,11 +63,14 @@ export interface Recorrencia {
   observacao: string
   /** "À parte": cada ocorrência aparece separada e não soma com os outros gastos do mês. */
   separado: boolean
+  /** Pago com dinheiro à parte (vale para todas as ocorrências). */
+  dinheiro_a_parte: boolean
 }
 
-export type NovaRecorrencia = Omit<Recorrencia, 'id' | 'observacao' | 'separado'> & {
+export type NovaRecorrencia = Omit<Recorrencia, 'id' | 'observacao' | 'separado' | 'dinheiro_a_parte'> & {
   observacao?: string
   separado?: boolean
+  dinheiro_a_parte?: boolean
 }
 
 export interface Recebido {
