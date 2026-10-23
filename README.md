@@ -59,6 +59,11 @@ que foi decidido está em [`docs/superpowers/specs`](docs/superpowers/specs/2026
 - Registro dos depósitos do benefício (valor e data), já que não há dia fixo.
 - Num mês passado, mostra o saldo no fim daquele mês; num mês futuro, o saldo previsto.
 
+**Registrar com uma frase (atalho do iPhone)**
+- Segurar o Botão de Ação (ou "E aí Siri, gasto"), digitar **uber 17** e o gasto entra no app, sem
+  abri-lo. Aceita cartão, débito e parcelas ("tênis 300 em 3x") e "desfazer". Passo a passo em
+  [`docs/atalho-gasto.md`](docs/atalho-gasto.md).
+
 **Registrar e editar**
 - Botão **+** no topo, ao lado do seletor de mês, que abre uma folha de baixo para cima:
   valor em destaque, sugestões das descrições mais usadas, data, categoria e tipo
@@ -146,7 +151,7 @@ src/
   projetos/     área Projetos: perfil do GitHub e README dos apps
   hoje/         tela inicial com o resumo do dia (com testes)
   estado.tsx    dados carregados, mês escolhido e "hoje"
-supabase/       esquema do banco (SQL) com RLS
+supabase/       esquema do banco (SQL) com RLS e a função do atalho "Gasto" (functions/gasto)
 public/         ícones e manifest do PWA
 docs/           descrição do app e imagens do README
 ```
