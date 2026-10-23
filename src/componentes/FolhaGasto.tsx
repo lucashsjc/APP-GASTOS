@@ -5,6 +5,7 @@ import type { Aba, Forma, Gasto, NovoGasto, Recorrencia } from '../data/types'
 import { useEstado } from '../estado'
 import {
   descricoesMaisUsadas,
+  observacoesMaisUsadas,
   dividirParcelas,
   gerarParcelas,
   lembrarPorDescricao,
@@ -61,6 +62,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         descricao: recEditada.descricao,
         data: dataNoMes(mes, recEditada.dia),
         categoria: recEditada.categoria,
+        observacao: recEditada.observacao,
+        separado: recEditada.separado,
         forma: recEditada.forma ?? 'credito',
         certo: true,
         parcelas: 2,
@@ -74,6 +77,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         descricao: gastoEditado.descricao,
         data: comoGrupo ? grupo[0].data : gastoEditado.data,
         categoria: gastoEditado.categoria,
+        observacao: gastoEditado.observacao,
+        separado: gastoEditado.separado,
         forma: gastoEditado.forma ?? 'credito',
         certo: gastoEditado.tipo !== 'unico',
         parcelas: gastoEditado.parcela_total ?? 2,
@@ -87,6 +92,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       // Pelo + do topo, a data é hoje; pela lista de certos, um dia do mês que está aberto.
       data: origem === 'topo' || mes === mesAtual ? hoje : dataNoMes(mes, diaDe(hoje)),
       categoria: '',
+      observacao: '',
+      separado: false,
       forma: 'credito' as Forma,
       certo: origem === 'certos',
       parcelas: 2,
@@ -111,6 +118,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const editando = Boolean(gastoEditado || recEditada)
   const valor = lerReais(valorTexto)
   const sugestoes = useMemo(() => descricoesMaisUsadas(dados, aba), [dados, aba])
+  const sugestoesObs = useMemo(() => observacoesMaisUsadas(dados), [dados])
+  const [observacao, setObservacao] = useState(inicial.observacao)
+  const [separado, setSeparado] = useState(inicial.separado)
   const aPartirDe = mes > mesAtual ? mes : mesAtual
 
   /** Ao escrever a descrição, sugere a categoria e a forma usadas da última vez. */
@@ -143,8 +153,10 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       descricao: descricao.trim(),
       categoria: categoria || sugerirCategoria(descricao),
     }
+    const extras = { observacao: observacao.trim(), separado }
     const unico = (tipoGasto: NovoGasto['tipo']): NovoGasto => ({
       ...comum,
+      ...extras,
       valor_centavos: valor,
       data,
       tipo: tipoGasto,
@@ -158,7 +170,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     setSalvando(true)
     const ok = await executar(async () => {
       if (recEditada) {
-        const alteracoes = { ...comum, valor_centavos: valor, dia }
+        const alteracoes = { ...comum, ...extras, valor_centavos: valor, dia }
         await aplicarPlanoRecorrencia(recEditada, planejarEdicaoRecorrencia(dados, recEditada, alteracoes, aPartirDe))
       } else if (gastoEditado && tipo === 'parcelado') {
         // Refaz a compra inteira com o novo total e número de parcelas.
@@ -167,18 +179,27 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         await repo.excluirGastos(grupo.map((g) => g.id))
         await repo.criarGastos(
           gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, gastoEditado.grupo_id ?? crypto.randomUUID()).map(
-            (p) => ({ ...p, pago: pagas.has(p.parcela_numero) }),
+            (p) => ({ ...p, ...extras, pago: pagas.has(p.parcela_numero) }),
           ),
         )
       } else if (gastoEditado) {
         const tipoGasto = gastoEditado.tipo === 'parcela' ? 'parcela' : certo ? 'certo_unico' : 'unico'
-        await repo.atualizarGasto(gastoEditado.id, { ...comum, valor_centavos: valor, data, tipo: tipoGasto })
+        await repo.atualizarGasto(gastoEditado.id, { ...comum, ...extras, valor_centavos: valor, data, tipo: tipoGasto })
       } else if (tipo === 'uma') {
         await repo.criarGastos([unico(certo ? 'certo_unico' : 'unico')])
       } else if (tipo === 'parcelado') {
-        await repo.criarGastos(gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, crypto.randomUUID()))
+        await repo.criarGastos(
+          gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, crypto.randomUUID()).map((p) => ({ ...p, ...extras })),
+        )
       } else {
-        await repo.criarRecorrencia({ ...comum, valor_centavos: valor, dia: diaDe(data), inicio: mesDe(data), fim: null })
+        await repo.criarRecorrencia({
+          ...comum,
+          ...extras,
+          valor_centavos: valor,
+          dia: diaDe(data),
+          inicio: mesDe(data),
+          fim: null,
+        })
       }
     })
     setSalvando(false)
@@ -310,6 +331,38 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             não estão no app, então só esta é editada.
           </p>
         )}
+
+        <label className="campo">
+          <span>Observação (opcional)</span>
+          <input
+            value={observacao}
+            onChange={(e) => setObservacao(e.target.value)}
+            placeholder="Ex.: pago com o salário, Pix da mãe"
+            maxLength={120}
+          />
+        </label>
+        {sugestoesObs.length > 0 && (
+          <div className="chips" aria-label="Sugestões de observação">
+            {sugestoesObs.map((o) => (
+              <button
+                key={o}
+                type="button"
+                className={`chip${observacao === o ? ' ativo' : ''}`}
+                onClick={() => setObservacao(observacao === o ? '' : o)}
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        )}
+
+        <label className="alternar">
+          <input type="checkbox" checked={separado} onChange={(e) => setSeparado(e.target.checked)} />
+          <span>
+            Gasto à parte
+            <small>Aparece separado e não soma com os outros gastos do mês nem com o livre.</small>
+          </span>
+        </label>
 
         {aba === 'nubank' && (
           <div className="campo">

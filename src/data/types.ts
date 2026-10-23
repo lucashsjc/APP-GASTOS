@@ -31,10 +31,18 @@ export interface Gasto {
   caiu_manual: boolean | null
   /** Controle do Lucas: já pagou (ex.: a fatura) ou não. */
   pago: boolean
+  /** Anotação livre, mostrada embaixo do gasto (ex.: com qual dinheiro foi pago). */
+  observacao: string
+  /** Gasto "à parte": aparece separado e não soma com os outros gastos do mês nem entra no livre. */
+  separado: boolean
 }
 
-/** Ao criar, "pago" é opcional (começa como não pago). */
-export type NovoGasto = Omit<Gasto, 'id' | 'pago'> & { pago?: boolean }
+/** Ao criar, "pago", "observacao" e "separado" são opcionais (não pago, vazia, não separado). */
+export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado'> & {
+  pago?: boolean
+  observacao?: string
+  separado?: boolean
+}
 
 export interface Recorrencia {
   id: string
@@ -49,9 +57,15 @@ export interface Recorrencia {
   inicio: string
   /** Último mês (AAAA-MM), ou null enquanto não for encerrada. */
   fim: string | null
+  observacao: string
+  /** "À parte": cada ocorrência aparece separada e não soma com os outros gastos do mês. */
+  separado: boolean
 }
 
-export type NovaRecorrencia = Omit<Recorrencia, 'id'>
+export type NovaRecorrencia = Omit<Recorrencia, 'id' | 'observacao' | 'separado'> & {
+  observacao?: string
+  separado?: boolean
+}
 
 export interface Recebido {
   id: string

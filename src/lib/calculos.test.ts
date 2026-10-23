@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { completarRecorrencia } from '../data/completar'
 import { dadosDeExemplo } from '../data/exemplo'
 import type { Dados, Gasto, Recorrencia } from '../data/types'
 import { gastosDoMes, maisFrequente } from './analise'
@@ -44,6 +45,8 @@ function gasto(dados: Partial<Gasto>): Gasto {
     parcela_total: null,
     caiu_manual: null,
     pago: false,
+    observacao: '',
+    separado: false,
     ...dados,
   }
 }
@@ -59,6 +62,8 @@ function recorrencia(dados: Partial<Recorrencia>): Recorrencia {
     categoria: 'Fixos',
     inicio: '2026-08',
     fim: null,
+    observacao: '',
+    separado: false,
     ...dados,
   }
 }
@@ -250,7 +255,7 @@ describe('todo mês', () => {
 
     // Aplica o plano e confere mês a mês.
     r.fim = plano.atualizar!.fim!
-    dados.recorrencias.push({ id: 'nova', ...plano.criar! })
+    dados.recorrencias.push(completarRecorrencia(plano.criar!, 'nova'))
     const valor = (mes: string) => certosDoMes(dados, 'nubank', mes, HOJE).map((c) => c.valor_centavos)
     expect(valor('2026-06')).toEqual([1290])
     expect(valor('2026-09')).toEqual([1290])
@@ -430,5 +435,38 @@ describe('pago / não pago', () => {
     expect(certosDoMes(dados, 'nubank', '2026-11', HOJE)[0].pago).toBe(false)
     // E não duplica a ocorrência daquele mês.
     expect(certosDoMes(dados, 'nubank', '2026-10', HOJE)).toHaveLength(1)
+  })
+})
+
+describe('gasto à parte', () => {
+  it('não soma com os outros nem entra no livre', () => {
+    const dados = vazio()
+    dados.recebidos.push({ id: 'x', aba: 'nubank', mes: '2026-10', valor_centavos: 180000 })
+    dados.recorrencias.push(recorrencia({ descricao: 'PORTO', valor_centavos: 36792, dia: 1, separado: true }))
+    dados.recorrencias.push(recorrencia({ descricao: 'Spotify', valor_centavos: 1290, dia: 15 }))
+    dados.gastos.push(gasto({ valor_centavos: 2000, data: '2026-10-05' }))
+    dados.gastos.push(gasto({ valor_centavos: 5000, data: '2026-10-06', separado: true }))
+    const r = resumoNubank(dados, '2026-10', HOJE)
+    expect(r.aParte).toBe(36792 + 5000)
+    expect(r.certos.total).toBe(1290)
+    expect(r.outros).toBe(2000)
+    expect(r.livre).toBe(180000 - 1290 - 2000)
+    expect(gastosDoMes(dados, 'nubank', '2026-10', HOJE).map((g) => g.valor_centavos).sort()).toEqual([1290, 2000])
+  })
+
+  it('a observação do todo mês aparece em cada mês (e o ajuste do mês pode trocar)', () => {
+    const dados = vazio()
+    const r = recorrencia({ dia: 1, observacao: 'Pago pelo meu pai' })
+    dados.recorrencias.push(r)
+    dados.gastos.push(gasto({ tipo: 'certo_unico', recorrencia_id: r.id, data: '2026-11-01', observacao: 'Paguei eu' }))
+    expect(certosDoMes(dados, 'nubank', '2026-10', HOJE)[0].observacao).toBe('Pago pelo meu pai')
+    expect(certosDoMes(dados, 'nubank', '2026-11', HOJE)[0].observacao).toBe('Paguei eu')
+  })
+
+  it('no Caju, o gasto à parte continua saindo do saldo do cartão', () => {
+    const dados = vazio()
+    dados.depositos.push({ id: 'd', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-02', valor_centavos: 3000, separado: true }))
+    expect(saldoCajuEm(dados, HOJE, HOJE)).toBe(7000)
   })
 })

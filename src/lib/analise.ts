@@ -12,8 +12,9 @@ export interface ItemGasto {
   data: string
 }
 
+/** Gastos do mês para a análise (sem os gastos à parte, que ficam fora das contas do mês). */
 export function gastosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): ItemGasto[] {
-  return [...certosDoMes(dados, aba, mes, hoje), ...outrosDoMes(dados, aba, mes)].map((g) => ({
+  return [...certosDoMes(dados, aba, mes, hoje), ...outrosDoMes(dados, aba, mes)].filter((g) => !g.separado).map((g) => ({
     descricao: g.descricao,
     categoria: g.categoria,
     valor_centavos: g.valor_centavos,

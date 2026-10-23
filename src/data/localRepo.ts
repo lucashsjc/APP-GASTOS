@@ -1,4 +1,5 @@
 import { hojeSP } from '../lib/datas'
+import { completarGasto, completarRecorrencia } from './completar'
 import { dadosDeExemplo } from './exemplo'
 import type { Repo } from './repo'
 import type { Dados, Gasto, Recorrencia } from './types'
@@ -11,7 +12,8 @@ function ler(): Dados {
     if (salvo) {
       const dados: Dados = { gastos: [], recorrencias: [], recebidos: [], depositos: [], ...JSON.parse(salvo) }
       // Dados guardados antes do "pago" existir.
-      dados.gastos = dados.gastos.map((g) => ({ ...g, pago: g.pago ?? false }))
+      dados.gastos = dados.gastos.map((g) => ({ ...g, pago: g.pago ?? false, observacao: g.observacao ?? '', separado: g.separado ?? false }))
+      dados.recorrencias = dados.recorrencias.map((r) => ({ ...r, observacao: r.observacao ?? '', separado: r.separado ?? false }))
       return dados
     }
   } catch {
@@ -43,7 +45,7 @@ export function criarRepoLocal(): Repo {
     },
 
     async criarGastos(novos) {
-      const criados: Gasto[] = novos.map((g) => ({ ...g, pago: g.pago ?? false, id: crypto.randomUUID() }))
+      const criados: Gasto[] = novos.map((g) => completarGasto(g, crypto.randomUUID()))
       alterar((d) => d.gastos.push(...criados))
       return criados
     },
@@ -55,7 +57,7 @@ export function criarRepoLocal(): Repo {
     },
 
     async criarRecorrencia(dados) {
-      const r: Recorrencia = { ...dados, id: crypto.randomUUID() }
+      const r: Recorrencia = completarRecorrencia(dados, crypto.randomUUID())
       alterar((d) => d.recorrencias.push(r))
       return r
     },

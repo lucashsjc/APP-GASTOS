@@ -3,7 +3,8 @@
 
 import { strToU8, zipSync } from 'fflate'
 import { describe, expect, it } from 'vitest'
-import type { Dados, Gasto } from '../data/types'
+import { completarGasto, completarRecorrencia } from '../data/completar'
+import type { Dados } from '../data/types'
 import { certosDoMes } from './calculos'
 import { gravacaoDaSugestao, lerPlanilhaDeGastos, planejarImportacao } from './importarPlanilha'
 import { escaparXml, gerarXlsx, lerXlsx, serialDaData } from './xlsx'
@@ -230,8 +231,8 @@ describe('plano de importação', () => {
     let n = 0
     for (const s of plano.sugestoes) {
       const { recorrencia, gastos } = gravacaoDaSugestao(s, 'grupo')
-      if (recorrencia) dados.recorrencias.push({ id: `r${++n}`, ...recorrencia })
-      for (const g of gastos) dados.gastos.push({ id: `g${++n}`, ...g } as Gasto)
+      if (recorrencia) dados.recorrencias.push(completarRecorrencia(recorrencia, `r${++n}`))
+      for (const g of gastos) dados.gastos.push(completarGasto(g, `g${++n}`))
     }
     const novembro = certosDoMes(dados, 'nubank', '2026-11', HOJE)
     expect(novembro.map((c) => [c.descricao, c.valor_centavos, c.grupo])).toEqual([
@@ -250,12 +251,12 @@ describe('plano de importação', () => {
     const meses = lerPlanilhaDeGastos(planilhaSintetica())
     const primeira = planejarImportacao(meses, dados, HOJE)
     let n = 0
-    dados.gastos.push(...primeira.gastos.map((g) => ({ id: `g${++n}`, ...g, pago: false })))
+    dados.gastos.push(...primeira.gastos.map((g) => completarGasto(g, `g${++n}`)))
     dados.recebidos.push(...primeira.recebidos.map((r) => ({ id: `r${++n}`, aba: 'nubank' as const, ...r })))
     for (const s of primeira.sugestoes) {
       const { recorrencia, gastos } = gravacaoDaSugestao(s, 'grupo')
-      if (recorrencia) dados.recorrencias.push({ id: `r${++n}`, ...recorrencia })
-      dados.gastos.push(...gastos.map((g) => ({ id: `g${++n}`, ...g, pago: false })))
+      if (recorrencia) dados.recorrencias.push(completarRecorrencia(recorrencia, `r${++n}`))
+      dados.gastos.push(...gastos.map((g) => completarGasto(g, `g${++n}`)))
     }
 
     const segunda = planejarImportacao(meses, dados, HOJE)

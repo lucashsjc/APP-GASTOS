@@ -30,10 +30,49 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
 
   const certos = certosDoMes(dados, aba, mes, hoje)
   const outros = outrosDoMes(dados, aba, mes)
-  // Tudo o que foi gasto no mês numa lista só, do mais recente para o mais antigo.
+  // Tudo o que foi gasto no mês, do mais recente para o mais antigo; os gastos à parte ficam separados.
   const itens: (Certo | Gasto)[] = [...certos, ...outros].sort((a, b) => b.data.localeCompare(a.data))
-  const totalDoMes = itens.reduce((s, i) => s + i.valor_centavos, 0)
+  const normais = itens.filter((i) => !i.separado)
+  const aParte = itens.filter((i) => i.separado)
+  const totalDoMes = normais.reduce((s, i) => s + i.valor_centavos, 0)
+  const totalAParte = aParte.reduce((s, i) => s + i.valor_centavos, 0)
+
   const acoesCerto = useAcoesCerto(aba, setFolha)
+  const linha = (item: Certo | Gasto) =>
+    'chave' in item ? (
+      <li key={item.chave}>
+        <ItemDeslizavel
+          pergunta={acoesCerto.pergunta(item)}
+          rotuloApagar={acoesCerto.rotuloApagar(item)}
+          aoEditar={() => acoesCerto.editar(item)}
+          aoApagar={() => acoesCerto.apagar(item)}
+          aoTocar={() => acoesCerto.editar(item)}
+        >
+          <LinhaGasto
+            {...item}
+            forma={aba === 'nubank' ? item.forma : null}
+            detalhe={`${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
+            aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
+          />
+        </ItemDeslizavel>
+      </li>
+    ) : (
+      <li key={item.id}>
+        <ItemDeslizavel
+          pergunta={`Apagar “${item.descricao}” (${formatarReais(item.valor_centavos)})?`}
+          aoEditar={() => setFolha({ aba, gasto: item })}
+          aoApagar={() => executar(() => repo.excluirGastos([item.id]))}
+          aoTocar={() => setFolha({ aba, gasto: item })}
+        >
+          <LinhaGasto
+            {...item}
+            forma={aba === 'nubank' ? item.forma : null}
+            aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
+          />
+        </ItemDeslizavel>
+      </li>
+    )
+
   const depositos = aba === 'caju' ? dados.depositos.filter((d) => mesDe(d.data) === mes) : []
   const recebido = dados.recebidos.find((r) => r.mes === mes)?.valor_centavos ?? 0
 
@@ -55,49 +94,23 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         </h2>
         {carregando ? (
           <p className="vazio">Carregando…</p>
-        ) : itens.length === 0 ? (
+        ) : normais.length === 0 ? (
           <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
         ) : (
-          <ul className="lista">
-            {itens.map((item) =>
-              'chave' in item ? (
-                <li key={item.chave}>
-                  <ItemDeslizavel
-                    pergunta={acoesCerto.pergunta(item)}
-                    rotuloApagar={acoesCerto.rotuloApagar(item)}
-                    aoEditar={() => acoesCerto.editar(item)}
-                    aoApagar={() => acoesCerto.apagar(item)}
-                    aoTocar={() => acoesCerto.editar(item)}
-                  >
-                    <LinhaGasto
-                      {...item}
-                      forma={aba === 'nubank' ? item.forma : null}
-                      detalhe={`${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
-                      aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
-                    />
-                  </ItemDeslizavel>
-                </li>
-              ) : (
-                <li key={item.id}>
-                  <ItemDeslizavel
-                    pergunta={`Apagar “${item.descricao}” (${formatarReais(item.valor_centavos)})?`}
-                    aoEditar={() => setFolha({ aba, gasto: item })}
-                    aoApagar={() => executar(() => repo.excluirGastos([item.id]))}
-                    aoTocar={() => setFolha({ aba, gasto: item })}
-                  >
-                    <LinhaGasto
-                      {...item}
-                      forma={aba === 'nubank' ? item.forma : null}
-                      aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
-                    />
-                  </ItemDeslizavel>
-                </li>
-              ),
-            )}
-          </ul>
+          <ul className="lista">{normais.map(linha)}</ul>
         )}
         {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
       </section>
+
+      {aParte.length > 0 && (
+        <section className="secao secao-a-parte">
+          <h2>
+            À parte <span>{formatarReais(totalAParte)}</span>
+          </h2>
+          <ul className="lista">{aParte.map(linha)}</ul>
+          <p className="dica">Não somam com os gastos do mês nem com o livre.</p>
+        </section>
+      )}
 
       <Link to={`/${aba}/certos`} className="card link-fixos">
         <span>

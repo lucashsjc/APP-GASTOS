@@ -4,6 +4,7 @@
 // mês já tem R$ 485,10 certos.
 
 import { gerarParcelas } from '../lib/calculos'
+import { completarGasto } from './completar'
 import { dataNoMes, diaDe, mesDe, somarMeses } from '../lib/datas'
 import type { Aba, Dados, Forma, Gasto } from './types'
 
@@ -99,6 +100,8 @@ export function dadosDeExemplo(hoje: string): Dados {
     parcela_total: null,
     caiu_manual: null,
     pago: false,
+    observacao: '',
+    separado: false,
   })
 
   const gastos: Gasto[] = [
@@ -117,7 +120,7 @@ export function dadosDeExemplo(hoje: string): Dados {
         parcelas: 2,
       },
       'ex-grupo-ps5',
-    ).map((p) => ({ ...p, id: id(), pago: false })),
+    ).map((p) => completarGasto(p, id())),
   ]
 
   const recorrencia = (aba: Aba, descricao: string, centavos: number, dia: number, categoria: string) => ({
@@ -130,6 +133,8 @@ export function dadosDeExemplo(hoje: string): Dados {
     categoria,
     inicio,
     fim: null,
+    observacao: '',
+    separado: false,
   })
 
   return {

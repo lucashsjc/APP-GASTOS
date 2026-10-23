@@ -35,6 +35,9 @@ export interface Certo {
   parcela_total: number | null
   /** Pago ou não (para um "todo mês", vem do ajuste daquele mês, se houver). */
   pago: boolean
+  observacao: string
+  /** "À parte": não soma com os outros gastos do mês nem entra no livre. */
+  separado: boolean
 }
 
 /** Já caiu = data até hoje, ou marcado à mão como caído. */
@@ -67,6 +70,8 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       gasto: ajuste,
       recorrencia: r,
       pago: ajuste?.pago ?? false,
+      observacao: ajuste?.observacao || r.observacao,
+      separado: r.separado,
       parcela_numero: null,
       parcela_total: null,
     })
@@ -92,6 +97,8 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       gasto: g,
       recorrencia: null,
       pago: g.pago,
+      observacao: g.observacao,
+      separado: g.separado,
       parcela_numero: g.parcela_numero,
       parcela_total: g.parcela_total,
     })
@@ -139,15 +146,19 @@ export interface ResumoNubank {
   recebido: number
   certos: ResumoCertos
   outros: number
-  /** Recebido − certos − outros. Pode ser negativo. */
+  /** Recebido − certos − outros (sem os gastos à parte). Pode ser negativo. */
   livre: number
   credito: number
   debito: number
+  /** Total dos gastos à parte do mês (fora das outras contas). */
+  aParte: number
 }
 
 export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNubank {
-  const certos = certosDoMes(dados, 'nubank', mes, hoje)
-  const outros = outrosDoMes(dados, 'nubank', mes)
+  const todosCertos = certosDoMes(dados, 'nubank', mes, hoje)
+  const todosOutros = outrosDoMes(dados, 'nubank', mes)
+  const certos = todosCertos.filter((c) => !c.separado)
+  const outros = todosOutros.filter((g) => !g.separado)
   const recebido = recebidoDoMes(dados, mes)
   const resumo = resumirCertos(certos)
   const totalOutros = somar(outros.map((g) => g.valor_centavos))
@@ -160,6 +171,7 @@ export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNub
     livre: recebido - resumo.total - totalOutros,
     credito: resumo.total + totalOutros - debito,
     debito,
+    aParte: somar([...todosCertos, ...todosOutros].filter((g) => g.separado).map((g) => g.valor_centavos)),
   }
 }
 
@@ -376,6 +388,23 @@ export function descricoesMaisUsadas(dados: Dados, aba: Aba, quantas = 6): strin
   }
   return [...contagem.values()]
     .sort((a, b) => b.vezes - a.vezes || b.ultima.localeCompare(a.ultima))
+    .slice(0, quantas)
+    .map((c) => c.texto)
+}
+
+/** As observações mais usadas (em todos os cartões), para os chips de sugestão. */
+export function observacoesMaisUsadas(dados: Dados, quantas = 5): string[] {
+  const contagem = new Map<string, { texto: string; vezes: number }>()
+  for (const item of [...dados.gastos, ...dados.recorrencias]) {
+    const texto = item.observacao?.trim()
+    if (!texto) continue
+    const chave = normalizarDescricao(texto)
+    const atual = contagem.get(chave)
+    if (atual) atual.vezes++
+    else contagem.set(chave, { texto, vezes: 1 })
+  }
+  return [...contagem.values()]
+    .sort((a, b) => b.vezes - a.vezes)
     .slice(0, quantas)
     .map((c) => c.texto)
 }

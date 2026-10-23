@@ -2472,3 +2472,15 @@ a.botao-secundario {
 .resumo-simples {
   grid-template-columns: 1fr;
 }
+
+.linha-texto .linha-obs {
+  color: #b8b8c0;
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.secao-a-parte h2 {
+  color: #c9a8f5;
+}
