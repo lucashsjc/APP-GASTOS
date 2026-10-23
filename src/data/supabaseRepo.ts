@@ -86,18 +86,37 @@ export function criarRepoSupabase(): Repo {
     return coluna ?? null
   }
 
-  /** Tira das gravações as colunas que o banco ainda não tem; avisa se alguma delas traz informação. */
+  /**
+   * Tira das gravações as colunas que pareciam faltar e só trazem o valor padrão. As que trazem
+   * informação (ex.: dinheiro_a_parte = true) seguem na gravação: o SQL pode ter sido rodado com o
+   * app aberto, e aí a gravação dá certo.
+   */
   function preparar<T extends object>(tabela: Tabela, linha: T): T {
     const copia: Record<string, unknown> = { ...(linha as Record<string, unknown>) }
     for (const coluna of faltando[tabela]) {
       const valor = copia[coluna]
-      if (valor !== undefined && valor !== false && valor !== '' && valor !== null) {
-        const { sql, uso } = OPCIONAIS[coluna]
-        throw new Error(`Para ${uso}, rode o supabase/${sql} no Supabase.`)
-      }
-      delete copia[coluna]
+      if (valor === undefined || valor === false || valor === '' || valor === null) delete copia[coluna]
     }
     return copia as T
+  }
+
+  /** Erro de gravação por coluna que não existe (ou que a API ainda não conhece): explica qual SQL rodar. */
+  function erroDeGravacao(tabela: Tabela, e: { code?: string; message: string } | null) {
+    if (!e) return
+    if (e.code === '42703' || e.code === 'PGRST204') {
+      const coluna = Object.keys(OPCIONAIS).find((c) => e.message.includes(c))
+      if (coluna) {
+        faltando[tabela].add(coluna)
+        const { sql, uso } = OPCIONAIS[coluna]
+        throw new Error(`Para ${uso}, rode o supabase/${sql} no Supabase (e feche e abra o app).`)
+      }
+    }
+    erro(e)
+  }
+
+  /** Gravou com sucesso: as colunas enviadas existem. */
+  function confirmarColunas(tabela: Tabela, linha: object) {
+    for (const coluna of Object.keys(linha)) faltando[tabela].delete(coluna)
   }
 
   const comPadroes = <T extends { observacao?: string; separado?: boolean; dinheiro_a_parte?: boolean }>(linha: T) => ({
@@ -143,12 +162,15 @@ export function criarRepoSupabase(): Repo {
       if (!novos.length) return []
       const linhas = novos.map((g) => preparar('gastos', g))
       const { data, error } = await db.from('gastos').insert(linhas).select(colunas('gastos'))
-      erro(error)
+      erroDeGravacao('gastos', error)
+      confirmarColunas('gastos', linhas[0])
       return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false }))
     },
     async atualizarGasto(id, dados) {
-      const { error } = await db.from('gastos').update(preparar('gastos', dados)).eq('id', id)
-      erro(error)
+      const linha = preparar('gastos', dados)
+      const { error } = await db.from('gastos').update(linha).eq('id', id)
+      erroDeGravacao('gastos', error)
+      confirmarColunas('gastos', linha)
     },
     async excluirGastos(ids) {
       if (!ids.length) return
@@ -157,17 +179,17 @@ export function criarRepoSupabase(): Repo {
     },
 
     async criarRecorrencia(dados) {
-      const { data, error } = await db
-        .from('recorrencias')
-        .insert(preparar('recorrencias', dados))
-        .select(colunas('recorrencias'))
-        .single()
-      erro(error)
+      const linha = preparar('recorrencias', dados)
+      const { data, error } = await db.from('recorrencias').insert(linha).select(colunas('recorrencias')).single()
+      erroDeGravacao('recorrencias', error)
+      confirmarColunas('recorrencias', linha)
       return comPadroes(data as unknown as Recorrencia)
     },
     async atualizarRecorrencia(id, dados) {
-      const { error } = await db.from('recorrencias').update(preparar('recorrencias', dados)).eq('id', id)
-      erro(error)
+      const linha = preparar('recorrencias', dados)
+      const { error } = await db.from('recorrencias').update(linha).eq('id', id)
+      erroDeGravacao('recorrencias', error)
+      confirmarColunas('recorrencias', linha)
     },
     async excluirRecorrencia(id) {
       const { error } = await db.from('recorrencias').delete().eq('id', id)

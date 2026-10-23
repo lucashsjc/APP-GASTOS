@@ -208,7 +208,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     })
     setSalvando(false)
     if (!ok) return
-    if (!editando && mesDe(data) !== mes && tipo === 'uma') {
+    if (aba === 'nubank' && dinheiroAParte !== inicial.dinheiroAParte) {
+      avisar(dinheiroAParte ? '💵 Pago com dinheiro à parte: fora do livre para gastar.' : 'Voltou a contar no livre para gastar.')
+    } else if (!editando && mesDe(data) !== mes && tipo === 'uma') {
       avisar(`Gasto salvo em ${nomeDoMes(mesDe(data))}.`)
     }
     aoFechar()
