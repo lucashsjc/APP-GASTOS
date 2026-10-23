@@ -96,7 +96,7 @@ export default function PaginaHoje() {
                 })}
               </ul>
             ) : (
-              <p className="vazio">Nenhuma atividade para os próximos 7 dias. 🎉</p>
+              <p className="vazio">Nenhuma atividade para os próximos 7 dias.</p>
             )}
 
             {alertas.length > 0 && (

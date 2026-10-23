@@ -84,7 +84,7 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
       <ul>
         {AREAS.map(({ rota, nome, Icone }) => (
           <li key={rota}>
-            <NavLink to={rota} className={() => (ativa(rota) ? 'ativo brilho' : '')} onClick={aoFechar}>
+            <NavLink to={rota} className={() => (ativa(rota) ? 'ativo' : '')} onClick={aoFechar}>
               <span className="menu-icone">
                 <Icone tamanho={18} />
               </span>
@@ -94,7 +94,7 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
         ))}
       </ul>
 
-      <Link to="/nubank" className="menu-resumo brilho" onClick={aoFechar}>
+      <Link to="/nubank" className="menu-resumo" onClick={aoFechar}>
         <small>Hoje</small>
         <div>
           <span>Livre no Nubank</span>

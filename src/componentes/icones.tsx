@@ -1,5 +1,4 @@
-// Ícones em SVG (traço) e os logos simplificados das abas. Os logos são só "nu" e "caju" em
-// quadrados coloridos, e não os logos oficiais do Nubank ou do Caju.
+// Ícones em SVG (traço fino) e os logos dos cartões (imagens em public/logos, escolhidas pelo Lucas).
 
 import type { Aba } from '../data/types'
 
@@ -69,15 +68,102 @@ export const IconeSeta = (p: Props) => (
 
 export function Logo({ aba, tamanho = 26 }: { aba: Aba; tamanho?: number }) {
   return (
-    <span
+    <img
       className={`logo logo-${aba}`}
-      style={{ width: tamanho, height: tamanho, fontSize: tamanho * (aba === 'nubank' ? 0.46 : 0.3) }}
+      src={`/logos/${aba}.png`}
+      width={tamanho}
+      height={tamanho}
+      alt=""
       aria-hidden="true"
-    >
-      {aba === 'nubank' ? 'nu' : 'caju'}
-    </span>
+      draggable={false}
+    />
   )
 }
+
+/** Ícones das categorias, no mesmo traço fino dos outros. */
+export function IconeCategoria({ nome, tamanho = 20 }: { nome: string; tamanho?: number }) {
+  const p = { tamanho }
+  switch (nome) {
+    case 'Alimentação':
+      return (
+        <Svg {...p}>
+          <path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17 21V3c-2.2 1.4-3 4-3 7v4h3" />
+        </Svg>
+      )
+    case 'Mercado':
+      return (
+        <Svg {...p}>
+          <circle cx="9" cy="20" r="1.3" />
+          <circle cx="18" cy="20" r="1.3" />
+          <path d="M2.5 3h3l2.4 12h11l2-8H6.6" />
+        </Svg>
+      )
+    case 'Transporte':
+      return (
+        <Svg {...p}>
+          <path d="M5 17h14M5 17v2M19 17v2M4 13l1.8-5.2A2 2 0 0 1 7.7 6.5h8.6a2 2 0 0 1 1.9 1.3L20 13M4 13h16v4H4z" />
+          <circle cx="7.5" cy="15" r=".6" />
+          <circle cx="16.5" cy="15" r=".6" />
+        </Svg>
+      )
+    case 'Compras':
+      return (
+        <Svg {...p}>
+          <path d="M5 8h14l-1 13H6zM9 8V6a3 3 0 0 1 6 0v2" />
+        </Svg>
+      )
+    case 'Fixos':
+      return (
+        <Svg {...p}>
+          <path d="M17 2l3 3-3 3M3 11V9a4 4 0 0 1 4-4h13M7 22l-3-3 3-3M21 13v2a4 4 0 0 1-4 4H4" />
+        </Svg>
+      )
+    case 'Saúde':
+      return (
+        <Svg {...p}>
+          <path d="M3 12h4l2-5 4 10 2-5h6" />
+        </Svg>
+      )
+    case 'Lazer':
+      return (
+        <Svg {...p}>
+          <path d="M3 9a2 2 0 0 0 0 6v3h18v-3a2 2 0 0 1 0-6V6H3zM14 6v12" />
+        </Svg>
+      )
+    case 'Presentes':
+      return (
+        <Svg {...p}>
+          <path d="M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C10 5 6.5 5.5 7.5 8 8 9 12 9 12 9zM12 9c2-4 5.5-3.5 4.5-1-.5 1-4.5 1-4.5 1z" />
+        </Svg>
+      )
+    case 'Depósito':
+      return (
+        <Svg {...p}>
+          <path d="M12 4v12M6 10l6 6 6-6M5 20h14" />
+        </Svg>
+      )
+    default:
+      return (
+        <Svg {...p}>
+          <circle cx="6" cy="12" r="1" />
+          <circle cx="12" cy="12" r="1" />
+          <circle cx="18" cy="12" r="1" />
+        </Svg>
+      )
+  }
+}
+
+export const IconeNota = (p: Props) => (
+  <Svg {...p}>
+    <path d="M4 5h16v11H8l-4 4z" />
+  </Svg>
+)
+
+export const IconeCarteira = (p: Props) => (
+  <Svg {...p}>
+    <path d="M3 7a2 2 0 0 1 2-2h13v4M3 7v11a2 2 0 0 0 2 2h15V9H5a2 2 0 0 1-2-2zM16 14.5h.01" />
+  </Svg>
+)
 
 export const IconeMenu = (p: Props) => (
   <Svg {...p}>

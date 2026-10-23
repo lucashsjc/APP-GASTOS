@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { IconeAnterior } from '../componentes/icones'
+import { IconeAnterior, IconeCategoria } from '../componentes/icones'
 import { SeletorMes } from '../componentes/SeletorMes'
 import type { Aba } from '../data/types'
 import { useEstado } from '../estado'
@@ -65,8 +65,8 @@ export default function ParaOnde({ aba }: { aba: Aba }) {
                 return (
                   <li key={f.categoria} className="card-categoria">
                     <div className="card-categoria-topo">
-                      <span className="linha-icone" style={{ background: `${c.cor}22`, color: c.cor }} aria-hidden="true">
-                        {c.icone}
+                      <span className="linha-icone" aria-hidden="true">
+                        <IconeCategoria nome={c.nome} />
                       </span>
                       <strong>{f.categoria}</strong>
                       <span>{formatarReais(f.total)}</span>

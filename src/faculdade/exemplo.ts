@@ -13,9 +13,9 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
   const dia = (n: number) => dataNoMes(mesPassado, Math.min(n, 28))
   return {
     disciplinas: [
-      { id: 'd-calc', nome: 'Cálculo I', cor: '#4ea8f5', media_minima: 6, limite_faltas: 16 },
-      { id: 'd-prog', nome: 'Programação Web', cor: '#3ccf8e', media_minima: 6, limite_faltas: 16 },
-      { id: 'd-fis', nome: 'Física I', cor: '#f5b942', media_minima: 6, limite_faltas: 12 },
+      { id: 'd-calc', nome: 'Cálculo I', cor: '#cfe7f8', media_minima: 6, limite_faltas: 16 },
+      { id: 'd-prog', nome: 'Programação Web', cor: '#bfe6cf', media_minima: 6, limite_faltas: 16 },
+      { id: 'd-fis', nome: 'Física I', cor: '#f3d9a8', media_minima: 6, limite_faltas: 12 },
     ],
     notas: [
       { id: 'n1', disciplina_id: 'd-calc', descricao: 'P1', valor: 5.5, peso: 1, data: dia(20) },

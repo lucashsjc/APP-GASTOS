@@ -5,7 +5,7 @@ import type { AbaXlsx } from '../lib/xlsx'
 import type { Atividade, DadosFaculdade, Disciplina, Falta, Nota } from './tipos'
 
 /** Cores para as disciplinas novas, em ordem. */
-export const CORES_DISCIPLINAS = ['#4ea8f5', '#3ccf8e', '#f5b942', '#e46fd1', '#a78bfa', '#f2716b', '#2ec4c4', '#f39a4d']
+export const CORES_DISCIPLINAS = ['#cfe7f8', '#bfe6cf', '#f3d9a8', '#f1d0e6', '#dcd2f6', '#f5cbc6', '#c6ecea', '#f6dcc6']
 
 export function proximaCor(disciplinas: Disciplina[]): string {
   return CORES_DISCIPLINAS[disciplinas.length % CORES_DISCIPLINAS.length]

@@ -1,27 +1,27 @@
-// Categorias iniciais (seção 8), cada uma com um ícone e uma cor.
+// Categorias iniciais (seção 8). Cada uma tem um ícone (IconeCategoria, pelo nome) e uma cor
+// pastel, usada nos gráficos.
 
 export interface Categoria {
   nome: string
-  icone: string
   cor: string
 }
 
 export const CATEGORIAS: Categoria[] = [
-  { nome: 'Alimentação', icone: '🍔', cor: '#f5b942' },
-  { nome: 'Mercado', icone: '🛒', cor: '#3ccf8e' },
-  { nome: 'Transporte', icone: '🚗', cor: '#4ea8f5' },
-  { nome: 'Compras', icone: '🛍️', cor: '#e46fd1' },
-  { nome: 'Fixos', icone: '📌', cor: '#a78bfa' },
-  { nome: 'Saúde', icone: '💊', cor: '#f2716b' },
-  { nome: 'Lazer', icone: '🎮', cor: '#2ec4c4' },
-  { nome: 'Presentes', icone: '🎁', cor: '#f39a4d' },
-  { nome: 'Outros', icone: '•', cor: '#8b8b93' },
+  { nome: 'Alimentação', cor: '#f3d9a8' },
+  { nome: 'Mercado', cor: '#bfe6cf' },
+  { nome: 'Transporte', cor: '#cfe7f8' },
+  { nome: 'Compras', cor: '#f1d0e6' },
+  { nome: 'Fixos', cor: '#dcd2f6' },
+  { nome: 'Saúde', cor: '#f5cbc6' },
+  { nome: 'Lazer', cor: '#c6ecea' },
+  { nome: 'Presentes', cor: '#f6dcc6' },
+  { nome: 'Outros', cor: '#d6d6db' },
 ]
 
 export const CATEGORIA_PADRAO = 'Outros'
 
 export function categoria(nome: string): Categoria {
-  return CATEGORIAS.find((c) => c.nome === nome) ?? { nome, icone: '•', cor: '#8b8b93' }
+  return CATEGORIAS.find((c) => c.nome === nome) ?? { nome, cor: '#d6d6db' }
 }
 
 // Regras de categoria da importação (seção 9). O que não se encaixa vai para Outros.

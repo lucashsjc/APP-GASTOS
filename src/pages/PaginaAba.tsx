@@ -138,7 +138,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
                   >
                     <LinhaGasto descricao="Depósito" categoria="Outros" valor_centavos={d.valor_centavos} data={d.data}
                       positivo
-                      icone={{ simbolo: '💰', cor: '#3ccf8e' }}
+                      icone="Depósito"
                     />
                   </ItemDeslizavel>
                 </li>
@@ -198,7 +198,7 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
         </span>
       </div>
       {r.dinheiroAParte > 0 && (
-        <p className="card-principal-nota">💵 Pago com dinheiro à parte: {formatarReais(r.dinheiroAParte)} (fora da conta)</p>
+        <p className="card-principal-nota">Pago com dinheiro à parte: {formatarReais(r.dinheiroAParte)} (fora da conta)</p>
       )}
       <div className="card-principal-rodape">
         <button type="button" className="recebido" onClick={aoEditarRecebido}>

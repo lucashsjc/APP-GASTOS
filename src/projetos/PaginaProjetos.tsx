@@ -13,7 +13,7 @@ export default function PaginaProjetos() {
         </div>
       </header>
 
-      <a href={urlGithub()} target="_blank" rel="noopener noreferrer" className="card perfil-github brilho">
+      <a href={urlGithub()} target="_blank" rel="noopener noreferrer" className="card perfil-github">
         <img src={`https://github.com/${GITHUB_USUARIO}.png?size=160`} alt="" width={64} height={64} />
         <span>
           <strong>Lucas Henrique</strong>

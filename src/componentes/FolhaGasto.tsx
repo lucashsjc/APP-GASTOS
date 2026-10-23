@@ -15,6 +15,7 @@ import { CATEGORIAS, sugerirCategoria } from '../lib/categorias'
 import { dataNoMes, diaDe, mesDe, nomeDoMes, tituloDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { Folha } from './Folha'
+import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
 
 export type ModoGasto =
   | { aba: Aba; origem: 'topo' | 'certos' }
@@ -209,7 +210,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     setSalvando(false)
     if (!ok) return
     if (aba === 'nubank' && dinheiroAParte !== inicial.dinheiroAParte) {
-      avisar(dinheiroAParte ? '💵 Pago com dinheiro à parte: fora do livre para gastar.' : 'Voltou a contar no livre para gastar.')
+      avisar(dinheiroAParte ? 'Pago com dinheiro à parte: fora do livre para gastar.' : 'Voltou a contar no livre para gastar.')
     } else if (!editando && mesDe(data) !== mes && tipo === 'uma') {
       avisar(`Gasto salvo em ${nomeDoMes(mesDe(data))}.`)
     }
@@ -369,7 +370,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             aria-pressed={dinheiroAParte}
             onClick={() => setDinheiroAParte((v) => !v)}
           >
-            <span className="botao-dinheiro-icone">{dinheiroAParte ? '✓' : '💵'}</span>
+            <span className="botao-dinheiro-icone">
+              {dinheiroAParte ? <IconeCheck tamanho={18} /> : <IconeCarteira tamanho={18} />}
+            </span>
             <span>
               Paguei com dinheiro à parte
               <small>Fica na lista, mas não entra no livre para gastar nem na barra do card.</small>
@@ -415,14 +418,13 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
               <button
                 key={c.nome}
                 type="button"
-                className={`chip${categoria === c.nome ? ' ativo' : ''}`}
-                style={categoria === c.nome ? { borderColor: c.cor, background: `${c.cor}26` } : undefined}
+                className={`chip chip-categoria${categoria === c.nome ? ' ativo' : ''}`}
                 onClick={() => {
                   setCategoria(c.nome)
                   setCategoriaEscolhida(true)
                 }}
               >
-                <span aria-hidden="true">{c.icone}</span> {c.nome}
+                <IconeCategoria nome={c.nome} tamanho={15} /> {c.nome}
               </button>
             ))}
           </div>
