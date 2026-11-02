@@ -21,15 +21,36 @@ import ParaOnde from './pages/ParaOnde'
 
 export default function App() {
   const [sessao, setSessao] = useState<Session | null | undefined>(modoDemonstracao ? null : undefined)
+  const [semResposta, setSemResposta] = useState(false)
 
   useEffect(() => {
     if (!supabase) return
-    supabase.auth.getSession().then(({ data }) => setSessao(data.session))
+    // Se o Supabase não responder (ex.: projeto pausado), avisa em vez de ficar carregando para sempre.
+    const espera = window.setTimeout(() => setSemResposta(true), 12000)
+    supabase.auth
+      .getSession()
+      .then(({ data }) => setSessao(data.session))
+      .catch(() => setSemResposta(true))
+      .finally(() => window.clearTimeout(espera))
     const { data } = supabase.auth.onAuthStateChange((_evento, nova) => setSessao(nova))
-    return () => data.subscription.unsubscribe()
+    return () => {
+      window.clearTimeout(espera)
+      data.subscription.unsubscribe()
+    }
   }, [])
 
-  if (sessao === undefined) return <div className="carregando">Carregando…</div>
+  if (sessao === undefined) {
+    if (!semResposta) return <div className="carregando">Carregando…</div>
+    return (
+      <div className="carregando sem-resposta">
+        <p>O servidor não respondeu.</p>
+        <small>Confira a internet. Se estiver tudo certo, o projeto no Supabase pode estar pausado: abra supabase.com e clique em Restore project.</small>
+        <button type="button" className="botao-texto" onClick={() => window.location.reload()}>
+          Tentar de novo
+        </button>
+      </div>
+    )
+  }
   if (!modoDemonstracao && !sessao) return <Login />
 
   return (
