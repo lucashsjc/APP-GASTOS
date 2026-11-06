@@ -71,6 +71,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <LinhaGasto
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
+            detalhe={item.mes_conta && item.mes_conta !== mesDe(item.data) ? `${dataCurta(item.data)} · conta em ${nomeDoMes(item.mes_conta)}` : undefined}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>

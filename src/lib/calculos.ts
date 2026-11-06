@@ -51,9 +51,17 @@ export function recorrenciaAtivaNoMes(r: Recorrencia, mes: string): boolean {
   return r.inicio <= mes && (r.fim === null || mes <= r.fim)
 }
 
+/** Mês em que o gasto conta: o escolhido em "Descontar no mês" ou, sem escolha, o mês da data. */
+export function mesDoGasto(g: Pick<Gasto, 'data' | 'mes_conta'>): string {
+  return g.mes_conta || mesDe(g.data)
+}
+
 export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): Certo[] {
   const certos: Certo[] = []
-  const gastosDoMes = dados.gastos.filter((g) => g.aba === aba && mesDe(g.data) === mes)
+  // O ajuste de um "todo mês" vale para o mês da data; os outros gastos, para o mês em que contam.
+  const gastosDoMes = dados.gastos.filter(
+    (g) => g.aba === aba && (g.recorrencia_id ? mesDe(g.data) : mesDoGasto(g)) === mes,
+  )
 
   for (const r of dados.recorrencias) {
     if (r.aba !== aba || !recorrenciaAtivaNoMes(r, mes)) continue
@@ -136,7 +144,7 @@ export function resumoPagamento(itens: { valor_centavos: number; pago: boolean }
 /** Gastos de "uma vez" do mês, do mais recente para o mais antigo. */
 export function outrosDoMes(dados: Dados, aba: Aba, mes: string): Gasto[] {
   return dados.gastos
-    .filter((g) => g.aba === aba && g.tipo === 'unico' && mesDe(g.data) === mes)
+    .filter((g) => g.aba === aba && g.tipo === 'unico' && mesDoGasto(g) === mes)
     .sort((a, b) => b.data.localeCompare(a.data))
 }
 

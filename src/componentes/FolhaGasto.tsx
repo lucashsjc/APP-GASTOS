@@ -12,7 +12,7 @@ import {
   planejarEdicaoRecorrencia,
 } from '../lib/calculos'
 import { CATEGORIAS, sugerirCategoria } from '../lib/categorias'
-import { dataNoMes, diaDe, mesDe, nomeDoMes, tituloDoMes } from '../lib/datas'
+import { dataNoMes, diaDe, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { Folha } from './Folha'
 import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
@@ -127,6 +127,12 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [separado, setSeparado] = useState(inicial.separado)
   const [dinheiroAParte, setDinheiroAParte] = useState(inicial.dinheiroAParte)
   const aPartirDe = mes > mesAtual ? mes : mesAtual
+  // "Descontar no mês": vazio = o mês da data.
+  const [mesConta, setMesConta] = useState(gastoEditado?.mes_conta ?? '')
+  const podeMudarMes = tipo === 'uma' && !recEditada && gastoEditado?.tipo !== 'parcela'
+  const mesDaData = /^\d{4}-\d{2}-\d{2}$/.test(data) ? mesDe(data) : null
+  const mesesConta = mesDaData ? [-1, 0, 1].map((n) => somarMeses(mesDaData, n)) : []
+  const mesFinal = podeMudarMes && mesConta && mesConta !== mesDaData ? mesConta : null
 
   /** Ao escrever a descrição, sugere a categoria e a forma usadas da última vez. */
   const mudarDescricao = (texto: string) => {
@@ -162,6 +168,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     const unico = (tipoGasto: NovoGasto['tipo']): NovoGasto => ({
       ...comum,
       ...extras,
+      mes_conta: mesFinal,
       valor_centavos: valor,
       data,
       tipo: tipoGasto,
@@ -189,7 +196,14 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         )
       } else if (gastoEditado) {
         const tipoGasto = gastoEditado.tipo === 'parcela' ? 'parcela' : certo ? 'certo_unico' : 'unico'
-        await repo.atualizarGasto(gastoEditado.id, { ...comum, ...extras, valor_centavos: valor, data, tipo: tipoGasto })
+        await repo.atualizarGasto(gastoEditado.id, {
+          ...comum,
+          ...extras,
+          valor_centavos: valor,
+          data,
+          tipo: tipoGasto,
+          ...(tipoGasto === 'parcela' ? {} : { mes_conta: mesFinal }),
+        })
       } else if (tipo === 'uma') {
         await repo.criarGastos([unico(certo ? 'certo_unico' : 'unico')])
       } else if (tipo === 'parcelado') {
@@ -211,8 +225,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     if (!ok) return
     if (aba === 'nubank' && dinheiroAParte !== inicial.dinheiroAParte) {
       avisar(dinheiroAParte ? 'Pago com dinheiro à parte: fora do livre para gastar.' : 'Voltou a contar no livre para gastar.')
-    } else if (!editando && mesDe(data) !== mes && tipo === 'uma') {
-      avisar(`Gasto salvo em ${nomeDoMes(mesDe(data))}.`)
+    } else if (tipo === 'uma' && (mesFinal ?? mesDe(data)) !== mes && (!editando || mesFinal !== (gastoEditado?.mes_conta ?? null))) {
+      avisar(`Gasto salvo em ${nomeDoMes(mesFinal ?? mesDe(data))}.`)
     }
     aoFechar()
   }
@@ -318,6 +332,34 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             <span>{tipo === 'parcelado' ? 'Data da compra' : tipo === 'todo_mes' ? 'Primeira vez' : 'Data'}</span>
             <input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
           </label>
+        )}
+
+        {podeMudarMes && mesDaData && (
+          <div className="campo">
+            <span>Descontar no mês</span>
+            <div className="segmentado pequeno" role="radiogroup" aria-label="Mês em que o gasto desconta">
+              {mesesConta.map((m) => {
+                const ativo = (mesConta || mesDaData) === m
+                return (
+                  <button
+                    key={m}
+                    type="button"
+                    role="radio"
+                    aria-checked={ativo}
+                    className={ativo ? 'ativo' : ''}
+                    onClick={() => setMesConta(m === mesDaData ? '' : m)}
+                  >
+                    {tituloDoMes(m, mesAtual)}
+                  </button>
+                )
+              })}
+            </div>
+            {mesFinal && (
+              <small className="nota">
+                Comprado em {nomeDoMes(mesDaData)}, mas entra nos gastos de {nomeDoMes(mesFinal)}.
+              </small>
+            )}
+          </div>
         )}
 
         {tipo === 'todo_mes' && !recEditada && /^\d{4}-\d{2}-\d{2}$/.test(data) && (

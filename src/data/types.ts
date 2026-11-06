@@ -37,14 +37,17 @@ export interface Gasto {
   separado: boolean
   /** Pago com dinheiro à parte: fica na lista, mas fora das contas do card (livre, barra, gasto no mês). */
   dinheiro_a_parte: boolean
+  /** Mês (AAAA-MM) em que o gasto desconta, quando não é o mês da data (ex.: comprou no fim do mês com o Caju do mês seguinte). */
+  mes_conta: string | null
 }
 
 /** Ao criar, os campos de controle são opcionais (não pago, sem observação, nada à parte). */
-export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte'> & {
+export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte' | 'mes_conta'> & {
   pago?: boolean
   observacao?: string
   separado?: boolean
   dinheiro_a_parte?: boolean
+  mes_conta?: string | null
 }
 
 export interface Recorrencia {

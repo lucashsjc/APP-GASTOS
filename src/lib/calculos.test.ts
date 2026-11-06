@@ -48,6 +48,7 @@ function gasto(dados: Partial<Gasto>): Gasto {
     observacao: '',
     separado: false,
     dinheiro_a_parte: false,
+    mes_conta: null,
     ...dados,
   }
 }
@@ -487,5 +488,39 @@ describe('pago com dinheiro à parte', () => {
     expect(r.aParte).toBe(0)
     expect(r.livre).toBe(100000 - 2000)
     expect(r.credito + r.debito).toBe(2000)
+  })
+})
+
+describe('descontar no mês', () => {
+  it('o gasto comprado em outubro entra nos gastos de novembro', () => {
+    const dados = vazio()
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-30', valor_centavos: 4500, mes_conta: '2026-11' }))
+    expect(outrosDoMes(dados, 'caju', '2026-10')).toHaveLength(0)
+    expect(outrosDoMes(dados, 'caju', '2026-11')).toHaveLength(1)
+    expect(gastosDoMes(dados, 'caju', '2026-11', '2026-11-06')[0].valor_centavos).toBe(4500)
+  })
+
+  it('no Nubank, sai do livre do mês escolhido', () => {
+    const dados = vazio()
+    dados.recebidos.push({ id: 'o', aba: 'nubank', mes: '2026-10', valor_centavos: 100000 })
+    dados.recebidos.push({ id: 'n', aba: 'nubank', mes: '2026-11', valor_centavos: 100000 })
+    dados.gastos.push(gasto({ data: '2026-10-30', valor_centavos: 3000, mes_conta: '2026-11' }))
+    expect(resumoNubank(dados, '2026-10', HOJE).livre).toBe(100000)
+    expect(resumoNubank(dados, '2026-11', HOJE).livre).toBe(97000)
+  })
+
+  it('no Caju, o saldo do fim de outubro não desconta a compra de novembro', () => {
+    const dados = vazio()
+    dados.depositos.push({ id: 'd', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
+    dados.depositos.push({ id: 'e', aba: 'caju', data: '2026-10-30', valor_centavos: 20000 })
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-31', valor_centavos: 5000, mes_conta: '2026-11' }))
+    expect(saldoCajuEm(dados, '2026-10-31', '2026-11-06')).toBe(30000)
+    expect(saldoCajuEm(dados, '2026-11-06', '2026-11-06')).toBe(25000)
+  })
+
+  it('sem escolha, conta no mês da data', () => {
+    const dados = vazio()
+    dados.gastos.push(gasto({ data: '2026-10-30' }))
+    expect(outrosDoMes(dados, 'nubank', '2026-10')).toHaveLength(1)
   })
 })

@@ -10,6 +10,7 @@ export function completarGasto(g: NovoGasto, id: string): Gasto {
     observacao: g.observacao ?? '',
     separado: g.separado ?? false,
     dinheiro_a_parte: g.dinheiro_a_parte ?? false,
+    mes_conta: g.mes_conta ?? null,
   }
 }
 

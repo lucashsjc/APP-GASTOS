@@ -33,6 +33,7 @@ const COLUNAS = {
     'observacao',
     'separado',
     'dinheiro_a_parte',
+    'mes_conta',
   ],
   recorrencias: [
     'id',
@@ -63,6 +64,7 @@ const OPCIONAIS: Record<string, { sql: string; uso: string }> = {
   observacao: { sql: '006_observacao_e_a_parte.sql', uso: 'guardar a observação' },
   separado: { sql: '006_observacao_e_a_parte.sql', uso: 'separar o gasto dos outros' },
   dinheiro_a_parte: { sql: '007_dinheiro_a_parte.sql', uso: 'marcar como pago com dinheiro à parte' },
+  mes_conta: { sql: '008_mes_conta.sql', uso: 'descontar o gasto em outro mês' },
 }
 
 const PAGINA = 1000
@@ -151,7 +153,7 @@ export function criarRepoSupabase(): Repo {
         tudo<Deposito>('depositos'),
       ])
       return {
-        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false })),
+        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null })),
         recorrencias: recorrencias.map(comPadroes),
         recebidos,
         depositos,
@@ -164,7 +166,7 @@ export function criarRepoSupabase(): Repo {
       const { data, error } = await db.from('gastos').insert(linhas).select(colunas('gastos'))
       erroDeGravacao('gastos', error)
       confirmarColunas('gastos', linhas[0])
-      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false }))
+      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null }))
     },
     async atualizarGasto(id, dados) {
       const linha = preparar('gastos', dados)
