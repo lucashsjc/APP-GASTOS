@@ -127,9 +127,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [separado, setSeparado] = useState(inicial.separado)
   const [dinheiroAParte, setDinheiroAParte] = useState(inicial.dinheiroAParte)
   const aPartirDe = mes > mesAtual ? mes : mesAtual
-  // "Descontar no mês": vazio = o mês da data.
+  // "Descontar no mês" (só no Caju, que chega no fim do mês e vale para o seguinte): vazio = o mês da data.
   const [mesConta, setMesConta] = useState(gastoEditado?.mes_conta ?? '')
-  const podeMudarMes = tipo === 'uma' && !recEditada && gastoEditado?.tipo !== 'parcela'
+  const podeMudarMes = aba === 'caju' && tipo === 'uma' && !recEditada && gastoEditado?.tipo !== 'parcela'
   const mesDaData = /^\d{4}-\d{2}-\d{2}$/.test(data) ? mesDe(data) : null
   const mesesConta = mesDaData ? [-1, 0, 1].map((n) => somarMeses(mesDaData, n)) : []
   const mesFinal = podeMudarMes && mesConta && mesConta !== mesDaData ? mesConta : null
