@@ -50,7 +50,7 @@ const COLUNAS = {
     'dinheiro_a_parte',
   ],
   recebidos: ['id', 'aba', 'mes', 'valor_centavos'],
-  depositos: ['id', 'aba', 'data', 'valor_centavos'],
+  depositos: ['id', 'aba', 'data', 'valor_centavos', 'mes_conta'],
 }
 
 type Tabela = keyof typeof COLUNAS
@@ -65,6 +65,15 @@ const OPCIONAIS: Record<string, { sql: string; uso: string }> = {
   separado: { sql: '006_observacao_e_a_parte.sql', uso: 'separar o gasto dos outros' },
   dinheiro_a_parte: { sql: '007_dinheiro_a_parte.sql', uso: 'marcar como pago com dinheiro à parte' },
   mes_conta: { sql: '008_mes_conta.sql', uso: 'descontar o gasto em outro mês' },
+}
+
+/** O SQL de uma coluna opcional, quando ela chegou numa tabela em outro SQL. */
+const OPCIONAIS_POR_TABELA: Record<string, { sql: string; uso: string }> = {
+  'depositos.mes_conta': { sql: '009_caju_por_mes.sql', uso: 'escolher o mês do depósito' },
+}
+
+function opcional(tabela: string, coluna: string) {
+  return OPCIONAIS_POR_TABELA[`${tabela}.${coluna}`] ?? OPCIONAIS[coluna]
 }
 
 const PAGINA = 1000
@@ -109,7 +118,7 @@ export function criarRepoSupabase(): Repo {
       const coluna = Object.keys(OPCIONAIS).find((c) => e.message.includes(c))
       if (coluna) {
         faltando[tabela].add(coluna)
-        const { sql, uso } = OPCIONAIS[coluna]
+        const { sql, uso } = opcional(tabela, coluna)
         throw new Error(`Para ${uso}, rode o supabase/${sql} no Supabase (e feche e abra o app).`)
       }
     }
@@ -156,7 +165,7 @@ export function criarRepoSupabase(): Repo {
         gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null })),
         recorrencias: recorrencias.map(comPadroes),
         recebidos,
-        depositos,
+        depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null })),
       }
     },
 
@@ -206,9 +215,12 @@ export function criarRepoSupabase(): Repo {
     },
 
     async criarDeposito(dados) {
-      const { data, error } = await db.from('depositos').insert(dados).select(colunas('depositos')).single()
-      erro(error)
-      return data as unknown as Deposito
+      const linha = preparar('depositos', dados)
+      const { data, error } = await db.from('depositos').insert(linha).select(colunas('depositos')).single()
+      erroDeGravacao('depositos', error)
+      confirmarColunas('depositos', linha)
+      const deposito = data as unknown as Deposito
+      return { ...deposito, mes_conta: deposito.mes_conta ?? null }
     },
     async excluirDeposito(id) {
       const { error } = await db.from('depositos').delete().eq('id', id)

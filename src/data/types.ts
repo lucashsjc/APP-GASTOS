@@ -88,6 +88,8 @@ export interface Deposito {
   aba: 'caju'
   data: string
   valor_centavos: number
+  /** Mês (AAAA-MM) para o qual o depósito vale, quando não é o mês da data (ex.: caiu no fim do mês para o seguinte). */
+  mes_conta?: string | null
 }
 
 export type NovoDeposito = Omit<Deposito, 'id'>

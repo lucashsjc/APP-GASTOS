@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useEstado } from '../estado'
 import { ehAreaBanco } from '../lib/areas'
-import { resumoNubank, saldoCajuEm } from '../lib/calculos'
+import { resumoNubank, saldoCajuDoMes } from '../lib/calculos'
 import { mesDe } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 import {
@@ -62,7 +62,7 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
   const { pathname } = useLocation()
   const { dados, hoje } = useEstado()
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
-  const saldoCaju = saldoCajuEm(dados, hoje, hoje)
+  const saldoCaju = saldoCajuDoMes(dados, mesDe(hoje), hoje)
 
   const ativa = (rota: string) =>
     rota === '/' ? pathname === '/' : rota === '/nubank' ? ehAreaBanco(pathname) : pathname.startsWith(rota)

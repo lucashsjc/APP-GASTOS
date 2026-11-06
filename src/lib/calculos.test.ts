@@ -6,6 +6,7 @@ import { gastosDoMes, maisFrequente } from './analise'
 import {
   cardCaju,
   certosDoMes,
+  depositosDoMes,
   datasDasParcelas,
   dividirParcelas,
   gerarParcelas,
@@ -17,7 +18,7 @@ import {
   resumirCertos,
   resumoNubank,
   resumoPagamento,
-  saldoCajuEm,
+  saldoCajuDoMes,
 } from './calculos'
 import { diasRestantesNoMes, hojeSP } from './datas'
 import { formatarReais, lerReais, partesDoValor, reaisParaCentavos, somar } from './dinheiro'
@@ -296,7 +297,7 @@ describe('todo mês', () => {
   })
 })
 
-describe('saldo do Caju', () => {
+describe('saldo do Caju (cada mês separado)', () => {
   function caju(): Dados {
     const dados = vazio()
     dados.depositos.push({ id: 'd1', aba: 'caju', data: '2026-09-05', valor_centavos: 50000 })
@@ -309,36 +310,44 @@ describe('saldo do Caju', () => {
     return dados
   }
 
-  it('acumula entre os meses: depósitos até hoje − gastos já caídos até hoje', () => {
-    // Setembro: 50000 − 30000 − 1000 = 19000. Outubro até dia 21: + 50000 − 25000 − 1000.
-    expect(saldoCajuEm(caju(), HOJE, HOJE)).toBe(43000)
+  it('mês atual: depósitos do mês − gastos do mês já caídos (sem a sobra de setembro)', () => {
+    // Outubro até dia 21: 50000 − 25000 − 1000. Os 19000 que sobraram de setembro não entram.
+    expect(saldoCajuDoMes(caju(), '2026-10', HOJE)).toBe(24000)
   })
 
-  it('não conta depósitos nem gastos futuros', () => {
-    const dados = caju()
-    // O gasto do dia 25 e o depósito de novembro ainda não entram.
-    expect(saldoCajuEm(dados, HOJE, HOJE)).toBe(43000)
+  it('não conta os gastos do mês que ainda não caíram', () => {
+    // O gasto do dia 25 ainda não entra; o depósito de novembro é de outro mês.
+    expect(saldoCajuDoMes(caju(), '2026-10', HOJE)).toBe(24000)
   })
 
   it('gasto marcado à mão como caído já sai do saldo', () => {
     const dados = caju()
     dados.gastos.push(gasto({ aba: 'caju', forma: null, tipo: 'certo_unico', data: '2026-10-28', caiu_manual: true, valor_centavos: 3000 }))
-    expect(saldoCajuEm(dados, HOJE, HOJE)).toBe(40000)
+    expect(saldoCajuDoMes(dados, '2026-10', HOJE)).toBe(21000)
   })
 
-  it('mês passado: saldo no fim daquele mês', () => {
+  it('mês passado: saldo no fim daquele mês, só com o dinheiro dele', () => {
     expect(cardCaju(caju(), '2026-09', HOJE)).toEqual({ modo: 'passado', saldo: 19000 })
   })
 
-  it('mês futuro: saldo de hoje − certos do Caju previstos até aquele mês', () => {
-    // Certos do Caju ainda por cair: todo mês de 10,00 em novembro e em dezembro.
-    // (O gasto avulso do dia 25 não é certo, então não entra na previsão.)
-    expect(cardCaju(caju(), '2026-11', HOJE)).toEqual({ modo: 'futuro', saldo: 42000 })
-    expect(cardCaju(caju(), '2026-12', HOJE)).toEqual({ modo: 'futuro', saldo: 41000 })
+  it('mês futuro: depósitos que valem para ele − os gastos previstos nele', () => {
+    // Novembro: depósito de 50000 − todo mês de 10,00.
+    expect(cardCaju(caju(), '2026-11', HOJE)).toEqual({ modo: 'futuro', saldo: 49000 })
+    // Dezembro ainda não tem depósito.
+    expect(cardCaju(caju(), '2026-12', HOJE)).toEqual({ modo: 'futuro', saldo: -1000 })
   })
 
   it('mês atual: mostra quanto dá por dia', () => {
-    expect(cardCaju(caju(), '2026-10', HOJE)).toEqual({ modo: 'atual', saldo: 43000, porDia: 3909, diasRestantes: 11 })
+    expect(cardCaju(caju(), '2026-10', HOJE)).toEqual({ modo: 'atual', saldo: 24000, porDia: 2181, diasRestantes: 11 })
+  })
+
+  it('o depósito do fim de outubro que vale para novembro entra só em novembro', () => {
+    const dados = vazio()
+    dados.depositos.push({ id: 'o', aba: 'caju', data: '2026-10-01', valor_centavos: 40000 })
+    dados.depositos.push({ id: 'n', aba: 'caju', data: '2026-10-30', valor_centavos: 50000, mes_conta: '2026-11' })
+    expect(depositosDoMes(dados, '2026-10').map((d) => d.id)).toEqual(['o'])
+    expect(saldoCajuDoMes(dados, '2026-10', '2026-10-31')).toBe(40000)
+    expect(saldoCajuDoMes(dados, '2026-11', '2026-11-06')).toBe(50000)
   })
 })
 
@@ -471,7 +480,7 @@ describe('gasto à parte', () => {
     const dados = vazio()
     dados.depositos.push({ id: 'd', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
     dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-02', valor_centavos: 3000, separado: true }))
-    expect(saldoCajuEm(dados, HOJE, HOJE)).toBe(7000)
+    expect(saldoCajuDoMes(dados, '2026-10', HOJE)).toBe(7000)
   })
 })
 
@@ -509,13 +518,13 @@ describe('descontar no mês', () => {
     expect(resumoNubank(dados, '2026-11', HOJE).livre).toBe(97000)
   })
 
-  it('no Caju, o saldo do fim de outubro não desconta a compra de novembro', () => {
+  it('no Caju, a compra de 31/10 que conta em novembro sai do saldo de novembro', () => {
     const dados = vazio()
     dados.depositos.push({ id: 'd', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
-    dados.depositos.push({ id: 'e', aba: 'caju', data: '2026-10-30', valor_centavos: 20000 })
+    dados.depositos.push({ id: 'e', aba: 'caju', data: '2026-10-30', valor_centavos: 20000, mes_conta: '2026-11' })
     dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-31', valor_centavos: 5000, mes_conta: '2026-11' }))
-    expect(saldoCajuEm(dados, '2026-10-31', '2026-11-06')).toBe(30000)
-    expect(saldoCajuEm(dados, '2026-11-06', '2026-11-06')).toBe(25000)
+    expect(saldoCajuDoMes(dados, '2026-10', '2026-10-31')).toBe(10000)
+    expect(saldoCajuDoMes(dados, '2026-11', '2026-11-06')).toBe(15000)
   })
 
   it('sem escolha, conta no mês da data', () => {

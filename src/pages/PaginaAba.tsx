@@ -12,7 +12,7 @@ import { repo } from '../data/repo'
 import { definirPago } from '../data/acoes'
 import type { Aba, Gasto } from '../data/types'
 import { useEstado } from '../estado'
-import { cardCaju, certosDoMes, outrosDoMes, resumoNubank, resumoPagamento, type Certo } from '../lib/calculos'
+import { cardCaju, certosDoMes, depositosDoMes, outrosDoMes, resumoNubank, resumoPagamento, type Certo } from '../lib/calculos'
 import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 
@@ -78,7 +78,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
       </li>
     )
 
-  const depositos = aba === 'caju' ? dados.depositos.filter((d) => mesDe(d.data) === mes) : []
+  const depositos = aba === 'caju' ? depositosDoMes(dados, mes) : []
   const recebido = dados.recebidos.find((r) => r.mes === mes)?.valor_centavos ?? 0
 
   return (
@@ -138,6 +138,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
                     aoApagar={() => executar(() => repo.excluirDeposito(d.id))}
                   >
                     <LinhaGasto descricao="Depósito" categoria="Outros" valor_centavos={d.valor_centavos} data={d.data}
+                      detalhe={mesDe(d.data) !== mes ? `Caiu em ${dataCurta(d.data)}` : undefined}
                       positivo
                       icone="Depósito"
                     />
@@ -166,7 +167,10 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           dataInicial={mes === mesDe(hoje) ? hoje : dataNoMes(mes, diaDe(hoje))}
           textoBotao="Registrar depósito"
           classeBotao="botao-caju"
-          aoSalvar={(valor, data) => executar(() => repo.criarDeposito({ aba: 'caju', data, valor_centavos: valor }))}
+          comMes
+          aoSalvar={(valor, data, mesConta) =>
+            executar(() => repo.criarDeposito({ aba: 'caju', data, valor_centavos: valor, mes_conta: mesConta }))
+          }
           aoFechar={() => setFolhaValor(null)}
         />
       )}
@@ -248,7 +252,9 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
           )}
         </p>
       )}
-      {c.modo === 'futuro' && <p className="aviso-por-dia">Saldo de hoje menos os fixos e parcelas do Caju até lá.</p>}
+      {c.modo === 'futuro' && (
+        <p className="aviso-por-dia">Depósitos que valem para {nomeDoMes(mes)} menos os gastos já previstos nele.</p>
+      )}
       <div className="card-principal-rodape">
         <button type="button" className="botao-claro" onClick={aoDepositar}>
           + Registrar depósito

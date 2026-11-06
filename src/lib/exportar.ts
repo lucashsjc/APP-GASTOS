@@ -57,10 +57,14 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
     },
     {
       nome: 'Depósitos (Caju)',
-      colunas: ['Data', 'Valor'],
+      colunas: ['Data', 'Valor', 'Vale para'],
       linhas: [...dados.depositos]
         .sort((a, b) => a.data.localeCompare(b.data))
-        .map((d) => [{ data: d.data }, { centavos: d.valor_centavos }]),
+        .map((d) => [
+          { data: d.data },
+          { centavos: d.valor_centavos },
+          d.mes_conta ? `${d.mes_conta.slice(5)}/${d.mes_conta.slice(0, 4)}` : '',
+        ]),
     },
   ]
 }
