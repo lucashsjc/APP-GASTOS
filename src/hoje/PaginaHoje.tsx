@@ -6,15 +6,17 @@ import { useFaculdade } from '../faculdade/estado'
 import { aulasDoDia, formatarNota, prazoAtividade, provasProximas } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
 import { cardCaju, resumoNubank } from '../lib/calculos'
-import { mesDe } from '../lib/datas'
-import { formatarReais } from '../lib/dinheiro'
+import { dataCurta, mesDe } from '../lib/datas'
+import { formatarReais, partesDoValor } from '../lib/dinheiro'
+import { Carrossel, type Slide } from './Carrossel'
 import { alertasFaculdade, atividadesUrgentes, dataPorExtenso, saudacao } from './resumo'
 
 /** Tela inicial: o resumo do dia (dinheiro, o que vai cair e a faculdade). */
 export default function PaginaHoje() {
   const { dados, hoje } = useEstado()
   const faculdade = useFaculdade()
-  const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
+  const nubank = resumoNubank(dados, mesDe(hoje), hoje)
+  const livre = nubank.livre
   const caju = cardCaju(dados, mesDe(hoje), hoje)
   const atividades = atividadesUrgentes(faculdade.dados.atividades, hoje)
   const aulas = aulasDoDia(faculdade.dados.aulas, hoje)
@@ -22,6 +24,80 @@ export default function PaginaHoje() {
   // O aviso de nota não se repete quando a prova da matéria já aparece na lista.
   const comProva = new Set(provas.filter((p) => p.precisa !== null).map((p) => p.disciplina?.id))
   const alertas = alertasFaculdade(faculdade.dados).filter((a) => !(a.tipo === 'nota' && comProva.has(a.disciplina.id)))
+
+  // Os cards do carrossel: a próxima prova (se tiver), o livre do Nubank, o saldo do Caju e as aulas de hoje.
+  const valor = (centavos: number) => {
+    const p = partesDoValor(centavos)
+    return (
+      <>
+        {p.sinal}R$ {p.inteiro}
+        <small>,{p.centavos}</small>
+      </>
+    )
+  }
+  const gasto = nubank.certos.total + nubank.outros
+  const prova = provas[0]
+  const slides: Slide[] = [
+    ...(prova
+      ? [
+          {
+            chave: 'prova',
+            para: '/faculdade/calendario',
+            etiqueta: `Próxima prova · ${prova.dias === 0 ? 'hoje' : prova.dias === 1 ? 'amanhã' : `em ${prova.dias} dias`}`,
+            numero: prova.precisa !== null ? formatarNota(prova.precisa) : dataCurta(prova.nota.data!),
+            titulo:
+              prova.precisa !== null
+                ? `${prova.nota.descricao} de ${prova.disciplina?.nome ?? ''}: é o que você precisa para passar`
+                : `${prova.nota.descricao} de ${prova.disciplina?.nome ?? ''}`,
+            detalhe: dataPorExtenso(prova.nota.data!),
+          },
+        ]
+      : []),
+    {
+      chave: 'nubank',
+      para: '/nubank',
+      etiqueta: (
+        <>
+          <Logo aba="nubank" tamanho={18} /> Nubank · livre no mês
+        </>
+      ),
+      numero: valor(livre),
+      negativo: livre < 0,
+      titulo: livre < 0 ? 'Passou do que recebeu neste mês' : 'Livre para gastar até o fim do mês',
+      detalhe: `Gasto ${formatarReais(gasto)}${nubank.recebido > 0 ? ` · ${Math.round((gasto / nubank.recebido) * 100)}% do recebido` : ''}`,
+    },
+    {
+      chave: 'caju',
+      para: '/caju',
+      etiqueta: (
+        <>
+          <Logo aba="caju" tamanho={18} /> Caju · saldo do mês
+        </>
+      ),
+      numero: valor(caju.saldo),
+      negativo: caju.saldo < 0,
+      titulo:
+        caju.modo === 'atual' && caju.porDia !== null
+          ? `Dá para gastar ${formatarReais(caju.porDia)} por dia`
+          : 'Saldo do Caju esgotado neste mês',
+      detalhe: caju.modo === 'atual' ? `Até o fim do mês (${caju.diasRestantes} ${caju.diasRestantes === 1 ? 'dia' : 'dias'})` : undefined,
+    },
+    ...(aulas.length
+      ? [
+          {
+            chave: 'aulas',
+            para: '/faculdade/faltas',
+            etiqueta: 'Aulas de hoje',
+            numero: aulas[0].inicio ?? `${aulas.length}`,
+            titulo: aulas
+              .map((a) => faculdade.dados.disciplinas.find((x) => x.id === a.disciplina_id)?.nome)
+              .filter(Boolean)
+              .join(' e '),
+            detalhe: aulas.map((a) => `${a.inicio ?? ''} ${a.quantidade} ${a.quantidade === 1 ? 'aula' : 'aulas'}`.trim()).join(' · '),
+          },
+        ]
+      : []),
+  ]
   const semFaculdade = !faculdade.carregando && !faculdade.erro && !faculdade.dados.disciplinas.length && !faculdade.dados.atividades.length
 
   return (
@@ -34,24 +110,7 @@ export default function PaginaHoje() {
         <p className="data-hoje">{dataPorExtenso(hoje)}</p>
       </header>
 
-      <section className="hoje-dinheiro">
-        <Link to="/nubank" className="hoje-cartao card-nubank">
-          <span className="hoje-cartao-topo">
-            <Logo aba="nubank" tamanho={22} /> Livre no mês
-          </span>
-          <strong className={livre < 0 ? 'negativo' : undefined}>{formatarReais(livre)}</strong>
-          <small>Nubank</small>
-        </Link>
-        <Link to="/caju" className="hoje-cartao card-caju">
-          <span className="hoje-cartao-topo">
-            <Logo aba="caju" tamanho={22} /> Saldo
-          </span>
-          <strong className={caju.saldo < 0 ? 'negativo' : undefined}>{formatarReais(caju.saldo)}</strong>
-          <small>
-            {caju.modo === 'atual' && caju.porDia !== null ? `${formatarReais(caju.porDia)} por dia` : 'Saldo esgotado'}
-          </small>
-        </Link>
-      </section>
+      <Carrossel slides={slides} />
 
       <section className="secao">
         <h2>
@@ -69,23 +128,6 @@ export default function PaginaHoje() {
           </Link>
         ) : (
           <>
-            {aulas.length > 0 && (
-              <Link to="/faculdade/faltas" className="card hoje-aulas">
-                <small>Aulas de hoje</small>
-                <span>
-                  {aulas.map((a) => {
-                    const d = faculdade.dados.disciplinas.find((x) => x.id === a.disciplina_id)
-                    return (
-                      <span key={a.id} className="hoje-aula">
-                        <i className="ponto" style={{ background: d?.cor }} />
-                        {a.inicio && <b>{a.inicio}</b>} {d?.nome}
-                      </span>
-                    )
-                  })}
-                </span>
-              </Link>
-            )}
-
             {provas.length > 0 && (
               <ul className="lista">
                 {provas.map((p) => (

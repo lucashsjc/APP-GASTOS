@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Cabecalho } from './componentes/Cabecalho'
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
 import { IconeCalendario, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
@@ -59,6 +60,7 @@ export default function App() {
       <BrowserRouter>
         {modoDemonstracao && <div className="aviso-demo">Modo demonstração: dados de exemplo, só neste aparelho.</div>}
         <main className="conteudo">
+          <Cabecalho />
           <Routes>
             <Route path="/" element={<PaginaHoje />} />
             <Route path="/nubank" element={<PaginaAba aba="nubank" />} />

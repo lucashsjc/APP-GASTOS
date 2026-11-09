@@ -1,4 +1,4 @@
-/* Tema "pista": fundo preto, cinzas escuros, vermelho de destaque e os cartões como cartões de verdade. */
+/* Tema "equipe": fundo preto, cinzas escuros, verde-neon de destaque e cards escuros com brilho verde. */
 :root {
   --fundo: #000;
   --card: #121212;
@@ -9,24 +9,27 @@
   --verde: #3fd07a;
   --ambar: #ffc247;
   --negativo: #ff5148;
-  --vermelho: #e10600;
-  /* Estados ativos (pílulas, abas) ficam brancos com texto preto. */
+  /* Verde-neon escuro de destaque (botões, linha do topo); o texto em cima dele é preto. */
+  --vermelho: #19c46a;
+  --sobre-destaque: #000;
+  /* Estados ativos (pílulas, abas) em verde-neon claro, com texto preto. */
   --pastel-lilas: #fff;
-  --pastel-azul: #fff;
+  --pastel-azul: #2ee59d;
   --pastel-rosa: #fff;
   --sobre-pastel: #000;
   --sobre-pastel-2: #4a4a52;
   --nubank: #8a05be;
   --caju: #e8195d;
-  --cartao-nubank: linear-gradient(135deg, #8a05be, #4b0082 60%, #2a004f);
-  --cartao-caju: linear-gradient(135deg, #ff6a3d, #e8195d);
+  /* Cards de destaque: escuros, com um brilho verde (o Nubank e o Caju só aparecem no logo). */
+  --cartao-nubank: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
+  --cartao-caju: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
   --faculdade: #fff;
   --raio: 18px;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
 
   color-scheme: dark;
-  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1;
   color: var(--texto);
   background: var(--fundo);
@@ -2514,7 +2517,7 @@ a.botao-secundario {
 
 .botao-mais {
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(225, 6, 0, 0.45);
+  box-shadow: 0 6px 16px rgba(25, 196, 106, 0.35);
 }
 
 /* O card principal vira o cartão: roxo no Nubank, laranja no Caju, com o outro cartão aparecendo atrás. */
@@ -2881,7 +2884,7 @@ a.botao-secundario {
 }
 
 .calendario-dia.com-prova {
-  background: rgba(225, 6, 0, 0.18);
+  background: rgba(25, 196, 106, 0.18);
 }
 
 .calendario-dia.escolhido {
@@ -3279,7 +3282,7 @@ a.botao-secundario {
 
 .abertura-logo .logo-lk {
   display: block;
-  filter: drop-shadow(0 10px 30px rgba(225, 6, 0, 0.35));
+  filter: drop-shadow(0 10px 30px rgba(25, 196, 106, 0.35));
 }
 
 /* Rastro de velocidade que passa por trás do logo. */
@@ -3326,4 +3329,274 @@ a.botao-secundario {
   .abertura-rastro {
     animation: none;
   }
+}
+
+/* ---------- Tema equipe (estilo do site da Mercedes) ---------- */
+
+/* Cabeçalho: LK, nome, menu e as áreas em texto, com a linha verde embaixo. */
+.cabecalho {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 0 -16px 4px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--vermelho);
+}
+
+.cabecalho-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cabecalho-marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cabecalho-marca span {
+  display: flex;
+  flex-direction: column;
+}
+
+.cabecalho-marca small {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--vermelho);
+  line-height: 1.3;
+}
+
+.cabecalho-marca small + small {
+  color: var(--texto-2);
+}
+
+.cabecalho .botao-menu {
+  background: none;
+}
+
+.cabecalho-nav {
+  display: flex;
+  gap: 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 12px;
+}
+
+.cabecalho-nav a {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--texto-2);
+  white-space: nowrap;
+}
+
+.cabecalho-nav a.ativo {
+  color: #fff;
+}
+
+/* O menu agora fica no cabeçalho: some do topo de cada tela, e as listras saem. */
+.topo .botao-menu,
+.topo::before {
+  display: none;
+}
+
+.topo h1 {
+  font-style: normal;
+  text-transform: none;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.botao-nubank,
+.botao-caju,
+.botao-faculdade,
+.botao-principal,
+.botao-faltei,
+.etiqueta-prova {
+  color: var(--sobre-destaque);
+}
+
+.secao h2,
+.card h2 {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.valor-grande,
+.hoje-cartao strong,
+.linha-valor strong {
+  font-weight: 900;
+}
+
+.lista-numerada .linha-icone::before {
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* Cards de destaque escuros, com faixas de brilho verde na diagonal e o chip prateado. */
+.card-principal.card-nubank,
+.card-principal.card-caju,
+.hoje-cartao,
+.menu-resumo,
+.carrossel-card {
+  background: var(--cartao-nubank);
+  box-shadow: inset 0 0 0 1px rgba(46, 229, 157, 0.12);
+}
+
+.card-principal::before,
+.carrossel-card::before {
+  content: '';
+  position: absolute;
+  top: -140px;
+  left: -120px;
+  width: 140px;
+  height: 520px;
+  border-radius: 0;
+  background: linear-gradient(90deg, transparent, rgba(46, 229, 157, 0.28), transparent);
+  transform: rotate(35deg);
+  pointer-events: none;
+}
+
+.card-principal::after {
+  background: linear-gradient(135deg, #eef3f4, #8f9a9e);
+}
+
+.card-principal .barra-clara span {
+  background: var(--vermelho);
+}
+
+.link-card,
+.aviso-por-dia {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* Tela Hoje: carrossel de cards grandes, com os vizinhos aparecendo, botões redondos e bolinhas. */
+.carrossel {
+  margin: 0 -16px;
+}
+
+.carrossel-trilho {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding: 0 28px;
+  scrollbar-width: none;
+}
+
+.carrossel-trilho::-webkit-scrollbar {
+  display: none;
+}
+
+.carrossel-card {
+  position: relative;
+  flex: none;
+  width: calc(100% - 56px);
+  min-height: 300px;
+  scroll-snap-align: center;
+  border-radius: 22px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  color: #fff;
+}
+
+.carrossel-card > * {
+  position: relative;
+}
+
+.carrossel-etiqueta {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pastel-azul);
+  color: #000;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.carrossel-etiqueta .logo {
+  border-radius: 6px;
+}
+
+.carrossel-numero {
+  margin-top: auto;
+  padding-top: 18px;
+  font-size: 48px;
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.carrossel-numero small {
+  font-size: 24px;
+  color: #c9d1ce;
+}
+
+.carrossel-numero.negativo {
+  color: var(--negativo);
+}
+
+.carrossel-titulo {
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-top: 10px;
+}
+
+.carrossel-detalhe {
+  font-size: 14px;
+  font-weight: 600;
+  color: #c6cecb;
+  margin-top: 6px;
+}
+
+.carrossel-controles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.carrossel-seta {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--vermelho);
+  color: #000;
+}
+
+.carrossel-bolinhas {
+  display: flex;
+  gap: 7px;
+}
+
+.carrossel-bolinhas i {
+  width: 8px;
+  height: 8px;
+  border-radius: 9px;
+  background: #4a4c50;
+  transition: width 0.2s;
+}
+
+.carrossel-bolinhas i.ativa {
+  width: 22px;
+  background: var(--vermelho);
+}
+
+.abertura-logo .logo-lk {
+  filter: drop-shadow(0 10px 30px rgba(46, 229, 157, 0.3));
 }
