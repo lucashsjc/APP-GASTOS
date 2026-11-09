@@ -162,10 +162,15 @@ function FormDisciplina({ disciplina, aoVoltar }: { disciplina: Disciplina | nul
 export function FolhaNota({
   nota,
   disciplinaInicial,
+  dataInicial,
+  prova,
   aoFechar,
 }: {
   nota?: Nota
   disciplinaInicial?: string
+  dataInicial?: string
+  /** Aberta pelo calendário: uma prova que ainda vai acontecer. */
+  prova?: boolean
   aoFechar: () => void
 }) {
   const { dados, executar } = useFaculdade()
@@ -176,15 +181,16 @@ export function FolhaNota({
   const [descricao, setDescricao] = useState(nota?.descricao ?? '')
   const [valor, setValor] = useState(nota?.valor != null ? formatarNota(nota.valor) : '')
   // Avaliação que ainda não aconteceu: guarda sem nota, para o "quanto preciso tirar".
-  const [futura, setFutura] = useState(nota ? nota.valor === null : false)
+  const [futura, setFutura] = useState(nota ? nota.valor === null : Boolean(prova))
   const [peso, setPeso] = useState(nota ? formatarNota(nota.peso) : '1')
-  const [data, setData] = useState(nota?.data ?? hoje)
+  const [data, setData] = useState(nota?.data ?? dataInicial ?? hoje)
   const [erro, setErro] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
 
   const salvar = async (e: React.FormEvent) => {
     e.preventDefault()
     const v = lerNota(valor)
+    if (prova && !data) return setErro('Escolha a data da prova.')
     const p = lerNota(peso)
     if (!disciplina) return setErro('Escolha a disciplina.')
     if (!futura && v === null) return setErro('Nota inválida (ex.: 7,5). Se ainda não saiu, marque "Ainda não saiu".')
@@ -206,7 +212,10 @@ export function FolhaNota({
   }
 
   return (
-    <Folha titulo={nota ? (futura ? 'Editar avaliação' : 'Editar nota') : futura ? 'Nova avaliação' : 'Nova nota'} aoFechar={aoFechar}>
+    <Folha
+      titulo={nota ? (futura ? 'Editar prova' : 'Editar nota') : prova ? 'Nova prova' : futura ? 'Nova avaliação' : 'Nova nota'}
+      aoFechar={aoFechar}
+    >
       <form className="form-gasto" onSubmit={salvar} noValidate>
         {!futura && (
           <label className="campo-valor">
@@ -224,13 +233,15 @@ export function FolhaNota({
             </div>
           </label>
         )}
-        <label className="alternar">
-          <input type="checkbox" checked={futura} onChange={(e) => setFutura(e.target.checked)} />
-          <span>
-            Ainda não saiu
-            <small>Cadastre a prova ou trabalho que vem (com o peso) para ver quanto precisa tirar.</small>
-          </span>
-        </label>
+        {!prova && (
+          <label className="alternar">
+            <input type="checkbox" checked={futura} onChange={(e) => setFutura(e.target.checked)} />
+            <span>
+              Ainda não saiu
+              <small>A prova ou trabalho que vem (com a data e o peso): aparece no calendário e no quanto precisa tirar.</small>
+            </span>
+          </label>
+        )}
         <EscolhaDisciplina valor={disciplina} aoMudar={setDisciplina} />
         <label className="campo">
           <span>{futura ? 'Avaliação' : 'O que foi'}</span>
@@ -254,7 +265,7 @@ export function FolhaNota({
           </label>
         </div>
         {erro && <p className="erro">{erro}</p>}
-        <Botao salvando={salvando} texto={nota ? 'Salvar alterações' : futura ? 'Salvar avaliação' : 'Salvar nota'} />
+        <Botao salvando={salvando} texto={nota ? 'Salvar alterações' : prova ? 'Salvar prova' : futura ? 'Salvar avaliação' : 'Salvar nota'} />
       </form>
     </Folha>
   )
@@ -323,14 +334,22 @@ export function FolhaFalta({
 
 // ---------- Atividade ----------
 
-export function FolhaAtividade({ atividade, aoFechar }: { atividade?: Atividade; aoFechar: () => void }) {
+export function FolhaAtividade({
+  atividade,
+  dataInicial,
+  aoFechar,
+}: {
+  atividade?: Atividade
+  dataInicial?: string
+  aoFechar: () => void
+}) {
   const { dados, executar } = useFaculdade()
   const { hoje } = useEstado()
   const [titulo, setTitulo] = useState(atividade?.titulo ?? '')
   const [disciplina, setDisciplina] = useState<string | null>(
     atividade ? atividade.disciplina_id : (dados.disciplinas[0]?.id ?? null),
   )
-  const [entrega, setEntrega] = useState(atividade?.entrega ?? hoje)
+  const [entrega, setEntrega] = useState(atividade?.entrega ?? dataInicial ?? hoje)
   const [observacao, setObservacao] = useState(atividade?.observacao ?? '')
   const [erro, setErro] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)

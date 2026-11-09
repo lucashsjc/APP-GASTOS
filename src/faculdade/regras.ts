@@ -153,3 +153,50 @@ export function exportacaoFaculdade(d: DadosFaculdade): AbaXlsx[] {
     },
   ]
 }
+
+// ---------- Calendário ----------
+
+export type EventoCalendario =
+  | { tipo: 'prova'; data: string; nota: Nota; disciplina: Disciplina | null }
+  | { tipo: 'entrega'; data: string; atividade: Atividade; disciplina: Disciplina | null }
+
+/**
+ * Provas (avaliações com data, já com nota ou ainda não) e entregas de atividades, por data.
+ * No mesmo dia, as provas vêm antes.
+ */
+export function eventosCalendario(d: DadosFaculdade): EventoCalendario[] {
+  const disciplina = (id: string | null) => d.disciplinas.find((x) => x.id === id) ?? null
+  const eventos: EventoCalendario[] = [
+    ...d.notas
+      .filter((n): n is Nota & { data: string } => Boolean(n.data))
+      .map((n) => ({ tipo: 'prova' as const, data: n.data, nota: n, disciplina: disciplina(n.disciplina_id) })),
+    ...d.atividades.map((a) => ({ tipo: 'entrega' as const, data: a.entrega, atividade: a, disciplina: disciplina(a.disciplina_id) })),
+  ]
+  return eventos.sort((a, b) => a.data.localeCompare(b.data) || (a.tipo === b.tipo ? 0 : a.tipo === 'prova' ? -1 : 1))
+}
+
+/** O que vem por aí: provas que ainda não têm nota e entregas pendentes, de hoje em diante (e as atrasadas). */
+export function proximosEventos(eventos: EventoCalendario[], hoje: string): EventoCalendario[] {
+  return eventos.filter((e) =>
+    e.tipo === 'prova' ? e.data >= hoje && e.nota.valor === null : !e.atividade.feita,
+  )
+}
+
+/** Dias do mês (AAAA-MM) arrumados em semanas de segunda a domingo; null = espaço vazio. */
+export function semanasDoMes(mes: string): (string | null)[][] {
+  const [a, m] = mes.split('-').map(Number)
+  const ultimo = new Date(Date.UTC(a, m, 0)).getUTCDate()
+  // getUTCDay: 0 = domingo. Segunda vira a primeira coluna.
+  const inicio = (new Date(Date.UTC(a, m - 1, 1)).getUTCDay() + 6) % 7
+  const celulas: (string | null)[] = Array(inicio).fill(null)
+  for (let dia = 1; dia <= ultimo; dia++) celulas.push(`${mes}-${String(dia).padStart(2, '0')}`)
+  while (celulas.length % 7) celulas.push(null)
+  const semanas: (string | null)[][] = []
+  for (let i = 0; i < celulas.length; i += 7) semanas.push(celulas.slice(i, i + 7))
+  return semanas
+}
+
+/** Quantos dias faltam até a data (negativo = já passou). */
+export function diasAte(hoje: string, data: string): number {
+  return diasEntre(hoje, data)
+}

@@ -219,6 +219,13 @@ export const IconeAtividades = (p: Props) => (
   </Svg>
 )
 
+export const IconeCalendario = (p: Props) => (
+  <Svg {...p}>
+    <rect x="3.5" y="5" width="17" height="15.5" rx="2.5" />
+    <path d="M3.5 10h17M8 3v4M16 3v4" />
+  </Svg>
+)
+
 export const IconeLivros = (p: Props) => (
   <Svg {...p}>
     <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V3H6.5A2.5 2.5 0 0 0 4 5.5z" />

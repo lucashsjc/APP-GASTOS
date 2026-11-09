@@ -23,7 +23,8 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
       { id: 'n3', disciplina_id: 'd-prog', descricao: 'P1', valor: 9, peso: 2, data: dia(22) },
       { id: 'n4', disciplina_id: 'd-prog', descricao: 'Projeto', valor: 8.5, peso: 1, data: dia(15) },
       { id: 'n5', disciplina_id: 'd-fis', descricao: 'P1', valor: 4.5, peso: 1, data: dia(24) },
-      { id: 'n6', disciplina_id: 'd-fis', descricao: 'P2', valor: null, peso: 2, data: null },
+      { id: 'n6', disciplina_id: 'd-fis', descricao: 'P2', valor: null, peso: 2, data: somarDias(hoje, 4) },
+      { id: 'n7', disciplina_id: 'd-calc', descricao: 'P2', valor: null, peso: 1, data: somarDias(hoje, 15) },
     ],
     faltas: [
       { id: 'f1', disciplina_id: 'd-calc', data: dia(3), quantidade: 2 },
@@ -37,7 +38,6 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
       { id: 'a1', disciplina_id: 'd-fis', titulo: 'Relatório do laboratório', entrega: somarDias(hoje, -1), feita: false, observacao: '' },
       { id: 'a2', disciplina_id: 'd-calc', titulo: 'Lista 3 de derivadas', entrega: hoje, feita: false, observacao: 'Exercícios 1 a 15' },
       { id: 'a3', disciplina_id: 'd-prog', titulo: 'Entrega do projeto (parte 2)', entrega: somarDias(hoje, 5), feita: false, observacao: '' },
-      { id: 'a4', disciplina_id: 'd-calc', titulo: 'P2', entrega: somarDias(hoje, 15), feita: false, observacao: 'Capítulos 3 e 4' },
       { id: 'a5', disciplina_id: 'd-prog', titulo: 'Exercício de formulários', entrega: somarDias(hoje, -6), feita: true, observacao: '' },
     ],
   }

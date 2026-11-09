@@ -11,6 +11,9 @@ import {
   resumoFaltas,
   situacaoNota,
   CORES_DISCIPLINAS,
+  eventosCalendario,
+  proximosEventos,
+  semanasDoMes,
 } from './regras'
 import type { Atividade } from './tipos'
 
@@ -163,5 +166,38 @@ describe('quanto preciso tirar', () => {
   it('a média ignora avaliações que ainda não aconteceram', () => {
     expect(mediaPonderada([n(8), n(null, 5)])).toBe(8)
     expect(mediaPonderada([n(null)])).toBeNull()
+  })
+})
+
+describe('calendário', () => {
+  it('junta provas com data e entregas, com as provas primeiro no mesmo dia', () => {
+    const d = exemploFaculdade(HOJE)
+    d.notas.push({ id: 'p', disciplina_id: 'd-calc', descricao: 'P2', valor: null, peso: 2, data: '2026-10-30' })
+    d.atividades.push({ id: 'e', disciplina_id: null, titulo: 'Lista', entrega: '2026-10-30', feita: false, observacao: '' })
+    const doDia = eventosCalendario(d).filter((e) => e.data === '2026-10-30')
+    expect(doDia.map((e) => e.tipo)).toEqual(['prova', 'entrega'])
+    // Avaliação sem data não aparece no calendário.
+    expect(eventosCalendario(d).some((e) => e.tipo === 'prova' && e.nota.id === 'sem-data')).toBe(false)
+  })
+
+  it('próximos: provas sem nota a partir de hoje e entregas pendentes', () => {
+    const d = { disciplinas: [], faltas: [], notas: [
+      { id: 'a', disciplina_id: 'x', descricao: 'P1', valor: 7, peso: 1, data: '2026-10-25' },
+      { id: 'b', disciplina_id: 'x', descricao: 'P2', valor: null, peso: 1, data: '2026-10-25' },
+      { id: 'c', disciplina_id: 'x', descricao: 'P0', valor: null, peso: 1, data: '2026-10-01' },
+    ], atividades: [
+      { id: 'e', disciplina_id: null, titulo: 'Feita', entrega: '2026-10-25', feita: true, observacao: '' },
+      { id: 'f', disciplina_id: null, titulo: 'Atrasada', entrega: '2026-10-20', feita: false, observacao: '' },
+    ] }
+    const ids = proximosEventos(eventosCalendario(d), HOJE).map((e) => (e.tipo === 'prova' ? e.nota.id : e.atividade.id))
+    expect(ids).toEqual(['f', 'b'])
+  })
+
+  it('semanas de segunda a domingo', () => {
+    // 1º de novembro de 2026 é um domingo.
+    const s = semanasDoMes('2026-11')
+    expect(s[0]).toEqual([null, null, null, null, null, null, '2026-11-01'])
+    expect(s.at(-1)).toEqual(['2026-11-30', null, null, null, null, null, null])
+    expect(s.every((w) => w.length === 7)).toBe(true)
   })
 })

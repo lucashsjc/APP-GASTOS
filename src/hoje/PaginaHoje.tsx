@@ -52,7 +52,7 @@ export default function PaginaHoje() {
       <section className="secao">
         <h2>
           Faculdade
-          <Link to="/faculdade/atividades" className="link-secao">
+          <Link to="/faculdade/calendario" className="link-secao">
             Abrir <IconeProximo tamanho={14} />
           </Link>
         </h2>
@@ -79,7 +79,7 @@ export default function PaginaHoje() {
                           aria-label="Marcar como entregue"
                           onClick={() => faculdade.executar(() => repoFaculdade.atualizar('atividades', a.id, { feita: true }))}
                         />
-                        <Link to="/faculdade/atividades" className="linha-texto">
+                        <Link to="/faculdade/calendario" className="linha-texto">
                           <strong>{a.titulo}</strong>
                           <small>
                             {disc && (

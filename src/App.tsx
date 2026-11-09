@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { IconeAtividades, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
+import { IconeCalendario, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
@@ -76,7 +76,8 @@ export default function App() {
               <Route index element={<Navigate to="notas" replace />} />
               <Route path="notas" element={<PaginaFaculdade secao="notas" />} />
               <Route path="faltas" element={<PaginaFaculdade secao="faltas" />} />
-              <Route path="atividades" element={<PaginaFaculdade secao="atividades" />} />
+              <Route path="calendario" element={<PaginaFaculdade secao="calendario" />} />
+              <Route path="atividades" element={<Navigate to="/faculdade/calendario" replace />} />
             </Route>
             <Route path="/trabalho" element={<EmBreve titulo="Trabalho" />} />
             <Route path="/projetos" element={<PaginaProjetos />} />
@@ -118,7 +119,7 @@ function BarraFaculdade() {
   const itens = [
     { rota: '/faculdade/notas', nome: 'Notas', Icone: IconeNotas },
     { rota: '/faculdade/faltas', nome: 'Faltas', Icone: IconeFaltas },
-    { rota: '/faculdade/atividades', nome: 'Atividades', Icone: IconeAtividades },
+    { rota: '/faculdade/calendario', nome: 'Calendário', Icone: IconeCalendario },
   ]
   return (
     <nav className="barra-abas barra-faculdade" aria-label="Faculdade">
