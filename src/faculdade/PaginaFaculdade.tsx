@@ -5,9 +5,13 @@ import { BotaoMenu } from '../componentes/MenuLateral'
 import { useEstado } from '../estado'
 import { dataCurta, diaDe, mesDe, somarMeses, tituloDoMes } from '../lib/datas'
 import { useFaculdade } from './estado'
-import { FolhaAtividade, FolhaDisciplinas, FolhaFalta, FolhaNota, FolhaPontoExtra } from './Folhas'
+import { FolhaAtividade, FolhaDisciplinas, FolhaFalta, FolhaHorario, FolhaNota, FolhaPontoExtra } from './Folhas'
 import {
+  aulasDaDisciplinaNoDia,
+  aulasDoDia,
+  diaDaSemana,
   diasAte,
+  NOMES_DIAS,
   eventosCalendario,
   extrasDoBimestre,
   formatarNota,
@@ -35,6 +39,7 @@ type FolhaAberta =
   | { tipo: 'falta'; falta?: Falta; disciplina?: string }
   | { tipo: 'atividade'; atividade?: Atividade; data?: string }
   | { tipo: 'extra'; extra?: PontoExtra }
+  | { tipo: 'horario' }
 
 export default function PaginaFaculdade({ secao }: { secao: Secao }) {
   const { dados, carregando, erro } = useFaculdade()
@@ -109,6 +114,7 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
       {folha?.tipo === 'falta' && <FolhaFalta falta={folha.falta} disciplinaInicial={folha.disciplina} aoFechar={fechar} />}
       {folha?.tipo === 'atividade' && <FolhaAtividade atividade={folha.atividade} dataInicial={folha.data} aoFechar={fechar} />}
       {folha?.tipo === 'extra' && <FolhaPontoExtra extra={folha.extra} aoFechar={fechar} />}
+      {folha?.tipo === 'horario' && <FolhaHorario aoFechar={fechar} />}
     </div>
   )
 }
@@ -366,14 +372,56 @@ function SecaoFaltas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
   const [aberta, setAberta] = useState<string | null>(null)
 
   const faltarHoje = async (d: Disciplina, ultima?: Falta) => {
-    // Repete a quantidade da última falta (ex.: 2 aulas seguidas); sem histórico, 2.
-    const quantidade = ultima?.quantidade ?? 2
+    // Usa as aulas do horário de hoje; sem horário, repete a última falta (ou 2).
+    const quantidade = aulasDaDisciplinaNoDia(dados.aulas, d.id, hoje) || ultima?.quantidade || 2
     const ok = await executar(() => repoFaculdade.criar('faltas', { disciplina_id: d.id, data: hoje, quantidade }))
     if (ok) avisar(`Falta registrada em ${d.nome} (${quantidade} ${quantidade === 1 ? 'aula' : 'aulas'}).`)
   }
+  const hojeAulas = aulasDoDia(dados.aulas, hoje)
+  const faltouHoje = (id: string) => dados.faltas.some((f) => f.disciplina_id === id && f.data === hoje)
 
   return (
     <div className="lista-disciplinas">
+      <section className="card aulas-hoje">
+        <div className="aulas-hoje-topo">
+          <strong>Aulas de hoje</strong>
+          <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'horario' })}>
+            {dados.aulas.length ? 'Editar horário' : 'Montar horário'}
+          </button>
+        </div>
+        {!dados.aulas.length ? (
+          <p className="vazio">Monte o horário da semana: o "Faltei hoje" passa a saber quantas aulas você perdeu.</p>
+        ) : !hojeAulas.length ? (
+          <p className="vazio">Sem aulas hoje ({NOMES_DIAS[diaDaSemana(hoje) - 1].toLowerCase()}).</p>
+        ) : (
+          <ul className="lista">
+            {hojeAulas.map((a) => {
+              const d = dados.disciplinas.find((x) => x.id === a.disciplina_id)
+              if (!d) return null
+              const ja = faltouHoje(d.id)
+              return (
+                <li key={a.id} className="aula-linha">
+                  <i className="ponto ponto-grande" style={{ background: d.cor }} />
+                  <span className="linha-texto">
+                    <strong>{d.nome}</strong>
+                    <small>
+                      {a.inicio ? `${a.inicio} · ` : ''}
+                      {a.quantidade} {a.quantidade === 1 ? 'aula' : 'aulas'}
+                    </small>
+                  </span>
+                  {ja ? (
+                    <span className="prazo prazo-atrasada">Faltou</span>
+                  ) : (
+                    <button type="button" className="botao-faltei" onClick={() => faltarHoje(d)}>
+                      Faltei
+                    </button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
       {dados.disciplinas.map((d) => {
         const faltas = dados.faltas.filter((f) => f.disciplina_id === d.id).sort((a, b) => b.data.localeCompare(a.data))
         const r = resumoFaltas(faltas, d.limite_faltas)

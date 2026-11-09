@@ -3,7 +3,7 @@ import { IconeProximo, Logo } from '../componentes/icones'
 import { BotaoMenu } from '../componentes/MenuLateral'
 import { useEstado } from '../estado'
 import { useFaculdade } from '../faculdade/estado'
-import { prazoAtividade } from '../faculdade/regras'
+import { aulasDoDia, formatarNota, prazoAtividade, provasProximas } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
 import { cardCaju, resumoNubank } from '../lib/calculos'
 import { mesDe } from '../lib/datas'
@@ -17,7 +17,11 @@ export default function PaginaHoje() {
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
   const caju = cardCaju(dados, mesDe(hoje), hoje)
   const atividades = atividadesUrgentes(faculdade.dados.atividades, hoje)
-  const alertas = alertasFaculdade(faculdade.dados)
+  const aulas = aulasDoDia(faculdade.dados.aulas, hoje)
+  const provas = provasProximas(faculdade.dados, hoje)
+  // O aviso de nota não se repete quando a prova da matéria já aparece na lista.
+  const comProva = new Set(provas.filter((p) => p.precisa !== null).map((p) => p.disciplina?.id))
+  const alertas = alertasFaculdade(faculdade.dados).filter((a) => !(a.tipo === 'nota' && comProva.has(a.disciplina.id)))
   const semFaculdade = !faculdade.carregando && !faculdade.erro && !faculdade.dados.disciplinas.length && !faculdade.dados.atividades.length
 
   return (
@@ -65,6 +69,45 @@ export default function PaginaHoje() {
           </Link>
         ) : (
           <>
+            {aulas.length > 0 && (
+              <Link to="/faculdade/faltas" className="card hoje-aulas">
+                <small>Aulas de hoje</small>
+                <span>
+                  {aulas.map((a) => {
+                    const d = faculdade.dados.disciplinas.find((x) => x.id === a.disciplina_id)
+                    return (
+                      <span key={a.id} className="hoje-aula">
+                        <i className="ponto" style={{ background: d?.cor }} />
+                        {a.inicio && <b>{a.inicio}</b>} {d?.nome}
+                      </span>
+                    )
+                  })}
+                </span>
+              </Link>
+            )}
+
+            {provas.length > 0 && (
+              <ul className="lista">
+                {provas.map((p) => (
+                  <li key={p.nota.id}>
+                    <Link to="/faculdade/calendario" className="linha-atividade">
+                      <span className="etiqueta-prova">Prova</span>
+                      <span className="linha-texto">
+                        <strong>
+                          {p.nota.descricao}
+                          {p.disciplina && ` · ${p.disciplina.nome}`}
+                        </strong>
+                        <small>{p.precisa !== null ? `Precisa de ${formatarNota(p.precisa)} para passar` : 'Bons estudos!'}</small>
+                      </span>
+                      <span className={`prazo prazo-${p.dias <= 3 ? 'hoje' : 'perto'}`}>
+                        {p.dias === 0 ? 'Hoje' : p.dias === 1 ? 'Amanhã' : `Em ${p.dias} dias`}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+
             {atividades.length > 0 ? (
               <ul className="lista">
                 {atividades.map((a) => {

@@ -18,6 +18,13 @@ import {
   provaDoSemestre,
   resumoSemestre,
   extrasDoBimestre,
+  aulasDaDisciplinaNoDia,
+  aulasDoDia,
+  diaDaSemana,
+  historico,
+  nomeDoSemestre,
+  provasProximas,
+  semestreAtual,
 } from './regras'
 import type { Atividade } from './tipos'
 
@@ -185,7 +192,7 @@ describe('calendário', () => {
   })
 
   it('próximos: provas sem nota a partir de hoje e entregas pendentes', () => {
-    const d = { disciplinas: [], faltas: [], pontos_extras: [], notas: [
+    const d = { disciplinas: [], faltas: [], pontos_extras: [], aulas: [], notas: [
       { id: 'a', disciplina_id: 'x', descricao: 'P1', valor: 7, peso: 1, data: '2026-10-25' },
       { id: 'b', disciplina_id: 'x', descricao: 'P2', valor: null, peso: 1, data: '2026-10-25' },
       { id: 'c', disciplina_id: 'x', descricao: 'P0', valor: null, peso: 1, data: '2026-10-01' },
@@ -247,5 +254,64 @@ describe('pontos extras (SEAU e ACI no 2º bimestre)', () => {
     const pontos = [{ pontos: 3, bimestre: 2 }]
     expect(extrasDoBimestre(pontos, 1)).toBe(0)
     expect(extrasDoBimestre(pontos, 2)).toBe(3)
+  })
+})
+
+describe('horário das aulas', () => {
+  const aula = (id: string, disciplina_id: string, dia_semana: number, quantidade: number, inicio: string | null) => ({
+    id,
+    disciplina_id,
+    dia_semana,
+    quantidade,
+    inicio,
+  })
+
+  it('dia da semana: 1 = segunda, 7 = domingo', () => {
+    expect(diaDaSemana('2026-11-09')).toBe(1)
+    expect(diaDaSemana('2026-11-15')).toBe(7)
+  })
+
+  it('aulas do dia pelo horário e quantas são de cada matéria', () => {
+    const aulas = [aula('a', 'calc', 1, 2, '20:40'), aula('b', 'fis', 1, 2, '19:00'), aula('c', 'calc', 2, 2, null), aula('d', 'calc', 1, 1, null)]
+    expect(aulasDoDia(aulas, '2026-11-09').map((x) => x.id)).toEqual(['b', 'a', 'd'])
+    expect(aulasDaDisciplinaNoDia(aulas, 'calc', '2026-11-09')).toBe(3)
+    expect(aulasDaDisciplinaNoDia(aulas, 'calc', '2026-11-11')).toBe(0)
+  })
+})
+
+describe('semestres', () => {
+  it('o semestre atual deixa de fora as matérias encerradas e o que é delas', () => {
+    const d = exemploFaculdade(HOJE)
+    const atual = semestreAtual(d)
+    expect(atual.disciplinas.every((x) => x.semestre === null)).toBe(true)
+    expect(atual.notas.some((n) => n.disciplina_id === 'd-alg')).toBe(false)
+    expect(d.notas.some((n) => n.disciplina_id === 'd-alg')).toBe(true)
+  })
+
+  it('histórico com a média final e o coeficiente', () => {
+    const h = historico(exemploFaculdade(HOJE))
+    expect(h.map((s) => s.nome)).toEqual(['2026/1'])
+    expect(h[0].materias.map((m) => [m.disciplina.nome, m.media, m.passou])).toEqual([
+      ['Algoritmos', 7.5, true],
+      ['Geometria Analítica', 5.25, true],
+    ])
+    expect(h[0].coeficiente).toBe(6.375)
+  })
+
+  it('nome sugerido do semestre', () => {
+    expect(nomeDoSemestre('2026-11-09')).toBe('2026/2')
+    expect(nomeDoSemestre('2026-06-30')).toBe('2026/1')
+  })
+})
+
+describe('provas dos próximos dias', () => {
+  it('mostra quanto precisa na P2 quando a P1 já saiu', () => {
+    const d = exemploFaculdade('2026-11-09')
+    const proximas = provasProximas(d, '2026-11-09')
+    const fis = proximas.find((p) => p.disciplina?.id === 'd-fis')!
+    // Física: 1,5 na P1, média 5, +3 na P2 → precisa de 5,5.
+    expect(fis.dias).toBe(4)
+    expect(fis.precisa).toBe(5.5)
+    expect(proximas.map((p) => p.dias)).toEqual([...proximas.map((p) => p.dias)].sort((a, b) => a - b))
   })
 })

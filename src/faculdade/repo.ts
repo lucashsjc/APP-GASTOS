@@ -5,6 +5,7 @@ import { hojeSP } from '../lib/datas'
 import { exemploFaculdade } from './exemplo'
 import type {
   Atividade,
+  Aula,
   DadosFaculdade,
   Disciplina,
   Falta,
@@ -13,11 +14,12 @@ import type {
   NovaFalta,
   NovaNota,
   Nota,
+  NovaAula,
   NovoPontoExtra,
   PontoExtra,
 } from './tipos'
 
-type Tabela = 'disciplinas' | 'notas' | 'faltas' | 'atividades' | 'pontos_extras'
+type Tabela = 'disciplinas' | 'notas' | 'faltas' | 'atividades' | 'pontos_extras' | 'aulas'
 type Novo<T extends Tabela> = T extends 'disciplinas'
   ? NovaDisciplina
   : T extends 'notas'
@@ -26,7 +28,9 @@ type Novo<T extends Tabela> = T extends 'disciplinas'
       ? NovaFalta
       : T extends 'pontos_extras'
         ? NovoPontoExtra
-        : NovaAtividade
+        : T extends 'aulas'
+          ? NovaAula
+          : NovaAtividade
 
 export interface RepoFaculdade {
   carregar(): Promise<DadosFaculdade>
@@ -36,11 +40,12 @@ export interface RepoFaculdade {
 }
 
 const COLUNAS: Record<Tabela, string> = {
-  disciplinas: 'id, nome, cor, media_minima, limite_faltas',
+  disciplinas: 'id, nome, cor, media_minima, limite_faltas, semestre',
   notas: 'id, disciplina_id, descricao, valor, peso, data',
   faltas: 'id, disciplina_id, data, quantidade',
   atividades: 'id, disciplina_id, titulo, entrega, feita, observacao',
   pontos_extras: 'id, nome, pontos, bimestre',
+  aulas: 'id, disciplina_id, dia_semana, quantidade, inicio',
 }
 
 /** Tabela que ainda não existe no banco. */
@@ -52,6 +57,9 @@ function erro(e: { code?: string; message: string } | null, tabela?: Tabela) {
   if (!e) return
   if (tabela === 'pontos_extras' && tabelaFalta(e)) {
     throw new Error('Para guardar os pontos extras, rode o supabase/010_pontos_extras.sql no Supabase.')
+  }
+  if ((tabela === 'aulas' && tabelaFalta(e)) || (e.code === '42703' || e.code === 'PGRST204') && e.message.includes('semestre')) {
+    throw new Error('Para o horário das aulas e os semestres, rode o supabase/011_horario_e_semestres.sql no Supabase.')
   }
   // Tabela que não existe: o SQL da Faculdade ainda não foi rodado.
   if (e.code === 'PGRST205' || e.code === '42P01') {
@@ -67,28 +75,33 @@ function erro(e: { code?: string; message: string } | null, tabela?: Tabela) {
 function criarRepoSupabase(): RepoFaculdade {
   const db = supabase!
   const ler = async <T,>(tabela: Tabela) => {
-    const { data, error } = await db.from(tabela).select(COLUNAS[tabela]).order('id')
-    // Antes do SQL dos pontos extras, a Faculdade abre sem eles.
-    if (tabela === 'pontos_extras' && tabelaFalta(error)) return []
+    let { data, error } = await db.from(tabela).select(COLUNAS[tabela]).order('id')
+    // Antes dos SQLs mais novos, a Faculdade abre sem as tabelas e colunas que eles criam.
+    if ((tabela === 'pontos_extras' || tabela === 'aulas') && tabelaFalta(error)) return []
+    if (tabela === 'disciplinas' && error?.code === '42703') {
+      ;({ data, error } = await db.from(tabela).select(COLUNAS.disciplinas.replace(', semestre', '')).order('id'))
+    }
     erro(error)
     return (data ?? []) as unknown as T[]
   }
   return {
     async carregar() {
-      const [disciplinas, notas, faltas, atividades, pontosExtras] = await Promise.all([
+      const [disciplinas, notas, faltas, atividades, pontosExtras, aulas] = await Promise.all([
         ler<Disciplina>('disciplinas'),
         ler<Nota>('notas'),
         ler<Falta>('faltas'),
         ler<Atividade>('atividades'),
         ler<PontoExtra>('pontos_extras'),
+        ler<Aula>('aulas'),
       ])
       // O Postgres devolve "numeric" como texto.
       return {
-        disciplinas: disciplinas.map((d) => ({ ...d, media_minima: Number(d.media_minima) })),
+        disciplinas: disciplinas.map((d) => ({ ...d, media_minima: Number(d.media_minima), semestre: d.semestre ?? null })),
         notas: notas.map((n) => ({ ...n, valor: n.valor === null ? null : Number(n.valor), peso: Number(n.peso) })),
         faltas,
         atividades,
         pontos_extras: pontosExtras.map((x) => ({ ...x, pontos: Number(x.pontos) })),
+        aulas: aulas.map((a) => ({ ...a, inicio: a.inicio ? a.inicio.slice(0, 5) : null })),
       }
     },
     async criar(tabela, dados) {
@@ -111,7 +124,11 @@ const CHAVE = 'faculdade-demo'
 function lerLocal(): DadosFaculdade {
   try {
     const salvo = localStorage.getItem(CHAVE)
-    if (salvo) return { pontos_extras: [], ...JSON.parse(salvo) }
+    if (salvo) {
+      const dados = { pontos_extras: [], aulas: [], ...JSON.parse(salvo) } as DadosFaculdade
+      dados.disciplinas = dados.disciplinas.map((d) => ({ ...d, semestre: d.semestre ?? null }))
+      return dados
+    }
   } catch {
     // sem armazenamento: usa os dados de exemplo
   }
@@ -154,6 +171,7 @@ function criarRepoLocal(): RepoFaculdade {
         if (tabela === 'disciplinas') {
           d.notas = d.notas.filter((n) => n.disciplina_id !== id)
           d.faltas = d.faltas.filter((f) => f.disciplina_id !== id)
+          d.aulas = d.aulas.filter((a) => a.disciplina_id !== id)
           d.atividades = d.atividades.map((a) => (a.disciplina_id === id ? { ...a, disciplina_id: null } : a))
         }
       })

@@ -3138,3 +3138,119 @@ a.botao-secundario {
   color: var(--ambar);
   font-weight: 700;
 }
+
+/* ---------- Faculdade: horário, aulas de hoje e histórico ---------- */
+
+.aulas-hoje {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.aulas-hoje-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.aulas-hoje-topo strong {
+  font-weight: 900;
+  font-size: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.aulas-hoje-topo .botao-texto {
+  color: var(--vermelho);
+  font-weight: 700;
+}
+
+.aula-linha {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 2px;
+  border-bottom: 1px solid var(--borda);
+  border-radius: 0 !important;
+}
+
+.aula-linha:last-child {
+  border-bottom: none;
+}
+
+.botao-faltei {
+  background: var(--vermelho);
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  flex: none;
+}
+
+.hoje-aulas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.hoje-aulas small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.hoje-aulas > span {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+}
+
+.hoje-aula {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+
+.hoje-aula b {
+  color: var(--texto-2);
+  font-weight: 700;
+}
+
+.historico-semestre {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.historico-topo {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 4px 2px;
+}
+
+.historico-topo > strong {
+  font-size: 22px;
+  font-weight: 900;
+  font-style: italic;
+}
+
+.historico-topo span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.historico-topo small {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}

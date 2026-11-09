@@ -2,7 +2,7 @@
 
 import { dataCurta } from '../lib/datas'
 import type { AbaXlsx } from '../lib/xlsx'
-import type { Atividade, DadosFaculdade, Disciplina, Falta, Nota } from './tipos'
+import type { Atividade, Aula, DadosFaculdade, Disciplina, Falta, Nota } from './tipos'
 
 /** Cores para as disciplinas novas, em ordem. */
 export const CORES_DISCIPLINAS = ['#cfe7f8', '#bfe6cf', '#f3d9a8', '#f1d0e6', '#dcd2f6', '#f5cbc6', '#c6ecea', '#f6dcc6']
@@ -275,4 +275,132 @@ export function resumoSemestre(
   const valor = Math.ceil(Math.round((precisa - extrasDaQueFalta) * 1e6) / 1e4) / 100
   if (valor <= 0) return { tipo: 'garantido', naProva }
   return { tipo: 'precisa', valor, naProva }
+}
+
+// ---------- Semestres ----------
+
+/** Só o semestre atual: tira as disciplinas encerradas e as notas, faltas, aulas e entregas delas. */
+export function semestreAtual(d: DadosFaculdade): DadosFaculdade {
+  const ativas = d.disciplinas.filter((x) => !x.semestre)
+  const ids = new Set(ativas.map((x) => x.id))
+  return {
+    ...d,
+    disciplinas: ativas,
+    notas: d.notas.filter((n) => ids.has(n.disciplina_id)),
+    faltas: d.faltas.filter((f) => ids.has(f.disciplina_id)),
+    aulas: d.aulas.filter((a) => ids.has(a.disciplina_id)),
+    atividades: d.atividades.filter((a) => a.disciplina_id === null || ids.has(a.disciplina_id)),
+  }
+}
+
+/** Nome sugerido para o semestre que está acabando: "2026/2" (de julho a dezembro) ou "2026/1". */
+export function nomeDoSemestre(hoje: string): string {
+  const [ano, mes] = hoje.split('-').map(Number)
+  return `${ano}/${mes <= 6 ? 1 : 2}`
+}
+
+export interface MateriaDoHistorico {
+  disciplina: Disciplina
+  /** Média final (null se faltou alguma prova). */
+  media: number | null
+  passou: boolean | null
+  faltas: number
+}
+
+export interface SemestreDoHistorico {
+  nome: string
+  materias: MateriaDoHistorico[]
+  /** Média das médias finais (o coeficiente, sem peso de créditos). */
+  coeficiente: number | null
+}
+
+/**
+ * Os semestres encerrados, do mais recente para o mais antigo, com a média final de cada matéria.
+ * Os pontos extras são os de hoje (valem só para o semestre atual), então não entram no histórico.
+ */
+export function historico(d: DadosFaculdade): SemestreDoHistorico[] {
+  const porSemestre = new Map<string, Disciplina[]>()
+  for (const x of d.disciplinas) if (x.semestre) porSemestre.set(x.semestre, [...(porSemestre.get(x.semestre) ?? []), x])
+  return [...porSemestre.entries()]
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([nome, disciplinas]) => {
+      const materias = disciplinas
+        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+        .map((disciplina) => {
+          const notas = d.notas.filter((n) => n.disciplina_id === disciplina.id)
+          const r = resumoSemestre(
+            provaDoSemestre(notas, 1)?.valor ?? null,
+            provaDoSemestre(notas, 2)?.valor ?? null,
+            disciplina.media_minima,
+          )
+          const faltas = d.faltas.filter((f) => f.disciplina_id === disciplina.id).reduce((s, f) => s + f.quantidade, 0)
+          return {
+            disciplina,
+            media: r.tipo === 'fechado' ? r.media : null,
+            passou: r.tipo === 'fechado' ? r.passou : null,
+            faltas,
+          }
+        })
+      const medias = materias.map((m) => m.media).filter((m): m is number => m !== null)
+      return { nome, materias, coeficiente: medias.length ? medias.reduce((s, m) => s + m, 0) / medias.length : null }
+    })
+}
+
+// ---------- Horário das aulas ----------
+
+export const NOMES_DIAS = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
+
+/** 1 = segunda ... 7 = domingo. */
+export function diaDaSemana(data: string): number {
+  const [a, m, d] = data.split('-').map(Number)
+  return ((new Date(Date.UTC(a, m - 1, d)).getUTCDay() + 6) % 7) + 1
+}
+
+/** As aulas de um dia, pelo horário (as sem horário no fim). */
+export function aulasDoDia(aulas: Aula[], data: string): Aula[] {
+  const dia = diaDaSemana(data)
+  return aulas
+    .filter((a) => a.dia_semana === dia)
+    .sort((a, b) => (a.inicio ?? '99').localeCompare(b.inicio ?? '99'))
+}
+
+/** Quantas aulas da disciplina caem na data (0 se não tem aula nesse dia). */
+export function aulasDaDisciplinaNoDia(aulas: Aula[], disciplinaId: string, data: string): number {
+  return aulasDoDia(aulas, data)
+    .filter((a) => a.disciplina_id === disciplinaId)
+    .reduce((s, a) => s + a.quantidade, 0)
+}
+
+export interface ProvaProxima {
+  nota: Nota
+  disciplina: Disciplina | null
+  dias: number
+  /** Quanto precisa tirar nela, se é a P1 ou a P2 e a outra já tem nota. */
+  precisa: number | null
+}
+
+/** Provas sem nota dos próximos `dias` dias (hoje incluso), da mais próxima para a mais distante. */
+export function provasProximas(d: DadosFaculdade, hoje: string, dias = 14): ProvaProxima[] {
+  return d.notas
+    .filter((n): n is Nota & { data: string } => n.valor === null && !!n.data)
+    .map((nota) => ({ nota, dias: diasEntre(hoje, nota.data) }))
+    .filter((x) => x.dias >= 0 && x.dias <= dias)
+    .sort((a, b) => a.dias - b.dias)
+    .map(({ nota, dias: faltam }) => {
+      const disciplina = d.disciplinas.find((x) => x.id === nota.disciplina_id) ?? null
+      const notas = d.notas.filter((n) => n.disciplina_id === nota.disciplina_id)
+      let precisa: number | null = null
+      if (disciplina) {
+        const r = resumoSemestre(
+          provaDoSemestre(notas, 1)?.valor ?? null,
+          provaDoSemestre(notas, 2)?.valor ?? null,
+          disciplina.media_minima,
+          extrasDoBimestre(d.pontos_extras, 1),
+          extrasDoBimestre(d.pontos_extras, 2),
+        )
+        const eDaProva = provaDoSemestre(notas, r.tipo === 'precisa' ? r.naProva : 1)?.id === nota.id
+        if (r.tipo === 'precisa' && eDaProva) precisa = r.valor
+      }
+      return { nota, disciplina, dias: faltam, precisa }
+    })
 }

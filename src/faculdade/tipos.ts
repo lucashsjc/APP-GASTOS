@@ -10,6 +10,20 @@ export interface Disciplina {
   media_minima: number
   /** Máximo de faltas permitidas (em aulas), ou null se não souber. */
   limite_faltas: number | null
+  /** Semestre em que a disciplina foi encerrada (ex.: "2026/2"); null = semestre atual. */
+  semestre: string | null
+}
+
+/** Uma aula do horário da semana. */
+export interface Aula {
+  id: string
+  disciplina_id: string
+  /** 1 = segunda ... 7 = domingo. */
+  dia_semana: number
+  /** Quantas aulas seguidas nesse dia. */
+  quantidade: number
+  /** Horário de início (HH:MM), opcional. */
+  inicio: string | null
 }
 
 export interface Nota {
@@ -49,11 +63,12 @@ export interface PontoExtra {
   bimestre: 1 | 2
 }
 
-export type NovaDisciplina = Omit<Disciplina, 'id'>
+export type NovaDisciplina = Omit<Disciplina, 'id' | 'semestre'> & { semestre?: string | null }
 export type NovaNota = Omit<Nota, 'id'>
 export type NovaFalta = Omit<Falta, 'id'>
 export type NovaAtividade = Omit<Atividade, 'id'>
 export type NovoPontoExtra = Omit<PontoExtra, 'id'>
+export type NovaAula = Omit<Aula, 'id'>
 
 export interface DadosFaculdade {
   disciplinas: Disciplina[]
@@ -61,4 +76,5 @@ export interface DadosFaculdade {
   faltas: Falta[]
   atividades: Atividade[]
   pontos_extras: PontoExtra[]
+  aulas: Aula[]
 }

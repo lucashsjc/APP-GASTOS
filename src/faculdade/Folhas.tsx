@@ -5,9 +5,9 @@ import { Folha } from '../componentes/Folha'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { useEstado } from '../estado'
 import { useFaculdade } from './estado'
-import { formatarNota, lerNota, proximaCor } from './regras'
+import { formatarNota, historico, lerNota, NOMES_DIAS, nomeDoSemestre, proximaCor } from './regras'
 import { repoFaculdade } from './repo'
-import type { Atividade, Disciplina, Falta, Nota, PontoExtra } from './tipos'
+import type { Atividade, Aula, Disciplina, Falta, Nota, PontoExtra } from './tipos'
 
 function EscolhaDisciplina({
   valor,
@@ -55,8 +55,13 @@ function Botao({ salvando, texto }: { salvando: boolean; texto: string }) {
 // ---------- Disciplinas ----------
 
 export function FolhaDisciplinas({ aoFechar }: { aoFechar: () => void }) {
-  const { dados, executar } = useFaculdade()
+  const { dados, todos, executar } = useFaculdade()
   const [editando, setEditando] = useState<Disciplina | 'nova' | null>(dados.disciplinas.length ? null : 'nova')
+  const [tela, setTela] = useState<'lista' | 'encerrar' | 'historico'>('lista')
+  const temHistorico = todos.disciplinas.some((d) => d.semestre)
+
+  if (tela === 'encerrar') return <FolhaEncerrarSemestre aoVoltar={() => setTela('lista')} aoFechar={aoFechar} />
+  if (tela === 'historico') return <FolhaHistorico aoVoltar={() => setTela('lista')} />
 
   if (editando) {
     return (
@@ -96,6 +101,107 @@ export function FolhaDisciplinas({ aoFechar }: { aoFechar: () => void }) {
         <button type="button" className="botao-principal botao-faculdade" onClick={() => setEditando('nova')}>
           + Nova disciplina
         </button>
+        <div className="botoes-disciplina">
+          {dados.disciplinas.length > 0 && (
+            <button type="button" className="botao-secundario" onClick={() => setTela('encerrar')}>
+              Encerrar semestre
+            </button>
+          )}
+          {temHistorico && (
+            <button type="button" className="botao-secundario" onClick={() => setTela('historico')}>
+              Histórico
+            </button>
+          )}
+        </div>
+      </div>
+    </Folha>
+  )
+}
+
+// ---------- Semestres ----------
+
+function FolhaEncerrarSemestre({ aoVoltar, aoFechar }: { aoVoltar: () => void; aoFechar: () => void }) {
+  const { dados, executar } = useFaculdade()
+  const { hoje, avisar } = useEstado()
+  const [nome, setNome] = useState(nomeDoSemestre(hoje))
+  const [salvando, setSalvando] = useState(false)
+
+  const encerrar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!nome.trim()) return
+    setSalvando(true)
+    const ok = await executar(async () => {
+      for (const d of dados.disciplinas) await repoFaculdade.atualizar('disciplinas', d.id, { semestre: nome.trim() })
+    })
+    setSalvando(false)
+    if (ok) {
+      avisar(`Semestre ${nome.trim()} encerrado. Agora é só cadastrar as matérias novas.`)
+      aoFechar()
+    }
+  }
+
+  return (
+    <Folha titulo="Encerrar semestre" aoFechar={aoVoltar}>
+      <form className="form-gasto" onSubmit={encerrar} noValidate>
+        <p className="nota">
+          As {dados.disciplinas.length} matérias de agora vão para o histórico, com as notas e faltas delas. O app fica limpo
+          para o semestre novo. Nada é apagado.
+        </p>
+        <label className="campo">
+          <span>Nome do semestre</span>
+          <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: 2026/2" />
+        </label>
+        <Botao salvando={salvando} texto={`Encerrar ${nome.trim() || 'semestre'}`} />
+      </form>
+    </Folha>
+  )
+}
+
+function FolhaHistorico({ aoVoltar }: { aoVoltar: () => void }) {
+  const { todos, executar } = useFaculdade()
+  const semestres = historico(todos)
+  return (
+    <Folha titulo="Histórico" aoFechar={aoVoltar}>
+      <div className="form-gasto">
+        {semestres.map((s) => (
+          <section key={s.nome} className="historico-semestre">
+            <div className="historico-topo">
+              <strong>{s.nome}</strong>
+              <span>
+                <small>Coeficiente</small>
+                {s.coeficiente === null ? '—' : formatarNota(s.coeficiente)}
+              </span>
+            </div>
+            <ul className="lista">
+              {s.materias.map((m) => (
+                <li key={m.disciplina.id}>
+                  <ItemDeslizavel
+                    pergunta={`Voltar “${m.disciplina.nome}” para o semestre atual?`}
+                    rotuloApagar="Reabrir"
+                    aoApagar={() => executar(() => repoFaculdade.atualizar('disciplinas', m.disciplina.id, { semestre: null }))}
+                  >
+                    <div className="linha-simples">
+                      <span>
+                        <strong>{m.disciplina.nome}</strong>
+                        <small>
+                          {m.faltas} {m.faltas === 1 ? 'falta' : 'faltas'}
+                          {m.passou === null ? '' : m.passou ? ' · aprovado' : ' · abaixo da média'}
+                        </small>
+                      </span>
+                      <strong className={m.passou === null ? '' : m.passou ? 'positivo' : 'negativo-texto'}>
+                        {m.media === null ? '—' : formatarNota(m.media)}
+                      </strong>
+                    </div>
+                  </ItemDeslizavel>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+        <p className="dica">
+          O coeficiente é a média das médias finais (sem o peso dos créditos). Deslize uma matéria para reabrir no semestre
+          atual.
+        </p>
       </div>
     </Folha>
   )
@@ -465,6 +571,131 @@ export function FolhaPontoExtra({ extra, aoFechar }: { extra?: PontoExtra; aoFec
             Apagar estes pontos
           </button>
         )}
+      </form>
+    </Folha>
+  )
+}
+
+// ---------- Horário das aulas ----------
+
+export function FolhaHorario({ aoFechar }: { aoFechar: () => void }) {
+  const { dados, executar } = useFaculdade()
+  const [nova, setNova] = useState(dados.aulas.length === 0)
+  const dias = [1, 2, 3, 4, 5, 6, 7].filter((d) => d <= 6 || dados.aulas.some((a) => a.dia_semana === 7))
+
+  if (nova) return <FormAula aoVoltar={() => (dados.aulas.length ? setNova(false) : aoFechar())} />
+
+  const nome = (a: Aula) => dados.disciplinas.find((d) => d.id === a.disciplina_id)
+  return (
+    <Folha titulo="Horário das aulas" aoFechar={aoFechar}>
+      <div className="form-gasto">
+        {dias.map((dia) => {
+          const aulas = dados.aulas
+            .filter((a) => a.dia_semana === dia)
+            .sort((a, b) => (a.inicio ?? '99').localeCompare(b.inicio ?? '99'))
+          if (!aulas.length) return null
+          return (
+            <section key={dia} className="secao">
+              <h2>{NOMES_DIAS[dia - 1]}</h2>
+              <ul className="lista">
+                {aulas.map((a) => {
+                  const d = nome(a)
+                  return (
+                    <li key={a.id}>
+                      <ItemDeslizavel
+                        pergunta={`Tirar ${d?.nome ?? 'esta aula'} de ${NOMES_DIAS[dia - 1].toLowerCase()}?`}
+                        aoApagar={() => executar(() => repoFaculdade.excluir('aulas', a.id))}
+                      >
+                        <div className="linha-gasto">
+                          <i className="ponto ponto-grande" style={{ background: d?.cor }} />
+                          <span className="linha-texto">
+                            <strong>{d?.nome}</strong>
+                            <small>
+                              {a.inicio ? `${a.inicio} · ` : ''}
+                              {a.quantidade} {a.quantidade === 1 ? 'aula' : 'aulas'}
+                            </small>
+                          </span>
+                        </div>
+                      </ItemDeslizavel>
+                    </li>
+                  )
+                })}
+              </ul>
+            </section>
+          )
+        })}
+        <button type="button" className="botao-principal botao-faculdade" onClick={() => setNova(true)}>
+          + Aula no horário
+        </button>
+        <p className="dica">Deslize uma aula para tirar do horário.</p>
+      </div>
+    </Folha>
+  )
+}
+
+function FormAula({ aoVoltar }: { aoVoltar: () => void }) {
+  const { dados, executar } = useFaculdade()
+  const [disciplina, setDisciplina] = useState<string | null>(dados.disciplinas[0]?.id ?? null)
+  const [dias, setDias] = useState<number[]>([])
+  const [quantidade, setQuantidade] = useState(2)
+  const [inicio, setInicio] = useState('')
+  const [erro, setErro] = useState<string | null>(null)
+  const [salvando, setSalvando] = useState(false)
+
+  const salvar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!disciplina) return setErro('Escolha a disciplina.')
+    if (!dias.length) return setErro('Escolha pelo menos um dia da semana.')
+    setSalvando(true)
+    const ok = await executar(async () => {
+      for (const dia of dias) {
+        await repoFaculdade.criar('aulas', { disciplina_id: disciplina, dia_semana: dia, quantidade, inicio: inicio || null })
+      }
+    })
+    setSalvando(false)
+    if (ok) aoVoltar()
+  }
+
+  return (
+    <Folha titulo="Aula no horário" aoFechar={aoVoltar}>
+      <form className="form-gasto" onSubmit={salvar} noValidate>
+        <EscolhaDisciplina valor={disciplina} aoMudar={setDisciplina} />
+        <div className="campo">
+          <span>Dias da semana</span>
+          <div className="chips">
+            {NOMES_DIAS.map((n, i) => (
+              <button
+                key={n}
+                type="button"
+                className={`chip${dias.includes(i + 1) ? ' ativo' : ''}`}
+                onClick={() => setDias((ds) => (ds.includes(i + 1) ? ds.filter((x) => x !== i + 1) : [...ds, i + 1]))}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="campos-lado">
+          <div className="campo">
+            <span>Aulas seguidas</span>
+            <div className="contador">
+              <button type="button" aria-label="Menos aulas" onClick={() => setQuantidade((q) => Math.max(1, q - 1))}>
+                −
+              </button>
+              <strong>{quantidade}</strong>
+              <button type="button" aria-label="Mais aulas" onClick={() => setQuantidade((q) => Math.min(10, q + 1))}>
+                +
+              </button>
+            </div>
+          </div>
+          <label className="campo">
+            <span>Começa (opcional)</span>
+            <input type="time" value={inicio} onChange={(e) => setInicio(e.target.value)} />
+          </label>
+        </div>
+        <p className="nota">É a quantidade que entra como falta quando você toca em "Faltei hoje".</p>
+        {erro && <p className="erro">{erro}</p>}
+        <Botao salvando={salvando} texto="Salvar no horário" />
       </form>
     </Folha>
   )

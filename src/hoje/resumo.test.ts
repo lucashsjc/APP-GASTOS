@@ -34,10 +34,11 @@ describe('tela Hoje', () => {
   it('alertas de faltas e notas, os graves primeiro', () => {
     const d: DadosFaculdade = {
       pontos_extras: [],
+      aulas: [],
       disciplinas: [
-        { id: 'a', nome: 'Cálculo', cor: '#000', media_minima: 6, limite_faltas: 16 },
-        { id: 'b', nome: 'Física', cor: '#000', media_minima: 6, limite_faltas: 12 },
-        { id: 'c', nome: 'Química', cor: '#000', media_minima: 6, limite_faltas: 10 },
+        { id: 'a', nome: 'Cálculo', cor: '#000', media_minima: 6, limite_faltas: 16, semestre: null },
+        { id: 'b', nome: 'Física', cor: '#000', media_minima: 6, limite_faltas: 12, semestre: null },
+        { id: 'c', nome: 'Química', cor: '#000', media_minima: 6, limite_faltas: 10, semestre: null },
       ],
       notas: [
         { id: '1', disciplina_id: 'a', descricao: 'P1', valor: 5, peso: 1, data: null },
