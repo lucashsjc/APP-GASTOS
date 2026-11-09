@@ -1,7 +1,15 @@
 // O que a tela "Hoje" mostra: funções puras, com testes em resumo.test.ts.
 
 import { FUSO } from '../lib/datas'
-import { notaNecessaria, mediaPonderada, ordenarAtividades, resumoFaltas, situacaoNota } from '../faculdade/regras'
+import {
+  BIMESTRES,
+  extrasDoBimestre,
+  formatarNota,
+  ordenarAtividades,
+  provaDoBimestre,
+  resumoBimestre,
+  resumoFaltas,
+} from '../faculdade/regras'
 import type { Atividade, DadosFaculdade, Disciplina } from '../faculdade/tipos'
 
 export function somarDias(data: string, dias: number): string {
@@ -52,22 +60,22 @@ export function alertasFaculdade(d: DadosFaculdade): Alerta[] {
       })
     }
 
+    // P1 e P2 de cada bimestre (com os pontos extras): avisa o que precisa tirar ou o que não fechou.
     const notas = d.notas.filter((n) => n.disciplina_id === disc.id)
-    if (situacaoNota(mediaPonderada(notas), disc.media_minima) !== 'abaixo') continue
-    const precisa = notaNecessaria(notas, disc.media_minima)
-    alertas.push({
-      tipo: 'nota',
-      disciplina: disc,
-      grave: precisa.tipo === 'impossivel',
-      texto:
-        precisa.tipo === 'precisa'
-          ? `Abaixo da média: precisa de ${String(precisa.valor).replace('.', ',')}${
-              precisa.nasFuturas.length === 1 ? ` na ${precisa.nasFuturas[0]}` : precisa.nasFuturas.length ? ' no que falta' : ' na próxima'
-            }`
-          : precisa.tipo === 'impossivel'
-            ? 'Abaixo da média, sem como recuperar só com as notas que faltam'
-            : 'Abaixo da média por enquanto',
-    })
+    for (const bim of BIMESTRES) {
+      const p1 = provaDoBimestre(notas, 1, bim)?.valor ?? null
+      const p2 = provaDoBimestre(notas, 2, bim)?.valor ?? null
+      const extras = extrasDoBimestre(d.pontos_extras ?? [], bim)
+      const r = resumoBimestre(p1, p2, disc.media_minima, extras)
+      const feita = (p1 ?? p2) ?? 0
+      if (r.tipo === 'precisa' && r.valor > feita) {
+        alertas.push({ tipo: 'nota', disciplina: disc, grave: false, texto: `Precisa de ${formatarNota(r.valor)} na P${r.naProva} do ${bim}º bimestre` })
+      } else if (r.tipo === 'impossivel') {
+        alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `${bim}º bimestre: nem com ${r.maximo} na P${r.naProva} chega na média` })
+      } else if (r.tipo === 'fechado' && !r.passou) {
+        alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `Fechou o ${bim}º bimestre com ${formatarNota(r.media)}, abaixo da média` })
+      }
+    }
   }
   return alertas.sort((a, b) => Number(b.grave) - Number(a.grave))
 }

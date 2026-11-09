@@ -5,22 +5,28 @@ import { BotaoMenu } from '../componentes/MenuLateral'
 import { useEstado } from '../estado'
 import { dataCurta, diaDe, mesDe, somarMeses, tituloDoMes } from '../lib/datas'
 import { useFaculdade } from './estado'
-import { FolhaAtividade, FolhaDisciplinas, FolhaFalta, FolhaNota } from './Folhas'
+import { FolhaAtividade, FolhaDisciplinas, FolhaFalta, FolhaNota, FolhaPontoExtra } from './Folhas'
 import {
+  BIMESTRES,
   diasAte,
   eventosCalendario,
+  extrasDoBimestre,
   formatarNota,
-  mediaPonderada,
-  notaNecessaria,
+  lerNota,
+  nomeProva,
+  outrasNotas,
   prazoAtividade,
+  provaDoBimestre,
+  resumoBimestre,
   proximosEventos,
   resumoFaltas,
   semanasDoMes,
-  situacaoNota,
+  type Bimestre,
   type EventoCalendario,
+  type NumeroProva,
 } from './regras'
 import { repoFaculdade } from './repo'
-import type { Atividade, Disciplina, Falta, Nota } from './tipos'
+import type { Atividade, Disciplina, Falta, Nota, PontoExtra } from './tipos'
 
 export type Secao = 'notas' | 'faltas' | 'calendario'
 
@@ -31,6 +37,7 @@ type FolhaAberta =
   | { tipo: 'nota'; nota?: Nota; disciplina?: string; data?: string; prova?: boolean }
   | { tipo: 'falta'; falta?: Falta; disciplina?: string }
   | { tipo: 'atividade'; atividade?: Atividade; data?: string }
+  | { tipo: 'extra'; extra?: PontoExtra }
 
 export default function PaginaFaculdade({ secao }: { secao: Secao }) {
   const { dados, carregando, erro } = useFaculdade()
@@ -104,6 +111,7 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
       )}
       {folha?.tipo === 'falta' && <FolhaFalta falta={folha.falta} disciplinaInicial={folha.disciplina} aoFechar={fechar} />}
       {folha?.tipo === 'atividade' && <FolhaAtividade atividade={folha.atividade} dataInicial={folha.data} aoFechar={fechar} />}
+      {folha?.tipo === 'extra' && <FolhaPontoExtra extra={folha.extra} aoFechar={fechar} />}
     </div>
   )
 }
@@ -133,15 +141,13 @@ function SecaoNotas({
   const notasDe = (id: string) => dados.notas.filter((n) => n.disciplina_id === id)
   const d = aberta
   const notas = notasDe(d.id)
-    // As que já saíram por data; as que ainda vão acontecer no fim.
-    .sort((a, b) => Number(a.valor === null) - Number(b.valor === null) || (a.data ?? '').localeCompare(b.data ?? ''))
-  const media = mediaPonderada(notas)
-  const situacao = situacaoNota(media, d.media_minima)
+  const outras = outrasNotas(notas).sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
   return (
     <>
+      <PontosExtras abrir={abrir} />
       <div className="pilulas-materias" role="tablist" aria-label="Matérias">
         {dados.disciplinas.map((x) => {
-          const m = mediaPonderada(notasDe(x.id))
+          const atual = situacaoAtual(notasDe(x.id), x, dados.pontos_extras)
           return (
             <button
               key={x.id}
@@ -152,36 +158,33 @@ function SecaoNotas({
               onClick={() => aoEscolher(x.id)}
             >
               <i className="ponto" style={{ background: x.cor }} /> {x.nome}
-              <b className={`media-chip media-${situacaoNota(m, x.media_minima)}`}>{m === null ? '—' : formatarNota(m)}</b>
+              {atual && <b className={`media-chip media-${atual.passou ? 'acima' : 'abaixo'}`}>{formatarNota(atual.media)}</b>}
             </button>
           )
         })}
       </div>
       <section className="card card-disciplina">
         <CabecalhoDisciplina d={d}>
-          <span className={`media media-${situacao}`}>
-            <small>Média</small>
-            {media === null ? '—' : formatarNota(media)}
+          <span className="media">
+            <small>Média para passar</small>
+            {formatarNota(d.media_minima)}
           </span>
         </CabecalhoDisciplina>
-        <p className="disciplina-legenda">
-          {situacao === 'sem_notas'
-            ? `Nenhuma nota ainda · média mínima ${formatarNota(d.media_minima)}`
-            : situacao === 'acima'
-              ? `Acima da média mínima (${formatarNota(d.media_minima)})`
-              : `Abaixo da média mínima (${formatarNota(d.media_minima)})`}
-        </p>
-        <QuantoPreciso notas={notas} minima={d.media_minima} />
-        {notas.length > 0 ? (
-          <ul className="lista lista-interna">
-            {notas.map((n) => (
+        {BIMESTRES.map((b) => (
+          <BlocoBimestre key={b} d={d} notas={notas} bimestre={b} />
+        ))}
+      </section>
+
+      <section className="secao">
+        <h2>
+          Outras notas <span>trabalhos, listas…</span>
+        </h2>
+        {outras.length > 0 ? (
+          <ul className="lista">
+            {outras.map((n) => (
               <li key={n.id}>
                 <ItemDeslizavel
-                  pergunta={
-                    n.valor === null
-                      ? `Apagar a avaliação “${n.descricao}”?`
-                      : `Apagar a nota “${n.descricao}” (${formatarNota(n.valor)})?`
-                  }
+                  pergunta={`Apagar “${n.descricao}”?`}
                   aoEditar={() => abrir({ tipo: 'nota', nota: n })}
                   aoApagar={() => executar(() => repoFaculdade.excluir('notas', n.id))}
                   aoTocar={() => abrir({ tipo: 'nota', nota: n })}
@@ -189,15 +192,12 @@ function SecaoNotas({
                   <div className="linha-simples">
                     <span>
                       <strong>{n.descricao}</strong>
-                      <small>
-                        {n.data ? dataCurta(n.data) : 'sem data'}
-                        {n.peso !== 1 && ` · peso ${formatarNota(n.peso)}`}
-                      </small>
+                      <small>{n.data ? dataCurta(n.data) : 'sem data'}</small>
                     </span>
                     {n.valor === null ? (
                       <span className="prazo">ainda não saiu</span>
                     ) : (
-                      <strong className={n.valor >= d.media_minima ? 'positivo' : 'negativo-texto'}>{formatarNota(n.valor)}</strong>
+                      <strong>{formatarNota(n.valor)}</strong>
                     )}
                   </div>
                 </ItemDeslizavel>
@@ -205,35 +205,153 @@ function SecaoNotas({
             ))}
           </ul>
         ) : (
-          <p className="vazio">Nenhuma nota de {d.nome} ainda.</p>
+          <p className="vazio">Nenhuma. As provas P1 e P2 ficam nos bimestres acima.</p>
         )}
         <button type="button" className="botao-secundario" onClick={() => abrir({ tipo: 'nota', disciplina: d.id })}>
-          + Nota de {d.nome}
+          + Outra nota de {d.nome}
         </button>
       </section>
-      <p className="dica">Toque numa nota para editar. Quando sair a nota de uma prova, abra ela aqui e preencha.</p>
     </>
   )
 }
 
-function QuantoPreciso({ notas, minima }: { notas: Nota[]; minima: number }) {
-  const r = notaNecessaria(notas, minima)
-  if (r.tipo === 'ok') return null
-  const texto =
-    r.tipo === 'garantido'
-      ? 'A média mínima já está garantida, mesmo tirando zero no que falta.'
-      : r.tipo === 'impossivel'
-        ? `Nem com ${r.maximo} no que falta dá para chegar em ${formatarNota(minima)}.`
-        : r.nasFuturas.length === 0
-          ? `Na próxima avaliação (peso 1), precisa tirar ${formatarNota(r.valor)}.`
-          : r.nasFuturas.length === 1
-            ? `Precisa tirar ${formatarNota(r.valor)} na ${r.nasFuturas[0]}.`
-            : `Precisa de média ${formatarNota(r.valor)} em ${r.nasFuturas.join(', ')}.`
+/** A média do bimestre mais recente com as duas provas feitas (para a pílula da matéria). */
+function situacaoAtual(notas: Nota[], d: Disciplina, pontos: PontoExtra[]) {
+  for (const b of [...BIMESTRES].reverse()) {
+    const r = resumoBimestre(
+      provaDoBimestre(notas, 1, b)?.valor ?? null,
+      provaDoBimestre(notas, 2, b)?.valor ?? null,
+      d.media_minima,
+      extrasDoBimestre(pontos, b),
+    )
+    if (r.tipo === 'fechado') return r
+  }
+  return null
+}
+
+function BlocoBimestre({ d, notas, bimestre }: { d: Disciplina; notas: Nota[]; bimestre: Bimestre }) {
+  const { dados } = useFaculdade()
+  const p1 = provaDoBimestre(notas, 1, bimestre)
+  const p2 = provaDoBimestre(notas, 2, bimestre)
+  const extras = extrasDoBimestre(dados.pontos_extras, bimestre)
+  const r = resumoBimestre(p1?.valor ?? null, p2?.valor ?? null, d.media_minima, extras)
+  const nomesExtras = dados.pontos_extras.filter((x) => x.bimestre === bimestre).map((x) => x.nome).join(', ')
   return (
-    <p className={`quanto-preciso quanto-${r.tipo}`}>
-      <strong>Quanto preciso tirar</strong>
-      {texto}
-    </p>
+    <div className="bimestre">
+      <div className="bimestre-topo">
+        <strong>{bimestre}º bimestre</strong>
+        {extras > 0 && (
+          <span className="selo-extra">
+            +{formatarNota(extras)} {nomesExtras}
+          </span>
+        )}
+      </div>
+      <div className="bimestre-provas">
+        <CampoProva d={d} numero={1} bimestre={bimestre} nota={p1} />
+        <CampoProva d={d} numero={2} bimestre={bimestre} nota={p2} />
+        <div className={`bimestre-media${r.tipo === 'fechado' ? (r.passou ? ' passou' : ' nao-passou') : ''}`}>
+          <small>Média</small>
+          <strong>{r.tipo === 'fechado' ? formatarNota(r.media) : '—'}</strong>
+        </div>
+      </div>
+      <p className={`bimestre-resultado bimestre-${r.tipo}${r.tipo === 'fechado' ? (r.passou ? '-passou' : '-nao') : ''}`}>
+        {r.tipo === 'vazio'
+          ? `Coloque a nota da P1 para ver quanto precisa na P2 (média ${formatarNota(d.media_minima)}).`
+          : r.tipo === 'precisa'
+            ? <>Precisa tirar <b>{formatarNota(r.valor)}</b> na P{r.naProva} para passar{extras > 0 ? ` (já contando os +${formatarNota(extras)})` : ''}.</>
+            : r.tipo === 'garantido'
+              ? `Já passou: mesmo tirando 0 na P${r.naProva}, fecha a média.`
+              : r.tipo === 'impossivel'
+                ? `Nem com ${r.maximo} na P${r.naProva} chega na média ${formatarNota(d.media_minima)}.`
+                : r.passou
+                  ? `Passou no ${bimestre}º bimestre com ${formatarNota(r.media)}.`
+                  : `Fechou com ${formatarNota(r.media)}, abaixo da média ${formatarNota(d.media_minima)}.`}
+      </p>
+    </div>
+  )
+}
+
+/** Campo da nota de uma prova: grava ao sair do campo (ou no Enter). Vazio apaga a nota. */
+function CampoProva({ d, numero, bimestre, nota }: { d: Disciplina; numero: NumeroProva; bimestre: Bimestre; nota?: Nota }) {
+  const { executar } = useFaculdade()
+  const { avisar } = useEstado()
+  const atual = nota?.valor != null ? formatarNota(nota.valor) : ''
+  const [texto, setTexto] = useState(atual)
+  const [antes, setAntes] = useState(atual)
+  // Quando a nota muda por fora (outra tela, recarga), o campo acompanha.
+  if (atual !== antes) {
+    setAntes(atual)
+    setTexto(atual)
+  }
+
+  const gravar = async () => {
+    const limpo = texto.trim()
+    if (limpo === atual) return
+    if (limpo === '') {
+      if (!nota) return
+      // A prova marcada no calendário continua lá, só sem nota.
+      await executar(() =>
+        nota.data ? repoFaculdade.atualizar('notas', nota.id, { valor: null }) : repoFaculdade.excluir('notas', nota.id),
+      )
+      return
+    }
+    const valor = lerNota(limpo)
+    if (valor === null || valor > (d.media_minima > 10 ? 100 : 10)) {
+      avisar('Nota inválida (ex.: 7,5).')
+      setTexto(atual)
+      return
+    }
+    await executar(() =>
+      nota
+        ? repoFaculdade.atualizar('notas', nota.id, { valor })
+        : repoFaculdade.criar('notas', { disciplina_id: d.id, descricao: nomeProva(numero, bimestre), valor, peso: 1, data: null }),
+    )
+  }
+
+  return (
+    <label className="campo-prova">
+      <span>P{numero}</span>
+      <input
+        inputMode="decimal"
+        placeholder="—"
+        value={texto}
+        onChange={(e) => setTexto(e.target.value.replace(/[^\d.,]/g, ''))}
+        onBlur={gravar}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+        }}
+        aria-label={`Nota da P${numero} do ${bimestre}º bimestre de ${d.nome}`}
+      />
+      {nota?.data && <small>{dataCurta(nota.data)}</small>}
+    </label>
+  )
+}
+
+/** Pontos que valem em todas as matérias (SEAU, ACI...), em destaque no topo das notas. */
+function PontosExtras({ abrir }: { abrir: (f: FolhaAberta) => void }) {
+  const { dados } = useFaculdade()
+  if (!dados.pontos_extras.length) {
+    return (
+      <button type="button" className="card link-extra" onClick={() => abrir({ tipo: 'extra' })}>
+        + Pontos extras (SEAU, ACI…) que valem em todas as matérias
+      </button>
+    )
+  }
+  return (
+    <section className="card destaque-extra">
+      {dados.pontos_extras.map((x) => (
+        <button key={x.id} type="button" className="destaque-extra-linha" onClick={() => abrir({ tipo: 'extra', extra: x })}>
+          <span className="destaque-extra-pontos">+{formatarNota(x.pontos)}</span>
+          <span>
+            <strong>{x.nome}</strong>
+            <small>Na média do {x.bimestre}º bimestre, em todas as matérias</small>
+          </span>
+        </button>
+      ))}
+      <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'extra' })}>
+        + Outro ponto extra
+      </button>
+    </section>
   )
 }
 

@@ -11,7 +11,7 @@ interface EstadoFaculdade {
   executar: (acao: () => Promise<unknown>) => Promise<boolean>
 }
 
-const VAZIO: DadosFaculdade = { disciplinas: [], notas: [], faltas: [], atividades: [] }
+const VAZIO: DadosFaculdade = { disciplinas: [], notas: [], faltas: [], atividades: [], pontos_extras: [] }
 const Contexto = createContext<EstadoFaculdade | null>(null)
 
 /** Dados da Faculdade, usados na própria área e na tela Hoje. */

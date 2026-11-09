@@ -13,18 +13,19 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
   const dia = (n: number) => dataNoMes(mesPassado, Math.min(n, 28))
   return {
     disciplinas: [
-      { id: 'd-calc', nome: 'Cálculo I', cor: '#cfe7f8', media_minima: 6, limite_faltas: 16 },
-      { id: 'd-prog', nome: 'Programação Web', cor: '#bfe6cf', media_minima: 6, limite_faltas: 16 },
-      { id: 'd-fis', nome: 'Física I', cor: '#f3d9a8', media_minima: 6, limite_faltas: 12 },
+      { id: 'd-calc', nome: 'Cálculo I', cor: '#cfe7f8', media_minima: 5, limite_faltas: 16 },
+      { id: 'd-prog', nome: 'Programação Web', cor: '#bfe6cf', media_minima: 5, limite_faltas: 16 },
+      { id: 'd-fis', nome: 'Física I', cor: '#f3d9a8', media_minima: 5, limite_faltas: 12 },
     ],
     notas: [
-      { id: 'n1', disciplina_id: 'd-calc', descricao: 'P1', valor: 5.5, peso: 1, data: dia(20) },
-      { id: 'n2', disciplina_id: 'd-calc', descricao: 'Lista 1', valor: 8, peso: 1, data: dia(10) },
-      { id: 'n3', disciplina_id: 'd-prog', descricao: 'P1', valor: 9, peso: 2, data: dia(22) },
+      { id: 'n1', disciplina_id: 'd-calc', descricao: 'P1 · 1º bim', valor: 5.5, peso: 1, data: dia(5) },
+      { id: 'n2', disciplina_id: 'd-calc', descricao: 'P2 · 1º bim', valor: 6, peso: 1, data: dia(20) },
+      { id: 'n8', disciplina_id: 'd-calc', descricao: 'P1 · 2º bim', valor: 3.5, peso: 1, data: dia(27) },
+      { id: 'n7', disciplina_id: 'd-calc', descricao: 'P2 · 2º bim', valor: null, peso: 1, data: somarDias(hoje, 15) },
+      { id: 'n3', disciplina_id: 'd-prog', descricao: 'P1 · 1º bim', valor: 9, peso: 1, data: dia(8) },
       { id: 'n4', disciplina_id: 'd-prog', descricao: 'Projeto', valor: 8.5, peso: 1, data: dia(15) },
-      { id: 'n5', disciplina_id: 'd-fis', descricao: 'P1', valor: 4.5, peso: 1, data: dia(24) },
-      { id: 'n6', disciplina_id: 'd-fis', descricao: 'P2', valor: null, peso: 2, data: somarDias(hoje, 4) },
-      { id: 'n7', disciplina_id: 'd-calc', descricao: 'P2', valor: null, peso: 1, data: somarDias(hoje, 15) },
+      { id: 'n5', disciplina_id: 'd-fis', descricao: 'P1 · 1º bim', valor: 4.5, peso: 1, data: dia(24) },
+      { id: 'n6', disciplina_id: 'd-fis', descricao: 'P2 · 1º bim', valor: null, peso: 1, data: somarDias(hoje, 4) },
     ],
     faltas: [
       { id: 'f1', disciplina_id: 'd-calc', data: dia(3), quantidade: 2 },
@@ -40,5 +41,6 @@ export function exemploFaculdade(hoje: string): DadosFaculdade {
       { id: 'a3', disciplina_id: 'd-prog', titulo: 'Entrega do projeto (parte 2)', entrega: somarDias(hoje, 5), feita: false, observacao: '' },
       { id: 'a5', disciplina_id: 'd-prog', titulo: 'Exercício de formulários', entrega: somarDias(hoje, -6), feita: true, observacao: '' },
     ],
+    pontos_extras: [{ id: 'x1', nome: 'SEAU e ACI', pontos: 3, bimestre: 2 }],
   }
 }

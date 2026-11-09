@@ -2936,3 +2936,191 @@ a.botao-secundario {
   padding: 3px 7px;
   border-radius: 4px;
 }
+
+/* ---------- Faculdade: P1 e P2 de cada bimestre e pontos extras ---------- */
+
+.bimestre {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--card-2);
+}
+
+.bimestre-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.bimestre-topo strong {
+  font-weight: 900;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.selo-extra {
+  background: var(--ambar);
+  color: #000;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 3px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bimestre-provas {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.campo-prova {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.campo-prova span,
+.bimestre-media small {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--texto-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.campo-prova input {
+  width: 100%;
+  min-height: 52px;
+  border-radius: 12px;
+  border: 1px solid var(--borda);
+  background: #000;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.campo-prova input:focus {
+  outline: none;
+  border-color: #fff;
+}
+
+.campo-prova small {
+  font-size: 11px;
+  color: var(--texto-2);
+  text-align: center;
+}
+
+.bimestre-media {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bimestre-media strong {
+  display: grid;
+  place-items: center;
+  min-height: 52px;
+  border-radius: 12px;
+  background: #000;
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.bimestre-media.passou strong {
+  color: var(--verde);
+}
+
+.bimestre-media.nao-passou strong {
+  color: var(--negativo);
+}
+
+.bimestre-resultado {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--texto-2);
+}
+
+.bimestre-resultado b {
+  color: #fff;
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.bimestre-precisa,
+.bimestre-impossivel,
+.bimestre-fechado-nao {
+  color: #fff;
+}
+
+.bimestre-impossivel,
+.bimestre-fechado-nao {
+  color: var(--negativo);
+}
+
+.bimestre-garantido,
+.bimestre-fechado-passou {
+  color: var(--verde);
+}
+
+.destaque-extra {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: linear-gradient(135deg, #ffc247, #ff8a00);
+  color: #000;
+}
+
+.destaque-extra-linha {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  color: #000;
+}
+
+.destaque-extra-pontos {
+  font-size: 34px;
+  font-weight: 900;
+  font-style: italic;
+  line-height: 1;
+}
+
+.destaque-extra-linha span:last-child {
+  display: flex;
+  flex-direction: column;
+}
+
+.destaque-extra-linha strong {
+  font-size: 18px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.destaque-extra-linha small {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.destaque-extra .botao-texto {
+  align-self: flex-start;
+  color: #000;
+  font-weight: 700;
+}
+
+.link-extra {
+  text-align: left;
+  font-weight: 700;
+  color: var(--ambar);
+}
+
+.botao-apagar {
+  color: var(--negativo);
+  align-self: center;
+}

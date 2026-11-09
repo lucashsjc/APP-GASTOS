@@ -13,16 +13,20 @@ import type {
   NovaFalta,
   NovaNota,
   Nota,
+  NovoPontoExtra,
+  PontoExtra,
 } from './tipos'
 
-type Tabela = 'disciplinas' | 'notas' | 'faltas' | 'atividades'
+type Tabela = 'disciplinas' | 'notas' | 'faltas' | 'atividades' | 'pontos_extras'
 type Novo<T extends Tabela> = T extends 'disciplinas'
   ? NovaDisciplina
   : T extends 'notas'
     ? NovaNota
     : T extends 'faltas'
       ? NovaFalta
-      : NovaAtividade
+      : T extends 'pontos_extras'
+        ? NovoPontoExtra
+        : NovaAtividade
 
 export interface RepoFaculdade {
   carregar(): Promise<DadosFaculdade>
@@ -36,10 +40,19 @@ const COLUNAS: Record<Tabela, string> = {
   notas: 'id, disciplina_id, descricao, valor, peso, data',
   faltas: 'id, disciplina_id, data, quantidade',
   atividades: 'id, disciplina_id, titulo, entrega, feita, observacao',
+  pontos_extras: 'id, nome, pontos, bimestre',
 }
 
-function erro(e: { code?: string; message: string } | null) {
+/** Tabela que ainda não existe no banco. */
+function tabelaFalta(e: { code?: string } | null) {
+  return e?.code === 'PGRST205' || e?.code === '42P01'
+}
+
+function erro(e: { code?: string; message: string } | null, tabela?: Tabela) {
   if (!e) return
+  if (tabela === 'pontos_extras' && tabelaFalta(e)) {
+    throw new Error('Para guardar os pontos extras, rode o supabase/010_pontos_extras.sql no Supabase.')
+  }
   // Tabela que não existe: o SQL da Faculdade ainda não foi rodado.
   if (e.code === 'PGRST205' || e.code === '42P01') {
     throw new Error('As tabelas da Faculdade ainda não existem. Rode o supabase/003_faculdade.sql no Supabase.')
@@ -55,16 +68,19 @@ function criarRepoSupabase(): RepoFaculdade {
   const db = supabase!
   const ler = async <T,>(tabela: Tabela) => {
     const { data, error } = await db.from(tabela).select(COLUNAS[tabela]).order('id')
+    // Antes do SQL dos pontos extras, a Faculdade abre sem eles.
+    if (tabela === 'pontos_extras' && tabelaFalta(error)) return []
     erro(error)
     return (data ?? []) as unknown as T[]
   }
   return {
     async carregar() {
-      const [disciplinas, notas, faltas, atividades] = await Promise.all([
+      const [disciplinas, notas, faltas, atividades, pontosExtras] = await Promise.all([
         ler<Disciplina>('disciplinas'),
         ler<Nota>('notas'),
         ler<Falta>('faltas'),
         ler<Atividade>('atividades'),
+        ler<PontoExtra>('pontos_extras'),
       ])
       // O Postgres devolve "numeric" como texto.
       return {
@@ -72,15 +88,16 @@ function criarRepoSupabase(): RepoFaculdade {
         notas: notas.map((n) => ({ ...n, valor: n.valor === null ? null : Number(n.valor), peso: Number(n.peso) })),
         faltas,
         atividades,
+        pontos_extras: pontosExtras.map((x) => ({ ...x, pontos: Number(x.pontos) })),
       }
     },
     async criar(tabela, dados) {
       const { error } = await db.from(tabela).insert(dados as Record<string, unknown>)
-      erro(error)
+      erro(error, tabela)
     },
     async atualizar(tabela, id, dados) {
       const { error } = await db.from(tabela).update(dados as Record<string, unknown>).eq('id', id)
-      erro(error)
+      erro(error, tabela)
     },
     async excluir(tabela, id) {
       const { error } = await db.from(tabela).delete().eq('id', id)
@@ -94,7 +111,7 @@ const CHAVE = 'faculdade-demo'
 function lerLocal(): DadosFaculdade {
   try {
     const salvo = localStorage.getItem(CHAVE)
-    if (salvo) return JSON.parse(salvo)
+    if (salvo) return { pontos_extras: [], ...JSON.parse(salvo) }
   } catch {
     // sem armazenamento: usa os dados de exemplo
   }

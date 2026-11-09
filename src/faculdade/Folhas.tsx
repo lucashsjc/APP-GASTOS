@@ -7,7 +7,7 @@ import { useEstado } from '../estado'
 import { useFaculdade } from './estado'
 import { formatarNota, lerNota, proximaCor } from './regras'
 import { repoFaculdade } from './repo'
-import type { Atividade, Disciplina, Falta, Nota } from './tipos'
+import type { Atividade, Disciplina, Falta, Nota, PontoExtra } from './tipos'
 
 function EscolhaDisciplina({
   valor,
@@ -104,7 +104,7 @@ export function FolhaDisciplinas({ aoFechar }: { aoFechar: () => void }) {
 function FormDisciplina({ disciplina, aoVoltar }: { disciplina: Disciplina | null; aoVoltar: () => void }) {
   const { dados, executar } = useFaculdade()
   const [nome, setNome] = useState(disciplina?.nome ?? '')
-  const [media, setMedia] = useState(disciplina ? formatarNota(disciplina.media_minima) : '6')
+  const [media, setMedia] = useState(disciplina ? formatarNota(disciplina.media_minima) : '5')
   const [limite, setLimite] = useState(disciplina?.limite_faltas ? String(disciplina.limite_faltas) : '')
   const [erro, setErro] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
@@ -248,7 +248,7 @@ export function FolhaNota({
           <input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: P1, Trabalho, Lista 2" />
         </label>
         <div className="chips">
-          {['P1', 'P2', 'P3', 'Trabalho', 'Lista', 'Projeto'].map((s) => (
+          {['P1 · 1º bim', 'P2 · 1º bim', 'P1 · 2º bim', 'P2 · 2º bim', 'Trabalho', 'Lista'].map((s) => (
             <button key={s} type="button" className={`chip${descricao === s ? ' ativo' : ''}`} onClick={() => setDescricao(s)}>
               {s}
             </button>
@@ -392,6 +392,79 @@ export function FolhaAtividade({
         </label>
         {erro && <p className="erro">{erro}</p>}
         <Botao salvando={salvando} texto={atividade ? 'Salvar alterações' : 'Salvar atividade'} />
+      </form>
+    </Folha>
+  )
+}
+
+// ---------- Ponto extra ----------
+
+export function FolhaPontoExtra({ extra, aoFechar }: { extra?: PontoExtra; aoFechar: () => void }) {
+  const { executar } = useFaculdade()
+  const [nome, setNome] = useState(extra?.nome ?? '')
+  const [pontos, setPontos] = useState(extra ? formatarNota(extra.pontos) : '')
+  const [bimestre, setBimestre] = useState<1 | 2>(extra?.bimestre ?? 2)
+  const [erro, setErro] = useState<string | null>(null)
+  const [salvando, setSalvando] = useState(false)
+
+  const salvar = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const p = lerNota(pontos)
+    if (!nome.trim()) return setErro('Escreva de onde vêm os pontos (ex.: SEAU e ACI).')
+    if (p === null || p <= 0) return setErro('Pontos inválidos (ex.: 3 ou 1,5).')
+    setSalvando(true)
+    const campos = { nome: nome.trim(), pontos: p, bimestre }
+    const ok = await executar(() =>
+      extra ? repoFaculdade.atualizar('pontos_extras', extra.id, campos) : repoFaculdade.criar('pontos_extras', campos),
+    )
+    setSalvando(false)
+    if (ok) aoFechar()
+  }
+
+  return (
+    <Folha titulo={extra ? 'Editar pontos extras' : 'Pontos extras'} aoFechar={aoFechar}>
+      <form className="form-gasto" onSubmit={salvar} noValidate>
+        <label className="campo">
+          <span>De onde vêm</span>
+          <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="Ex.: SEAU e ACI" autoFocus={!extra} />
+        </label>
+        <div className="campos-lado">
+          <label className="campo">
+            <span>Pontos na média</span>
+            <input inputMode="decimal" value={pontos} onChange={(e) => setPontos(e.target.value)} placeholder="3" />
+          </label>
+          <div className="campo">
+            <span>Bimestre</span>
+            <div className="segmentado pequeno" role="radiogroup" aria-label="Bimestre">
+              {([1, 2] as const).map((b) => (
+                <button
+                  key={b}
+                  type="button"
+                  role="radio"
+                  aria-checked={bimestre === b}
+                  className={bimestre === b ? 'ativo' : ''}
+                  onClick={() => setBimestre(b)}
+                >
+                  {b}º
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+        <p className="nota">Somam na média desse bimestre em todas as matérias.</p>
+        {erro && <p className="erro">{erro}</p>}
+        <Botao salvando={salvando} texto={extra ? 'Salvar alterações' : 'Salvar pontos'} />
+        {extra && (
+          <button
+            type="button"
+            className="botao-texto botao-apagar"
+            onClick={async () => {
+              if (await executar(() => repoFaculdade.excluir('pontos_extras', extra.id))) aoFechar()
+            }}
+          >
+            Apagar estes pontos
+          </button>
+        )}
       </form>
     </Folha>
   )

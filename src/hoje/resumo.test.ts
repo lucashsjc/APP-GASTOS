@@ -33,6 +33,7 @@ describe('tela Hoje', () => {
 
   it('alertas de faltas e notas, os graves primeiro', () => {
     const d: DadosFaculdade = {
+      pontos_extras: [],
       disciplinas: [
         { id: 'a', nome: 'Cálculo', cor: '#000', media_minima: 6, limite_faltas: 16 },
         { id: 'b', nome: 'Física', cor: '#000', media_minima: 6, limite_faltas: 12 },
@@ -51,7 +52,7 @@ describe('tela Hoje', () => {
     }
     expect(alertasFaculdade(d).map((x) => [x.disciplina.nome, x.texto, x.grave])).toEqual([
       ['Física', 'Passou do limite de faltas (13/12)', true],
-      ['Cálculo', 'Abaixo da média: precisa de 6,5 na P2', false],
+      ['Cálculo', 'Precisa de 7 na P2 do 1º bimestre', false],
       ['Química', 'Só pode faltar mais 2 aulas', false],
     ])
   })

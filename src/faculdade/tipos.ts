@@ -41,14 +41,24 @@ export interface Atividade {
   observacao: string
 }
 
+/** Pontos que somam na média do bimestre em todas as matérias (ex.: SEAU e ACI). */
+export interface PontoExtra {
+  id: string
+  nome: string
+  pontos: number
+  bimestre: 1 | 2
+}
+
 export type NovaDisciplina = Omit<Disciplina, 'id'>
 export type NovaNota = Omit<Nota, 'id'>
 export type NovaFalta = Omit<Falta, 'id'>
 export type NovaAtividade = Omit<Atividade, 'id'>
+export type NovoPontoExtra = Omit<PontoExtra, 'id'>
 
 export interface DadosFaculdade {
   disciplinas: Disciplina[]
   notas: Nota[]
   faltas: Falta[]
   atividades: Atividade[]
+  pontos_extras: PontoExtra[]
 }
