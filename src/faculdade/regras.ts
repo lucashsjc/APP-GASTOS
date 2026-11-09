@@ -201,39 +201,43 @@ export function diasAte(hoje: string, data: string): number {
   return diasEntre(hoje, data)
 }
 
-// ---------- P1 e P2 de cada bimestre ----------
+// ---------- P1 e P2 do semestre ----------
 
+/** O semestre tem uma prova por bimestre: a P1 no 1º e a P2 no 2º. */
 export type Bimestre = 1 | 2
 export type NumeroProva = 1 | 2
-export const BIMESTRES: Bimestre[] = [1, 2]
-
-/** Nome com que a prova é guardada: "P1 · 1º bim". */
-export function nomeProva(prova: NumeroProva, bimestre: Bimestre): string {
-  return `P${prova} · ${bimestre}º bim`
-}
 
 function semEspacos(texto: string): string {
   return texto.toLowerCase().replace(/[\s·.º°]/g, '')
 }
 
-/** A nota que ocupa a P1 ou a P2 do bimestre. As antigas, só "P1" ou "P2", contam no 1º bimestre. */
-export function provaDoBimestre(notas: Nota[], prova: NumeroProva, bimestre: Bimestre): Nota | undefined {
-  const alvo = semEspacos(nomeProva(prova, bimestre))
-  return (
-    notas.find((n) => semEspacos(n.descricao) === alvo) ??
-    (bimestre === 1 ? notas.find((n) => semEspacos(n.descricao) === `p${prova}`) : undefined)
-  )
+// Nomes aceitos para cada prova (inclui os da versão que tinha duas provas por bimestre).
+const NOMES_PROVA: Record<NumeroProva, string[]> = {
+  1: ['p1', 'p11bim'],
+  2: ['p2', 'p21bim', 'p12bim', 'p22bim'],
 }
 
-/** As notas que não são P1 ou P2 de nenhum bimestre (trabalhos, listas...). */
+/** A nota da P1 ou da P2 do semestre. */
+export function provaDoSemestre(notas: Nota[], prova: NumeroProva): Nota | undefined {
+  for (const nome of NOMES_PROVA[prova]) {
+    const achada = notas.find((n) => semEspacos(n.descricao) === nome)
+    if (achada) return achada
+  }
+  return undefined
+}
+
+/** As notas que não são a P1 nem a P2 (trabalhos, listas...). */
 export function outrasNotas(notas: Nota[]): Nota[] {
-  const das = new Set(
-    BIMESTRES.flatMap((b) => [provaDoBimestre(notas, 1, b), provaDoBimestre(notas, 2, b)]).filter(Boolean).map((n) => n!.id),
-  )
+  const das = new Set([provaDoSemestre(notas, 1)?.id, provaDoSemestre(notas, 2)?.id].filter(Boolean))
   return notas.filter((n) => !das.has(n.id))
 }
 
-export type ResumoBimestre =
+/** Pontos extras de um bimestre (somam na prova daquele bimestre). */
+export function extrasDoBimestre(pontos: { pontos: number; bimestre: number }[], bimestre: Bimestre): number {
+  return pontos.filter((p) => p.bimestre === bimestre).reduce((s, p) => s + p.pontos, 0)
+}
+
+export type ResumoSemestre =
   | { tipo: 'vazio' }
   /** Com uma prova feita: quanto precisa na outra para fechar a média. */
   | { tipo: 'precisa'; valor: number; naProva: NumeroProva }
@@ -243,34 +247,32 @@ export type ResumoBimestre =
   | { tipo: 'fechado'; media: number; passou: boolean }
 
 /**
- * Média do bimestre = (P1 + P2) / 2 + pontos extras (até a nota máxima). Com só uma prova feita,
- * diz quanto precisa tirar na outra.
+ * Média do semestre = (nota do 1º bimestre + nota do 2º) / 2, em que a nota de cada bimestre é a
+ * prova mais os pontos extras daquele bimestre (até a nota máxima). Com só uma prova feita, diz
+ * quanto precisa tirar na outra.
  */
-export function resumoBimestre(p1: number | null, p2: number | null, minima: number, extras = 0): ResumoBimestre {
+export function resumoSemestre(
+  p1: number | null,
+  p2: number | null,
+  minima: number,
+  extras1 = 0,
+  extras2 = 0,
+): ResumoSemestre {
   const maximo = minima > 10 ? 100 : 10
+  const comExtras = (nota: number, extras: number) => Math.min(maximo, nota + extras)
   if (p1 === null && p2 === null) return { tipo: 'vazio' }
   if (p1 !== null && p2 !== null) {
-    const media = Math.min(maximo, (p1 + p2) / 2 + extras)
+    const media = (comExtras(p1, extras1) + comExtras(p2, extras2)) / 2
     return { tipo: 'fechado', media, passou: Math.round(media * 100) / 100 >= minima }
   }
-  const feita = (p1 ?? p2) as number
   const naProva: NumeroProva = p1 === null ? 1 : 2
+  const feita = p1 !== null ? comExtras(p1, extras1) : comExtras(p2 as number, extras2)
+  const extrasDaQueFalta = naProva === 1 ? extras1 : extras2
+  const precisa = 2 * minima - feita
+  // A que falta precisa chegar em `precisa` já com os extras dela (que não passam do máximo).
+  if (precisa > maximo) return { tipo: 'impossivel', naProva, maximo }
   // Arredonda para cima em centésimos, sem erro de ponto flutuante.
-  const valor = Math.ceil(Math.round((2 * (minima - extras) - feita) * 1e6) / 1e4) / 100
+  const valor = Math.ceil(Math.round((precisa - extrasDaQueFalta) * 1e6) / 1e4) / 100
   if (valor <= 0) return { tipo: 'garantido', naProva }
-  if (valor > maximo) return { tipo: 'impossivel', naProva, maximo }
   return { tipo: 'precisa', valor, naProva }
-}
-
-/** Pontos extras que somam no bimestre. */
-export function extrasDoBimestre(pontos: { pontos: number; bimestre: number }[], bimestre: Bimestre): number {
-  return pontos.filter((p) => p.bimestre === bimestre).reduce((s, p) => s + p.pontos, 0)
-}
-
-/** Média da matéria: a média das provas P1 e P2 que já têm nota (null se nenhuma). */
-export function mediaDasProvas(notas: Nota[]): number | null {
-  const valores = BIMESTRES.flatMap((b) => [provaDoBimestre(notas, 1, b), provaDoBimestre(notas, 2, b)])
-    .map((n) => n?.valor ?? null)
-    .filter((v): v is number => v !== null)
-  return valores.length ? valores.reduce((s, v) => s + v, 0) / valores.length : null
 }

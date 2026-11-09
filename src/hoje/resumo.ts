@@ -2,13 +2,12 @@
 
 import { FUSO } from '../lib/datas'
 import {
-  BIMESTRES,
   extrasDoBimestre,
   formatarNota,
   ordenarAtividades,
-  provaDoBimestre,
-  resumoBimestre,
+  provaDoSemestre,
   resumoFaltas,
+  resumoSemestre,
 } from '../faculdade/regras'
 import type { Atividade, DadosFaculdade, Disciplina } from '../faculdade/tipos'
 
@@ -60,21 +59,19 @@ export function alertasFaculdade(d: DadosFaculdade): Alerta[] {
       })
     }
 
-    // P1 e P2 de cada bimestre (com os pontos extras): avisa o que precisa tirar ou o que não fechou.
+    // P1 e P2 do semestre (com os pontos extras): avisa o que precisa tirar ou se não fechou a média.
     const notas = d.notas.filter((n) => n.disciplina_id === disc.id)
-    for (const bim of BIMESTRES) {
-      const p1 = provaDoBimestre(notas, 1, bim)?.valor ?? null
-      const p2 = provaDoBimestre(notas, 2, bim)?.valor ?? null
-      const extras = extrasDoBimestre(d.pontos_extras ?? [], bim)
-      const r = resumoBimestre(p1, p2, disc.media_minima, extras)
-      const feita = (p1 ?? p2) ?? 0
-      if (r.tipo === 'precisa' && r.valor > feita) {
-        alertas.push({ tipo: 'nota', disciplina: disc, grave: false, texto: `Precisa de ${formatarNota(r.valor)} na P${r.naProva} do ${bim}º bimestre` })
-      } else if (r.tipo === 'impossivel') {
-        alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `${bim}º bimestre: nem com ${r.maximo} na P${r.naProva} chega na média` })
-      } else if (r.tipo === 'fechado' && !r.passou) {
-        alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `Fechou o ${bim}º bimestre com ${formatarNota(r.media)}, abaixo da média` })
-      }
+    const p1 = provaDoSemestre(notas, 1)?.valor ?? null
+    const p2 = provaDoSemestre(notas, 2)?.valor ?? null
+    const pontos = d.pontos_extras ?? []
+    const nota = resumoSemestre(p1, p2, disc.media_minima, extrasDoBimestre(pontos, 1), extrasDoBimestre(pontos, 2))
+    // Só avisa quando precisa de mais na outra prova do que tirou na que já fez (abaixo do ritmo).
+    if (nota.tipo === 'precisa' && nota.valor > ((nota.naProva === 2 ? p1 : p2) ?? 0)) {
+      alertas.push({ tipo: 'nota', disciplina: disc, grave: false, texto: `Precisa de ${formatarNota(nota.valor)} na P${nota.naProva}` })
+    } else if (nota.tipo === 'impossivel') {
+      alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `Nem com ${nota.maximo} na P${nota.naProva} chega na média` })
+    } else if (nota.tipo === 'fechado' && !nota.passou) {
+      alertas.push({ tipo: 'nota', disciplina: disc, grave: true, texto: `Fechou com ${formatarNota(nota.media)}, abaixo da média` })
     }
   }
   return alertas.sort((a, b) => Number(b.grave) - Number(a.grave))

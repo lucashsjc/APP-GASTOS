@@ -52,7 +52,7 @@ describe('tela Hoje', () => {
     }
     expect(alertasFaculdade(d).map((x) => [x.disciplina.nome, x.texto, x.grave])).toEqual([
       ['Física', 'Passou do limite de faltas (13/12)', true],
-      ['Cálculo', 'Precisa de 7 na P2 do 1º bimestre', false],
+      ['Cálculo', 'Precisa de 7 na P2', false],
       ['Química', 'Só pode faltar mais 2 aulas', false],
     ])
   })

@@ -14,10 +14,9 @@ import {
   eventosCalendario,
   proximosEventos,
   semanasDoMes,
-  mediaDasProvas,
   outrasNotas,
-  provaDoBimestre,
-  resumoBimestre,
+  provaDoSemestre,
+  resumoSemestre,
   extrasDoBimestre,
 } from './regras'
 import type { Atividade } from './tipos'
@@ -207,43 +206,41 @@ describe('calendário', () => {
   })
 })
 
-describe('P1 e P2 do bimestre (média 5)', () => {
+describe('P1 e P2 do semestre (média 5)', () => {
   it('com a P1, diz quanto precisa na P2', () => {
-    expect(resumoBimestre(4, null, 5)).toEqual({ tipo: 'precisa', valor: 6, naProva: 2 })
-    expect(resumoBimestre(3.5, null, 5)).toEqual({ tipo: 'precisa', valor: 6.5, naProva: 2 })
-    expect(resumoBimestre(10, null, 5)).toEqual({ tipo: 'garantido', naProva: 2 })
-    expect(resumoBimestre(null, 7, 5)).toEqual({ tipo: 'precisa', valor: 3, naProva: 1 })
-  })
-
-  it('não dá para passar mesmo com 10', () => {
-    expect(resumoBimestre(null, 0, 6)).toEqual({ tipo: 'impossivel', naProva: 1, maximo: 10 })
+    expect(resumoSemestre(4, null, 5)).toEqual({ tipo: 'precisa', valor: 6, naProva: 2 })
+    expect(resumoSemestre(3.5, null, 5)).toEqual({ tipo: 'precisa', valor: 6.5, naProva: 2 })
+    expect(resumoSemestre(10, null, 5)).toEqual({ tipo: 'garantido', naProva: 2 })
+    expect(resumoSemestre(null, 7, 5)).toEqual({ tipo: 'precisa', valor: 3, naProva: 1 })
+    expect(resumoSemestre(null, 0, 6)).toEqual({ tipo: 'impossivel', naProva: 1, maximo: 10 })
   })
 
   it('com as duas, fecha a média', () => {
-    expect(resumoBimestre(4, 6, 5)).toEqual({ tipo: 'fechado', media: 5, passou: true })
-    expect(resumoBimestre(4, 5.9, 5)).toEqual({ tipo: 'fechado', media: 4.95, passou: false })
-    expect(resumoBimestre(null, null, 5)).toEqual({ tipo: 'vazio' })
+    expect(resumoSemestre(4, 6, 5)).toEqual({ tipo: 'fechado', media: 5, passou: true })
+    expect(resumoSemestre(4, 5.9, 5)).toEqual({ tipo: 'fechado', media: 4.95, passou: false })
+    expect(resumoSemestre(null, null, 5)).toEqual({ tipo: 'vazio' })
   })
 
-  it('acha a P1 e a P2 de cada bimestre (as antigas "P1"/"P2" ficam no 1º)', () => {
+  it('acha a P1 e a P2 (também pelos nomes antigos com bimestre)', () => {
     const n = (id: string, descricao: string, valor: number | null) => ({ id, disciplina_id: 'x', descricao, valor, peso: 1, data: null })
-    const notas = [n('a', 'P1', 6), n('b', 'P2 · 1º bim', null), n('c', 'P1 · 2º bim', 8), n('d', 'Trabalho', 9)]
-    expect(provaDoBimestre(notas, 1, 1)?.id).toBe('a')
-    expect(provaDoBimestre(notas, 2, 1)?.id).toBe('b')
-    expect(provaDoBimestre(notas, 1, 2)?.id).toBe('c')
-    expect(provaDoBimestre(notas, 2, 2)).toBeUndefined()
-    expect(outrasNotas(notas).map((x) => x.id)).toEqual(['d'])
-    expect(mediaDasProvas(notas)).toBe(7)
+    expect(provaDoSemestre([n('a', 'P1', 6), n('b', 'P2', 7), n('c', 'Trabalho', 9)], 2)?.id).toBe('b')
+    const antigas = [n('a', 'P1 · 1º bim', 6), n('b', 'P1 · 2º bim', 8), n('c', 'Trabalho', 9)]
+    expect(provaDoSemestre(antigas, 1)?.id).toBe('a')
+    expect(provaDoSemestre(antigas, 2)?.id).toBe('b')
+    expect(outrasNotas(antigas).map((x) => x.id)).toEqual(['c'])
   })
 })
 
-describe('pontos extras (SEAU e ACI)', () => {
-  it('somam na média do bimestre e baixam o que precisa tirar', () => {
-    // Média 5 com 3 extras: precisa de média 2 nas provas. Com 1 na P1, precisa de 3 na P2.
-    expect(resumoBimestre(1, null, 5, 3)).toEqual({ tipo: 'precisa', valor: 3, naProva: 2 })
-    expect(resumoBimestre(4, null, 5, 3)).toEqual({ tipo: 'garantido', naProva: 2 })
-    expect(resumoBimestre(2, 3, 5, 3)).toEqual({ tipo: 'fechado', media: 5.5, passou: true })
-    expect(resumoBimestre(9, 10, 5, 3)).toEqual({ tipo: 'fechado', media: 10, passou: true })
+describe('pontos extras (SEAU e ACI no 2º bimestre)', () => {
+  it('somam na nota da P2 e baixam o que precisa tirar', () => {
+    // Média 5: com 4 na P1, a P2 precisa valer 6; com +3, basta tirar 3.
+    expect(resumoSemestre(4, null, 5, 0, 3)).toEqual({ tipo: 'precisa', valor: 3, naProva: 2 })
+    expect(resumoSemestre(7, null, 5, 0, 3)).toEqual({ tipo: 'garantido', naProva: 2 })
+    expect(resumoSemestre(4, 3, 5, 0, 3)).toEqual({ tipo: 'fechado', media: 5, passou: true })
+    // A P2 com os extras não passa de 10.
+    expect(resumoSemestre(8, 9, 5, 0, 3)).toEqual({ tipo: 'fechado', media: 9, passou: true })
+    // Com 0 na P1, nem 10 na P2 chega: precisaria de 10 (com os extras, a P2 vale no máximo 10).
+    expect(resumoSemestre(0, null, 6, 0, 3)).toEqual({ tipo: 'impossivel', naProva: 2, maximo: 10 })
   })
 
   it('só do bimestre certo', () => {

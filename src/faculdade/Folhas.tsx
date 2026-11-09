@@ -248,7 +248,7 @@ export function FolhaNota({
           <input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Ex.: P1, Trabalho, Lista 2" />
         </label>
         <div className="chips">
-          {['P1 · 1º bim', 'P2 · 1º bim', 'P1 · 2º bim', 'P2 · 2º bim', 'Trabalho', 'Lista'].map((s) => (
+          {['P1', 'P2', 'Trabalho', 'Lista', 'Projeto'].map((s) => (
             <button key={s} type="button" className={`chip${descricao === s ? ' ativo' : ''}`} onClick={() => setDescricao(s)}>
               {s}
             </button>
@@ -451,7 +451,7 @@ export function FolhaPontoExtra({ extra, aoFechar }: { extra?: PontoExtra; aoFec
             </div>
           </div>
         </div>
-        <p className="nota">Somam na média desse bimestre em todas as matérias.</p>
+        <p className="nota">Somam na prova desse bimestre (P1 no 1º, P2 no 2º) em todas as matérias.</p>
         {erro && <p className="erro">{erro}</p>}
         <Botao salvando={salvando} texto={extra ? 'Salvar alterações' : 'Salvar pontos'} />
         {extra && (
