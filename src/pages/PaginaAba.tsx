@@ -102,7 +102,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         ) : normais.length === 0 ? (
           <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
         ) : (
-          <ul className="lista">{normais.map(linha)}</ul>
+          <ul className="lista lista-numerada">{normais.map(linha)}</ul>
         )}
         {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
       </section>
@@ -112,7 +112,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <h2>
             À parte <span>{formatarReais(totalAParte)}</span>
           </h2>
-          <ul className="lista">{aParte.map(linha)}</ul>
+          <ul className="lista lista-numerada">{aParte.map(linha)}</ul>
           <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
         </section>
       )}

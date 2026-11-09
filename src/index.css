@@ -1,29 +1,32 @@
-/* Tema escuro único: fundo grafite, cards escuros e destaques em tons pastel com texto escuro. */
+/* Tema "pista": fundo preto, cinzas escuros, vermelho de destaque e os cartões como cartões de verdade. */
 :root {
-  --fundo: #161618;
-  --card: #212124;
-  --card-2: #2b2b2f;
-  --borda: #2b2b2f;
-  --texto: #f2f2f4;
-  --texto-2: #8c8c94;
-  --verde: #9fdcb9;
-  --ambar: #f1d48f;
-  --negativo: #f3a39b;
-  /* Destaques pastel (com texto escuro por cima). */
-  --pastel-lilas: #e4d9fb;
-  --pastel-azul: #dcedfb;
-  --pastel-rosa: #fbdcd8;
-  --sobre-pastel: #151517;
-  --sobre-pastel-2: #5d5a66;
-  --nubank: #8a2be2;
-  --caju: #e5142b;
-  --faculdade: #dcedfb;
+  --fundo: #000;
+  --card: #121212;
+  --card-2: #1e1e1e;
+  --borda: #262626;
+  --texto: #fff;
+  --texto-2: #9a9aa3;
+  --verde: #3fd07a;
+  --ambar: #ffc247;
+  --negativo: #ff5148;
+  --vermelho: #e10600;
+  /* Estados ativos (pílulas, abas) ficam brancos com texto preto. */
+  --pastel-lilas: #fff;
+  --pastel-azul: #fff;
+  --pastel-rosa: #fff;
+  --sobre-pastel: #000;
+  --sobre-pastel-2: #4a4a52;
+  --nubank: #8a05be;
+  --caju: #e8195d;
+  --cartao-nubank: linear-gradient(135deg, #8a05be, #4b0082 60%, #2a004f);
+  --cartao-caju: linear-gradient(135deg, #ff6a3d, #e8195d);
+  --faculdade: #fff;
   --raio: 18px;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
 
   color-scheme: dark;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1;
   color: var(--texto);
   background: var(--fundo);
@@ -2448,4 +2451,338 @@ a.botao-secundario {
 .botao-dinheiro.ativo .botao-dinheiro-icone {
   background: var(--ambar);
   color: var(--sobre-pastel);
+}
+
+/* ---------- Tema pista: títulos, cartões, listas e botões ---------- */
+
+.topo {
+  position: relative;
+}
+
+/* Listras diagonais no topo, como numa reta de largada. */
+.topo::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  right: -16px;
+  top: calc(-12px - var(--seguro-topo));
+  height: calc(76px + var(--seguro-topo));
+  background: repeating-linear-gradient(-60deg, transparent 0 26px, rgba(255, 255, 255, 0.06) 26px 40px, transparent 40px 66px);
+  -webkit-mask: linear-gradient(90deg, transparent, #000 35%, #000 75%, transparent);
+  mask: linear-gradient(90deg, transparent, #000 35%, #000 75%, transparent);
+  pointer-events: none;
+}
+
+.topo > * {
+  position: relative;
+}
+
+.topo h1 {
+  font-size: 26px;
+  font-weight: 900;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: -0.01em;
+}
+
+.secao h2,
+.card h2 {
+  font-weight: 900;
+  font-size: 19px;
+}
+
+.botao-icone,
+.seletor-mes {
+  background: var(--card-2);
+}
+
+.seletor-mes .seletor-mes-nome {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Botões de destaque: vermelho com texto branco. */
+.botao-nubank,
+.botao-caju,
+.botao-faculdade,
+.botao-principal {
+  background: var(--vermelho);
+  color: #fff;
+  font-weight: 700;
+}
+
+.botao-mais {
+  border-radius: 50%;
+  box-shadow: 0 6px 16px rgba(225, 6, 0, 0.45);
+}
+
+/* O card principal vira o cartão: roxo no Nubank, laranja no Caju, com o outro cartão aparecendo atrás. */
+.card-principal {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  border-radius: 22px;
+  margin-bottom: 12px;
+}
+
+.card-principal.card-nubank {
+  background: var(--cartao-nubank);
+  box-shadow: 0 14px 0 -7px #c2185b, 0 22px 40px rgba(138, 5, 190, 0.35);
+}
+
+.card-principal.card-caju {
+  background: var(--cartao-caju);
+  box-shadow: 0 14px 0 -7px #5a0a8a, 0 22px 40px rgba(232, 25, 93, 0.3);
+}
+
+.card-principal::before {
+  content: '';
+  position: absolute;
+  right: -70px;
+  top: -80px;
+  width: 230px;
+  height: 230px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+/* O chip dourado do cartão. */
+.card-principal::after {
+  content: '';
+  position: absolute;
+  top: 22px;
+  right: 20px;
+  width: 36px;
+  height: 26px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #f5d37a, #b88a2e);
+  pointer-events: none;
+}
+
+.card-principal > * {
+  position: relative;
+}
+
+.card-principal-topo,
+.card-principal-legenda,
+.card-principal-nota,
+.recebido small,
+.formas small {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.card-principal-topo span {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.recebido {
+  color: #fff;
+}
+
+.valor-grande {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.valor-grande sup {
+  font-size: 20px;
+  opacity: 0.7;
+}
+
+.valor-grande.negativo {
+  color: #ffd2cf;
+}
+
+.barra-clara {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.barra-clara span {
+  background: #fff;
+}
+
+.barra-clara .barra-outros {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.link-card,
+.aviso-por-dia {
+  background: rgba(0, 0, 0, 0.22);
+  color: #fff;
+}
+
+.botao-claro {
+  background: #fff;
+  color: #000;
+  font-weight: 700;
+}
+
+/* Barra de progresso fora do cartão: vermelha. */
+.barra span {
+  background: var(--vermelho);
+}
+
+/* Tela Hoje: os dois atalhos também como cartões. */
+.hoje-cartao {
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.hoje-cartao.card-nubank {
+  background: var(--cartao-nubank);
+}
+
+.hoje-cartao.card-caju {
+  background: var(--cartao-caju);
+}
+
+.hoje-cartao-topo,
+.hoje-cartao small {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.hoje-cartao strong {
+  font-weight: 900;
+  font-size: 24px;
+}
+
+.hoje-cartao strong.negativo {
+  color: #ffd2cf;
+}
+
+/* Menu lateral: o resumo como cartão do Nubank. */
+.menu-resumo {
+  background: var(--cartao-nubank);
+  color: #fff;
+}
+
+.menu-resumo small {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.menu-marca span:first-child {
+  background: var(--vermelho);
+}
+
+.menu-marca span:last-child {
+  background: #fff;
+}
+
+/* Pílulas: chips, abas e escolhas em pílula, branca quando ativa. */
+.chip,
+.segmentado,
+.segmentado button {
+  border-radius: 999px;
+}
+
+.chip {
+  background: var(--card-2);
+  font-weight: 700;
+}
+
+.segmentado button {
+  font-weight: 700;
+}
+
+.barra-abas {
+  background: rgba(10, 10, 10, 0.94);
+  border: 1px solid var(--borda);
+}
+
+.barra-abas a {
+  font-weight: 700;
+}
+
+/* Listas de gastos numeradas como uma classificação: 01, 02, 03... */
+.lista-numerada {
+  counter-reset: posicao;
+  gap: 0;
+}
+
+.lista-numerada > li {
+  counter-increment: posicao;
+  border-radius: 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.lista-numerada .linha-icone {
+  background: none;
+  width: 30px;
+  justify-content: start;
+}
+
+.lista-numerada .linha-icone > * {
+  display: none;
+}
+
+.lista-numerada .linha-icone::before {
+  content: counter(posicao, decimal-leading-zero);
+  font-weight: 900;
+  font-style: italic;
+  font-size: 18px;
+  color: var(--texto-2);
+}
+
+.linha-texto strong {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.linha-valor strong {
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.selo-pago {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.barra-mes.atual .barra-mes-coluna span,
+.pagina-nubank .barra-mes.atual .barra-mes-coluna span,
+.pagina-caju .barra-mes.atual .barra-mes-coluna span {
+  background: var(--vermelho);
+}
+
+/* Dentro do cartão, a barra fica branca (fora dele, vermelha). */
+.card-principal .barra-clara span {
+  background: #fff;
+}
+
+.card-principal .barra-clara .barra-outros {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.menu-resumo div {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.menu-resumo strong {
+  color: #fff;
+  font-weight: 900;
+}
+
+.menu-resumo strong.negativo {
+  color: #ffd2cf;
+}
+
+.menu-resumo-link {
+  background: #000;
+}
+
+.link-secao {
+  color: var(--vermelho);
+  font-weight: 700;
+}
+
+.selo-pago {
+  color: var(--negativo);
 }
