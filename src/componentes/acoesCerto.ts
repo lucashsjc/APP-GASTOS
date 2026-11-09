@@ -14,7 +14,8 @@ export function useAcoesCerto(aba: Aba, abrirFolha: (modo: ModoGasto) => void) {
   const { dados, hoje, mes, executar } = useEstado()
   const mesAtual = mesDe(hoje)
 
-  const editar = (c: Certo) => abrirFolha(c.recorrencia ? { aba, recorrencia: c.recorrencia } : { aba, gasto: c.gasto! })
+  const editar = (c: Certo) =>
+    abrirFolha(c.recorrencia ? { aba, recorrencia: c.recorrencia, ocorrencia: c } : { aba, gasto: c.gasto! })
 
   /** Para um "todo mês", apagar = parar de contar: os meses que já passaram não mudam. */
   const encerramento = (c: Certo) => {

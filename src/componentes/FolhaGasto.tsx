@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react'
-import { aplicarPlanoRecorrencia } from '../data/acoes'
+import { aplicarPlanoRecorrencia, moverOcorrencia } from '../data/acoes'
 import { repo } from '../data/repo'
 import type { Aba, Forma, Gasto, NovoGasto, Recorrencia } from '../data/types'
 import { useEstado } from '../estado'
 import {
+  type Certo,
   descricoesMaisUsadas,
   observacoesMaisUsadas,
   dividirParcelas,
@@ -20,7 +21,8 @@ import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
 export type ModoGasto =
   | { aba: Aba; origem: 'topo' | 'certos' }
   | { aba: Aba; gasto: Gasto }
-  | { aba: Aba; recorrencia: Recorrencia }
+  /** `ocorrencia`: a do mês aberto, para mudar a data só nele. */
+  | { aba: Aba; recorrencia: Recorrencia; ocorrencia?: Certo }
 
 type Tipo = 'uma' | 'parcelado' | 'todo_mes'
 
@@ -41,6 +43,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
 
   const gastoEditado = 'gasto' in modo ? modo.gasto : null
   const recEditada = 'recorrencia' in modo ? modo.recorrencia : null
+  const ocorrencia = 'ocorrencia' in modo ? (modo.ocorrencia ?? null) : null
 
   // Parcelas da mesma compra. Só dá para mudar total e parcelas se a compra estiver completa
   // (na importação, às vezes só as parcelas futuras existem).
@@ -109,6 +112,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [descricao, setDescricao] = useState(inicial.descricao)
   const [data, setData] = useState(inicial.data)
   const [dia, setDia] = useState(recEditada?.dia ?? diaDe(inicial.data))
+  // Data da ocorrência do mês aberto (muda só nesse mês).
+  const [dataNoMesAberto, setDataNoMesAberto] = useState(ocorrencia?.data ?? '')
   const [categoria, setCategoria] = useState(inicial.categoria)
   const [categoriaEscolhida, setCategoriaEscolhida] = useState(Boolean(inicial.categoria))
   const [forma, setForma] = useState<Forma>(inicial.forma)
@@ -183,7 +188,18 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     const ok = await executar(async () => {
       if (recEditada) {
         const alteracoes = { ...comum, ...extras, valor_centavos: valor, dia }
-        await aplicarPlanoRecorrencia(recEditada, planejarEdicaoRecorrencia(dados, recEditada, alteracoes, aPartirDe))
+        const mudouOFixo = (Object.keys(alteracoes) as (keyof typeof alteracoes)[]).some(
+          (k) => alteracoes[k] !== recEditada[k],
+        )
+        if (mudouOFixo) {
+          await aplicarPlanoRecorrencia(recEditada, planejarEdicaoRecorrencia(dados, recEditada, alteracoes, aPartirDe))
+        }
+        const mudouAData = ocorrencia && /^\d{4}-\d{2}-\d{2}$/.test(dataNoMesAberto) && dataNoMesAberto !== ocorrencia.data
+        if (ocorrencia && mudouAData) {
+          // Se o fixo mudou, o ajuste antigo deste mês foi apagado: grava um novo com os valores novos.
+          const atual: Certo = mudouOFixo ? { ...ocorrencia, gasto: null, ...comum, valor_centavos: valor } : ocorrencia
+          await moverOcorrencia(atual, dataNoMesAberto)
+        }
       } else if (gastoEditado && tipo === 'parcelado') {
         // Refaz a compra inteira com o novo total e número de parcelas.
         // Mantém o "pago" de cada parcela que continua existindo.
@@ -315,9 +331,21 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           </div>
         )}
 
+        {ocorrencia && (
+          <label className="campo">
+            <span>Data em {nomeDoMes(mesDe(ocorrencia.data))} (só neste mês)</span>
+            <input
+              type="date"
+              value={dataNoMesAberto}
+              min={`${mesDe(ocorrencia.data)}-01`}
+              max={dataNoMes(mesDe(ocorrencia.data), 31)}
+              onChange={(e) => setDataNoMesAberto(e.target.value)}
+            />
+          </label>
+        )}
         {recEditada ? (
           <label className="campo">
-            <span>Dia do mês em que cai</span>
+            <span>Dia do mês em que cai (todo mês)</span>
             <input
               type="number"
               inputMode="numeric"

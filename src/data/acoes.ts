@@ -1,6 +1,7 @@
 // Operações que mexem em mais de uma linha (aplicam os planos de src/lib/calculos.ts).
 
 import type { Certo, PlanoRecorrencia } from '../lib/calculos'
+import { dataNoMes, mesDe } from '../lib/datas'
 import { repo } from './repo'
 import type { Gasto, NovoGasto, Recorrencia } from './types'
 
@@ -30,18 +31,38 @@ function ajusteDeRecorrencia(c: Certo, campos: Partial<NovoGasto>): NovoGasto {
   }
 }
 
-/** Um ajuste de "todo mês" que já não marca nada é apagado: volta a ocorrência calculada. */
-function ajusteVazio(g: Gasto, mudanca: Partial<Gasto>): boolean {
+/**
+ * Um ajuste de "todo mês" que já não marca nada é apagado: volta a ocorrência calculada. Se ele muda a
+ * data daquele mês, continua (`diaPadrao` é o dia em que o "todo mês" cai).
+ */
+function ajusteVazio(g: Gasto, mudanca: Partial<Gasto>, diaPadrao?: number): boolean {
   const final = { ...g, ...mudanca }
-  return Boolean(g.recorrencia_id) && !final.caiu_manual && !final.pago
+  const dataMudou = diaPadrao !== undefined && final.data !== dataNoMes(mesDe(final.data), diaPadrao)
+  return Boolean(g.recorrencia_id) && !final.caiu_manual && !final.pago && !dataMudou
+}
+
+/**
+ * Muda a data de uma ocorrência de "todo mês" só naquele mês (ex.: o PORTO que caiu dia 5 em vez de 1).
+ * `campos` leva o que mais mudou nesse mês (valor, descrição...).
+ */
+export async function moverOcorrencia(c: Certo, data: string, campos: Partial<NovoGasto> = {}) {
+  const r = c.recorrencia!
+  const voltouAoPadrao = data === dataNoMes(mesDe(data), r.dia)
+  if (c.gasto) {
+    if (voltouAoPadrao && ajusteVazio(c.gasto, { data, ...campos }, r.dia)) return repo.excluirGastos([c.gasto.id])
+    return repo.atualizarGasto(c.gasto.id, { data, ...campos })
+  }
+  if (voltouAoPadrao) return
+  await repo.criarGastos([ajusteDeRecorrencia(c, { data, pago: c.pago, ...campos })])
 }
 
 /** Marca um gasto (ou um certo) como pago ou não pago. */
 export async function definirPago(item: Gasto | Certo, pago: boolean) {
   const gasto = 'chave' in item ? item.gasto : item
+  const diaPadrao = 'chave' in item ? item.recorrencia?.dia : undefined
   if (gasto) {
     if (gasto.pago === pago) return
-    if (ajusteVazio(gasto, { pago })) return repo.excluirGastos([gasto.id])
+    if (ajusteVazio(gasto, { pago }, diaPadrao)) return repo.excluirGastos([gasto.id])
     return repo.atualizarGasto(gasto.id, { pago })
   }
   if ('chave' in item && item.recorrencia && pago) await repo.criarGastos([ajusteDeRecorrencia(item, { pago: true })])
