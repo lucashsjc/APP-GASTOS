@@ -6,8 +6,8 @@ export function LogoLK({ largura = 220 }: { largura?: number }) {
     <svg className="logo-lk" viewBox="-10 -10 330 120" width={largura} role="img" aria-label="LK">
       <defs>
         <linearGradient id="lk-gradiente" x1="0" x2="1" y1="0" y2="0">
-          <stop offset="0" stopColor="#c41a08" />
-          <stop offset="1" stopColor="#ff2a00" />
+          <stop offset="0" stopColor="#00a19c" />
+          <stop offset="1" stopColor="#00f0d0" />
         </linearGradient>
       </defs>
       <g fill="url(#lk-gradiente)" transform="translate(58 0) skewX(-32)">

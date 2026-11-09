@@ -1,4 +1,4 @@
-/* Tema "pista": fundo preto, cinzas escuros, vermelho de destaque e os cartões como cartões de verdade. */
+/* Tema "equipe": fundo preto, cinzas escuros, verde-água de destaque e os cartões como cartões de verdade. */
 :root {
   --fundo: #000;
   --card: #121212;
@@ -9,10 +9,12 @@
   --verde: #3fd07a;
   --ambar: #ffc247;
   --negativo: #ff5148;
-  --vermelho: #e10600;
-  /* Estados ativos (pílulas, abas) ficam brancos com texto preto. */
+  /* Verde-água de destaque (botões, linha do topo); o texto em cima dele é preto. */
+  --vermelho: #00d2be;
+  --sobre-destaque: #000;
+  /* Estados ativos (pílulas, abas) ficam verde-neon com texto preto. */
   --pastel-lilas: #fff;
-  --pastel-azul: #fff;
+  --pastel-azul: #34e27f;
   --pastel-rosa: #fff;
   --sobre-pastel: #000;
   --sobre-pastel-2: #4a4a52;
@@ -26,7 +28,7 @@
   --seguro-topo: env(safe-area-inset-top, 0px);
 
   color-scheme: dark;
-  font-family: 'Titillium Web', system-ui, -apple-system, sans-serif;
+  font-family: 'Archivo', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1;
   color: var(--texto);
   background: var(--fundo);
@@ -2467,9 +2469,7 @@ a.botao-secundario {
   right: -16px;
   top: calc(-12px - var(--seguro-topo));
   height: calc(76px + var(--seguro-topo));
-  background: repeating-linear-gradient(-60deg, transparent 0 26px, rgba(255, 255, 255, 0.06) 26px 40px, transparent 40px 66px);
-  -webkit-mask: linear-gradient(90deg, transparent, #000 35%, #000 75%, transparent);
-  mask: linear-gradient(90deg, transparent, #000 35%, #000 75%, transparent);
+  border-bottom: 1px solid var(--vermelho);
   pointer-events: none;
 }
 
@@ -2514,7 +2514,7 @@ a.botao-secundario {
 
 .botao-mais {
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(225, 6, 0, 0.45);
+  box-shadow: 0 6px 16px rgba(0, 210, 190, 0.35);
 }
 
 /* O card principal vira o cartão: roxo no Nubank, laranja no Caju, com o outro cartão aparecendo atrás. */
@@ -2881,7 +2881,7 @@ a.botao-secundario {
 }
 
 .calendario-dia.com-prova {
-  background: rgba(225, 6, 0, 0.18);
+  background: rgba(0, 210, 190, 0.18);
 }
 
 .calendario-dia.escolhido {
@@ -3279,7 +3279,7 @@ a.botao-secundario {
 
 .abertura-logo .logo-lk {
   display: block;
-  filter: drop-shadow(0 10px 30px rgba(225, 6, 0, 0.35));
+  filter: drop-shadow(0 10px 30px rgba(0, 210, 190, 0.35));
 }
 
 /* Rastro de velocidade que passa por trás do logo. */
@@ -3326,4 +3326,47 @@ a.botao-secundario {
   .abertura-rastro {
     animation: none;
   }
+}
+
+/* ---------- Tema equipe: ajustes do verde-água ---------- */
+
+.topo h1 {
+  font-style: normal;
+  text-transform: none;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.topo {
+  padding-bottom: 10px;
+}
+
+.botao-nubank,
+.botao-caju,
+.botao-faculdade,
+.botao-principal,
+.botao-faltei,
+.etiqueta-prova {
+  color: var(--sobre-destaque);
+}
+
+
+.secao h2,
+.card h2,
+.valor-grande,
+.hoje-cartao strong,
+.linha-valor strong {
+  font-weight: 800;
+}
+
+.lista-numerada .linha-icone::before {
+  font-style: normal;
+  font-weight: 800;
+}
+
+/* A linha verde-água fica embaixo do topo inteiro, de ponta a ponta, como no site. */
+.topo::before {
+  top: auto;
+  bottom: 0;
+  height: 0;
 }
