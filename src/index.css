@@ -3254,3 +3254,76 @@ a.botao-secundario {
   text-transform: uppercase;
   letter-spacing: 0.06em;
 }
+
+/* ---------- Tela de abertura (logo LK) ---------- */
+
+.abertura {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: #000;
+  transition: opacity 0.45s ease;
+}
+
+.abertura.saindo {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.abertura-logo {
+  position: relative;
+  animation: lk-largada 0.7s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+
+.abertura-logo .logo-lk {
+  display: block;
+  filter: drop-shadow(0 10px 30px rgba(225, 6, 0, 0.35));
+}
+
+/* Rastro de velocidade que passa por trás do logo. */
+.abertura-rastro {
+  position: absolute;
+  left: -40%;
+  right: 100%;
+  top: 50%;
+  height: 4px;
+  margin-top: -2px;
+  background: linear-gradient(90deg, transparent, var(--vermelho));
+  transform: skewX(-32deg);
+  animation: lk-rastro 0.7s ease-out 0.05s both;
+}
+
+@keyframes lk-largada {
+  from {
+    opacity: 0;
+    transform: translateX(-60px) skewX(-8deg);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes lk-rastro {
+  0% {
+    right: 100%;
+    opacity: 1;
+  }
+  70% {
+    right: 0;
+    opacity: 1;
+  }
+  100% {
+    right: 0;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .abertura-logo,
+  .abertura-rastro {
+    animation: none;
+  }
+}
