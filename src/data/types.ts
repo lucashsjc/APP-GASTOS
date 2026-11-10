@@ -39,10 +39,13 @@ export interface Gasto {
   dinheiro_a_parte: boolean
   /** Mês (AAAA-MM) em que o gasto desconta, quando não é o mês da data (ex.: comprou no fim do mês com o Caju do mês seguinte). */
   mes_conta: string | null
+  /** Horário da compra (HH:MM), se foi informado. */
+  hora: string | null
 }
 
 /** Ao criar, os campos de controle são opcionais (não pago, sem observação, nada à parte). */
-export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte' | 'mes_conta'> & {
+export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte' | 'mes_conta' | 'hora'> & {
+  hora?: string | null
   pago?: boolean
   observacao?: string
   separado?: boolean

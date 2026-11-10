@@ -50,6 +50,7 @@ function gasto(dados: Partial<Gasto>): Gasto {
     separado: false,
     dinheiro_a_parte: false,
     mes_conta: null,
+    hora: null,
     ...dados,
   }
 }

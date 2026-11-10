@@ -22,6 +22,9 @@ function hojeSP(agora = /* @__PURE__ */ new Date()) {
     day: "2-digit"
   }).format(agora);
 }
+function horaSP(agora = /* @__PURE__ */ new Date()) {
+  return new Intl.DateTimeFormat("en-GB", { timeZone: FUSO, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).format(agora);
+}
 function mesDe(data) {
   return data.slice(0, 7);
 }
@@ -104,8 +107,8 @@ function normalizarDescricao(texto2) {
 }
 
 // src/lib/frase.ts
-var EXEMPLO = 'Exemplos: "uber 17", "mercado 85,90 caju", "ifood 42 d\xE9bito", "t\xEAnis 300 em 3x".';
-var VAZIAS = /* @__PURE__ */ new Set(["reais", "real", "r$", "rs", "de", "do", "da", "no", "na", "em", "com", "gastei", "paguei", "comprei", "um", "uma", "e"]);
+var EXEMPLO = 'Exemplos: "uber 17", "mercado 85,90 caju", "ifood 42 d\xE9bito", "t\xEAnis 300 em 3x", "lanche 20 \xE0s 14h30".';
+var VAZIAS = /* @__PURE__ */ new Set(["reais", "real", "r$", "rs", "de", "do", "da", "no", "na", "em", "com", "gastei", "paguei", "comprei", "um", "uma", "e", "as", "\xE0s", "a"]);
 function valorDoToken(token) {
   let t = token.replace(/^r\$/i, "");
   if (/^\d+\.\d{1,2}$/.test(t)) t = t.replace(".", ",");
@@ -120,11 +123,19 @@ function lerFrase(texto2) {
     return " ";
   });
   if (parcelas < 1 || parcelas > 48) return { ok: false, erro: "Parcelas: de 1 a 48." };
+  let hora = null;
+  resto = resto.replace(/\s(?:[àa]s\s)?(\d{1,2})(?::(\d{2})|h(\d{2})?)(?=\s)/i, (tudo, h, m1, m2) => {
+    const horas = Number(h);
+    const minutos = Number(m1 ?? m2 ?? "0");
+    if (horas > 23 || minutos > 59) return tudo;
+    hora = `${String(horas).padStart(2, "0")}:${String(minutos).padStart(2, "0")}`;
+    return " ";
+  });
   let aba = "nubank";
   let forma = null;
   let valor = null;
   const palavras = [];
-  for (const token of resto.trim().split(" ")) {
+  for (const token of resto.trim().split(/\s+/)) {
     const chave = semAcento(token).toLowerCase().replace(/[.,!?;:]+$/, "");
     if (chave === "caju") aba = "caju";
     else if (chave === "nubank" || chave === "nu") aba = "nubank";
@@ -148,7 +159,8 @@ function lerFrase(texto2) {
       valor_centavos: valor,
       aba,
       forma: aba === "caju" ? null : forma,
-      parcelas
+      parcelas,
+      hora
     }
   };
 }
@@ -166,7 +178,7 @@ function gastosDaFrase(f, extras) {
         parcelas: f.parcelas
       },
       extras.grupoId
-    );
+    ).map((p, i) => ({ ...p, hora: i === 0 ? extras.hora ?? null : null }));
   }
   return [
     {
@@ -181,14 +193,15 @@ function gastosDaFrase(f, extras) {
       grupo_id: null,
       parcela_numero: null,
       parcela_total: null,
-      caiu_manual: null
+      caiu_manual: null,
+      hora: extras.hora ?? null
     }
   ];
 }
-function confirmacao(f, forma, categoria) {
+function confirmacao(f, forma, categoria, hora) {
   const cartao = f.aba === "caju" ? "Caju" : `Nubank ${forma === "debito" ? "d\xE9bito" : "cr\xE9dito"}`;
   const valor = f.parcelas > 1 ? `${formatarReais(f.valor_centavos)} em ${f.parcelas}x` : formatarReais(f.valor_centavos);
-  return `\u2705 ${f.descricao} \xB7 ${valor} \xB7 ${cartao} \xB7 ${categoria}`;
+  return `\u2705 ${f.descricao} \xB7 ${valor} \xB7 ${cartao} \xB7 ${categoria}${hora ? ` \xB7 ${hora}` : ""}`;
 }
 function ehDesfazer(texto2) {
   return /^(desfazer|desfaz|apagar|apaga|cancelar|cancela)( o)?( ultimo)?$/.test(semAcento(texto2).trim().toLowerCase());
@@ -263,9 +276,10 @@ Deno.serve(async (req) => {
     const anterior = historico.find((g) => normalizarDescricao(g.descricao) === normalizarDescricao(f.descricao));
     const categoria = anterior?.categoria ?? sugerirCategoria(f.descricao);
     const forma = f.forma ?? anterior?.forma ?? "credito";
-    const gastos = gastosDaFrase(f, { data: hojeSP(), categoria, forma, grupoId: crypto.randomUUID() });
+    const hora = f.hora ?? horaSP();
+    const gastos = gastosDaFrase(f, { data: hojeSP(), categoria, forma, grupoId: crypto.randomUUID(), hora });
     await banco("gastos", { method: "POST", body: JSON.stringify(gastos.map((g) => ({ ...g, user_id: USUARIO }))) });
-    return texto(confirmacao(f, forma, categoria));
+    return texto(confirmacao(f, forma, categoria, hora));
   } catch (e) {
     console.error(e);
     return texto("\u274C N\xE3o deu para gravar agora. Tente de novo.", 500);

@@ -14,14 +14,16 @@ export interface Frase {
   forma: Forma | null
   /** 1 = à vista. */
   parcelas: number
+  /** Horário dito na frase ("às 14h30"), ou null (a função usa a hora em que recebeu). */
+  hora: string | null
 }
 
 export type ResultadoFrase = { ok: true; frase: Frase } | { ok: false; erro: string }
 
-const EXEMPLO = 'Exemplos: "uber 17", "mercado 85,90 caju", "ifood 42 débito", "tênis 300 em 3x".'
+const EXEMPLO = 'Exemplos: "uber 17", "mercado 85,90 caju", "ifood 42 débito", "tênis 300 em 3x", "lanche 20 às 14h30".'
 
 // Palavras que só ligam a frase ("17 reais de uber", "gastei 42 no ifood").
-const VAZIAS = new Set(['reais', 'real', 'r$', 'rs', 'de', 'do', 'da', 'no', 'na', 'em', 'com', 'gastei', 'paguei', 'comprei', 'um', 'uma', 'e'])
+const VAZIAS = new Set(['reais', 'real', 'r$', 'rs', 'de', 'do', 'da', 'no', 'na', 'em', 'com', 'gastei', 'paguei', 'comprei', 'um', 'uma', 'e', 'as', 'às', 'a'])
 
 function valorDoToken(token: string): number | null {
   let t = token.replace(/^r\$/i, '')
@@ -42,12 +44,22 @@ export function lerFrase(texto: string): ResultadoFrase {
   })
   if (parcelas < 1 || parcelas > 48) return { ok: false, erro: 'Parcelas: de 1 a 48.' }
 
+  // Horário: "14:30", "14h30", "14h", "às 9h" (antes do valor, para "14h" não virar 14 reais).
+  let hora: string | null = null
+  resto = resto.replace(/\s(?:[àa]s\s)?(\d{1,2})(?::(\d{2})|h(\d{2})?)(?=\s)/i, (tudo, h: string, m1?: string, m2?: string) => {
+    const horas = Number(h)
+    const minutos = Number(m1 ?? m2 ?? '0')
+    if (horas > 23 || minutos > 59) return tudo
+    hora = `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}`
+    return ' '
+  })
+
   let aba: Aba = 'nubank'
   let forma: Forma | null = null
   let valor: number | null = null
   const palavras: string[] = []
 
-  for (const token of resto.trim().split(' ')) {
+  for (const token of resto.trim().split(/\s+/)) {
     const chave = semAcento(token).toLowerCase().replace(/[.,!?;:]+$/, '')
     if (chave === 'caju') aba = 'caju'
     else if (chave === 'nubank' || chave === 'nu') aba = 'nubank'
@@ -75,6 +87,7 @@ export function lerFrase(texto: string): ResultadoFrase {
       aba,
       forma: aba === 'caju' ? null : forma,
       parcelas,
+      hora,
     },
   }
 }
@@ -82,7 +95,7 @@ export function lerFrase(texto: string): ResultadoFrase {
 /** Os gastos a gravar (um, ou as parcelas). `forma` e `categoria` já resolvidas pelo histórico. */
 export function gastosDaFrase(
   f: Frase,
-  extras: { data: string; categoria: string; forma: Forma; grupoId: string },
+  extras: { data: string; categoria: string; forma: Forma; grupoId: string; hora?: string | null },
 ): NovoGasto[] {
   const forma = f.aba === 'nubank' ? extras.forma : null
   if (f.parcelas > 1) {
@@ -97,7 +110,7 @@ export function gastosDaFrase(
         parcelas: f.parcelas,
       },
       extras.grupoId,
-    )
+    ).map((p, i) => ({ ...p, hora: i === 0 ? (extras.hora ?? null) : null }))
   }
   return [
     {
@@ -113,15 +126,16 @@ export function gastosDaFrase(
       parcela_numero: null,
       parcela_total: null,
       caiu_manual: null,
+      hora: extras.hora ?? null,
     },
   ]
 }
 
 /** Resposta curta que o atalho mostra: "✅ Uber · R$ 17,00 · Nubank crédito · Transporte". */
-export function confirmacao(f: Frase, forma: Forma, categoria: string): string {
+export function confirmacao(f: Frase, forma: Forma, categoria: string, hora?: string | null): string {
   const cartao = f.aba === 'caju' ? 'Caju' : `Nubank ${forma === 'debito' ? 'débito' : 'crédito'}`
   const valor = f.parcelas > 1 ? `${formatarReais(f.valor_centavos)} em ${f.parcelas}x` : formatarReais(f.valor_centavos)
-  return `✅ ${f.descricao} · ${valor} · ${cartao} · ${categoria}`
+  return `✅ ${f.descricao} · ${valor} · ${cartao} · ${categoria}${hora ? ` · ${hora}` : ''}`
 }
 
 export function ehDesfazer(texto: string): boolean {

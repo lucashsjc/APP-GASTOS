@@ -11,7 +11,7 @@
 
 import { sugerirCategoria } from '../../../src/lib/categorias'
 import { normalizarDescricao } from '../../../src/lib/calculos'
-import { hojeSP } from '../../../src/lib/datas'
+import { horaSP, hojeSP } from '../../../src/lib/datas'
 import { formatarReais } from '../../../src/lib/dinheiro'
 import { confirmacao, ehDesfazer, gastosDaFrase, lerFrase } from '../../../src/lib/frase'
 
@@ -102,9 +102,11 @@ Deno.serve(async (req) => {
     const categoria = anterior?.categoria ?? sugerirCategoria(f.descricao)
     const forma = f.forma ?? anterior?.forma ?? 'credito'
 
-    const gastos = gastosDaFrase(f, { data: hojeSP(), categoria, forma, grupoId: crypto.randomUUID() })
+    // Horário: o que foi dito na frase ou, sem isso, a hora em que o atalho mandou.
+    const hora = f.hora ?? horaSP()
+    const gastos = gastosDaFrase(f, { data: hojeSP(), categoria, forma, grupoId: crypto.randomUUID(), hora })
     await banco('gastos', { method: 'POST', body: JSON.stringify(gastos.map((g) => ({ ...g, user_id: USUARIO }))) })
-    return texto(confirmacao(f, forma, categoria))
+    return texto(confirmacao(f, forma, categoria, hora))
   } catch (e) {
     console.error(e)
     return texto('❌ Não deu para gravar agora. Tente de novo.', 500)

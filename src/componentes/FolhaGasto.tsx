@@ -13,7 +13,7 @@ import {
   planejarEdicaoRecorrencia,
 } from '../lib/calculos'
 import { CATEGORIAS, sugerirCategoria } from '../lib/categorias'
-import { dataNoMes, diaDe, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
+import { dataNoMes, diaDe, horaSP, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { Folha } from './Folha'
 import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
@@ -111,6 +111,10 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [valorTexto, setValorTexto] = useState(inicial.valor)
   const [descricao, setDescricao] = useState(inicial.descricao)
   const [data, setData] = useState(inicial.data)
+  // Horário da compra: o que já estava gravado ou, num gasto novo de hoje, a hora de agora.
+  const [hora, setHora] = useState(
+    gastoEditado ? (gastoEditado.hora ?? '') : !recEditada && inicial.data === hoje ? horaSP() : '',
+  )
   const [dia, setDia] = useState(recEditada?.dia ?? diaDe(inicial.data))
   // Data da ocorrência do mês aberto (muda só nesse mês).
   const [dataNoMesAberto, setDataNoMesAberto] = useState(ocorrencia?.data ?? '')
@@ -170,10 +174,12 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       categoria: categoria || sugerirCategoria(descricao),
     }
     const extras = { observacao: observacao.trim(), separado, dinheiro_a_parte: aba === 'nubank' && dinheiroAParte }
+    const horaFinal = tipo === 'uma' && /^\d{2}:\d{2}$/.test(hora) ? hora : null
     const unico = (tipoGasto: NovoGasto['tipo']): NovoGasto => ({
       ...comum,
       ...extras,
       mes_conta: mesFinal,
+      hora: horaFinal,
       valor_centavos: valor,
       data,
       tipo: tipoGasto,
@@ -218,7 +224,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           valor_centavos: valor,
           data,
           tipo: tipoGasto,
-          ...(tipoGasto === 'parcela' ? {} : { mes_conta: mesFinal }),
+          ...(tipoGasto === 'parcela' ? {} : { mes_conta: mesFinal, hora: horaFinal }),
         })
       } else if (tipo === 'uma') {
         await repo.criarGastos([unico(certo ? 'certo_unico' : 'unico')])
@@ -356,10 +362,18 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             />
           </label>
         ) : (
-          <label className="campo">
-            <span>{tipo === 'parcelado' ? 'Data da compra' : tipo === 'todo_mes' ? 'Primeira vez' : 'Data'}</span>
-            <input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
-          </label>
+          <div className={tipo === 'uma' && gastoEditado?.tipo !== 'parcela' ? 'campos-lado' : undefined}>
+            <label className="campo">
+              <span>{tipo === 'parcelado' ? 'Data da compra' : tipo === 'todo_mes' ? 'Primeira vez' : 'Data'}</span>
+              <input type="date" value={data} onChange={(e) => setData(e.target.value)} required />
+            </label>
+            {tipo === 'uma' && gastoEditado?.tipo !== 'parcela' && (
+              <label className="campo">
+                <span>Horário</span>
+                <input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+              </label>
+            )}
+          </div>
         )}
 
         {podeMudarMes && mesDaData && (

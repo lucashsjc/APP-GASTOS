@@ -11,11 +11,13 @@ gasto aparece no app, com a resposta "✅ Uber · R$ 17,00 · Nubank crédito ·
 | `mercado 85,90 caju` | Mercado, R$ 85,90, Caju |
 | `ifood 42 débito` | iFood, R$ 42,00, Nubank, débito |
 | `tênis 300 em 3x` | Tênis, R$ 300,00 em 3 parcelas |
+| `lanche 20 às 14h30` | Lanche, R$ 20,00, com o horário 14:30 |
 | `17 reais de uber` | também funciona (jeito falado) |
 | `desfazer` | apaga o último gasto registrado |
 
 A categoria e a forma (crédito ou débito) são as da última vez que você usou a mesma descrição.
 Sem histórico, a categoria vem das regras do app (Uber → Transporte…) e a forma é crédito.
+O horário é o que você disser na frase ("14:30", "14h30", "às 9h") ou, sem isso, a hora em que o atalho mandou.
 
 ## Como funciona
 

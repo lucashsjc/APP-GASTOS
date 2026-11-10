@@ -144,7 +144,7 @@ export function resumoPagamento(itens: { valor_centavos: number; pago: boolean }
 export function outrosDoMes(dados: Dados, aba: Aba, mes: string): Gasto[] {
   return dados.gastos
     .filter((g) => g.aba === aba && g.tipo === 'unico' && mesDoGasto(g) === mes)
-    .sort((a, b) => b.data.localeCompare(a.data))
+    .sort((a, b) => b.data.localeCompare(a.data) || (b.hora ?? '').localeCompare(a.hora ?? ''))
 }
 
 // ---------- Nubank ----------

@@ -34,6 +34,7 @@ const COLUNAS = {
     'separado',
     'dinheiro_a_parte',
     'mes_conta',
+    'hora',
   ],
   recorrencias: [
     'id',
@@ -65,6 +66,7 @@ const OPCIONAIS: Record<string, { sql: string; uso: string }> = {
   separado: { sql: '006_observacao_e_a_parte.sql', uso: 'separar o gasto dos outros' },
   dinheiro_a_parte: { sql: '007_dinheiro_a_parte.sql', uso: 'marcar como pago com dinheiro à parte' },
   mes_conta: { sql: '008_mes_conta.sql', uso: 'descontar o gasto em outro mês' },
+  hora: { sql: '012_horario_do_gasto.sql', uso: 'guardar o horário da compra' },
 }
 
 /** O SQL de uma coluna opcional, quando ela chegou numa tabela em outro SQL. */
@@ -106,7 +108,8 @@ export function criarRepoSupabase(): Repo {
     const copia: Record<string, unknown> = { ...(linha as Record<string, unknown>) }
     for (const coluna of faltando[tabela]) {
       const valor = copia[coluna]
-      if (valor === undefined || valor === false || valor === '' || valor === null) delete copia[coluna]
+      // O horário é só informativo: sem a coluna (antes do SQL), o gasto grava sem ele.
+      if (valor === undefined || valor === false || valor === '' || valor === null || coluna === 'hora') delete copia[coluna]
     }
     return copia as T
   }
@@ -162,7 +165,7 @@ export function criarRepoSupabase(): Repo {
         tudo<Deposito>('depositos'),
       ])
       return {
-        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null })),
+        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null })),
         recorrencias: recorrencias.map(comPadroes),
         recebidos,
         depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null })),
@@ -175,7 +178,7 @@ export function criarRepoSupabase(): Repo {
       const { data, error } = await db.from('gastos').insert(linhas).select(colunas('gastos'))
       erroDeGravacao('gastos', error)
       confirmarColunas('gastos', linhas[0])
-      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null }))
+      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null }))
     },
     async atualizarGasto(id, dados) {
       const linha = preparar('gastos', dados)

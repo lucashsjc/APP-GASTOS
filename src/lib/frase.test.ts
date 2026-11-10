@@ -9,7 +9,7 @@ const ler = (t: string) => {
 
 describe('registrar com uma frase', () => {
   it('descrição e valor, no Nubank por padrão', () => {
-    expect(ler('uber 17')).toEqual({ descricao: 'Uber', valor_centavos: 1700, aba: 'nubank', forma: null, parcelas: 1 })
+    expect(ler('uber 17')).toEqual({ descricao: 'Uber', valor_centavos: 1700, aba: 'nubank', forma: null, parcelas: 1, hora: null })
     expect(ler('Mercado 85,90')).toMatchObject({ descricao: 'Mercado', valor_centavos: 8590 })
   })
 
@@ -72,5 +72,26 @@ describe('registrar com uma frase', () => {
     expect(ehDesfazer('desfazer')).toBe(true)
     expect(ehDesfazer('Apagar o último')).toBe(true)
     expect(ehDesfazer('uber 17')).toBe(false)
+  })
+})
+
+describe('horário na frase', () => {
+  it('entende "às 14h30", "14:30", "14h" e "9h"', () => {
+    expect(ler('lanche 20 às 14h30')).toMatchObject({ descricao: 'Lanche', valor_centavos: 2000, hora: '14:30' })
+    expect(ler('mercado 85,90 14:05 caju')).toMatchObject({ descricao: 'Mercado', valor_centavos: 8590, aba: 'caju', hora: '14:05' })
+    expect(ler('uber 17 as 9h')).toMatchObject({ descricao: 'Uber', valor_centavos: 1700, hora: '09:00' })
+    expect(ler('às 22h pizza 45')).toMatchObject({ descricao: 'Pizza', valor_centavos: 4500, hora: '22:00' })
+  })
+
+  it('sem horário, fica vazio; o valor com vírgula não vira hora', () => {
+    expect(ler('lanche 14,30')).toMatchObject({ valor_centavos: 1430, hora: null })
+    expect(ler('tênis 300 em 3x')).toMatchObject({ parcelas: 3, hora: null })
+  })
+
+  it('o horário vai para o gasto e aparece na confirmação', () => {
+    const f = ler('lanche 20 às 14h30')
+    const [g] = gastosDaFrase(f, { data: '2026-11-10', categoria: 'Alimentação', forma: 'credito', grupoId: 'g', hora: f.hora })
+    expect(g.hora).toBe('14:30')
+    expect(confirmacao(f, 'credito', 'Alimentação', '14:30')).toBe('✅ Lanche · R$ 20,00 · Nubank crédito · Alimentação · 14:30')
   })
 })

@@ -18,13 +18,16 @@ interface Props {
   observacao?: string
   /** Pago com dinheiro à parte (marca embaixo do gasto). */
   dinheiro_a_parte?: boolean
+  /** Horário da compra (HH:MM), mostrado depois da data. */
+  hora?: string | null
   /** Selo PAGO / NÃO PAGO (sem o selo quando não informado). */
   pago?: boolean
   aoAlternarPago?: () => void
 }
 
-export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, positivo, icone, pago, aoAlternarPago, observacao, dinheiro_a_parte }: Props) {
-  const partes = [detalhe ?? dataCurta(data), forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
+export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, detalhe, positivo, icone, pago, aoAlternarPago, observacao, dinheiro_a_parte, hora }: Props) {
+  const quando = detalhe ?? dataCurta(data)
+  const partes = [hora ? quando.replace(dataCurta(data), `${dataCurta(data)} ${hora}`) : quando, forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
   return (
     <div className="linha-gasto">
       <span className="linha-icone" aria-hidden="true">

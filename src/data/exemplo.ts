@@ -104,6 +104,7 @@ export function dadosDeExemplo(hoje: string): Dados {
     separado: false,
     dinheiro_a_parte: false,
     mes_conta: null,
+    hora: null,
   })
 
   const gastos: Gasto[] = [

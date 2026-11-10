@@ -29,6 +29,11 @@ export function hojeSP(agora: Date = new Date()): string {
   }).format(agora)
 }
 
+/** A hora de agora em São Paulo, como HH:MM. */
+export function horaSP(agora: Date = new Date()): string {
+  return new Intl.DateTimeFormat('en-GB', { timeZone: FUSO, hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).format(agora)
+}
+
 export function mesDe(data: string): string {
   return data.slice(0, 7)
 }

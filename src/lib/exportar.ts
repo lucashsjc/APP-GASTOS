@@ -11,7 +11,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
   return [
     {
       nome: 'Gastos',
-      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)', 'Pago', 'Observação', 'À parte', 'Dinheiro à parte', 'Desconta em'],
+      colunas: ['Data', 'Cartão', 'Descrição', 'Valor', 'Categoria', 'Tipo', 'Forma', 'Parcela', 'Caiu (à mão)', 'Pago', 'Observação', 'À parte', 'Dinheiro à parte', 'Desconta em', 'Horário'],
       linhas: [...dados.gastos]
         .sort((a, b) => a.data.localeCompare(b.data))
         .map((g) => [
@@ -29,6 +29,7 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
           g.separado ? 'Sim' : '',
           g.dinheiro_a_parte ? 'Sim' : '',
           g.mes_conta ? `${g.mes_conta.slice(5)}/${g.mes_conta.slice(0, 4)}` : '',
+          g.hora ?? '',
         ]),
     },
     {
