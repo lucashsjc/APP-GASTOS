@@ -3600,3 +3600,147 @@ a.botao-secundario {
 .abertura-logo .logo-lk {
   filter: drop-shadow(0 10px 30px rgba(46, 229, 157, 0.3));
 }
+
+/* ---------- Telemetria do mês e "Posso comprar?" ---------- */
+
+.telemetria {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.telemetria-topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.telemetria-rotulo {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--texto-2);
+}
+
+.telemetria-selo {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 4px 9px;
+  border-radius: 999px;
+}
+
+.telemetria-selo.bom {
+  background: var(--pastel-azul);
+  color: #000;
+}
+
+.telemetria-selo.ruim {
+  background: var(--negativo);
+  color: #000;
+}
+
+.telemetria-delta {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  font-variant-numeric: tabular-nums;
+}
+
+.telemetria-delta.bom {
+  color: var(--pastel-azul);
+}
+
+.telemetria-delta.ruim {
+  color: var(--negativo);
+}
+
+.telemetria-legenda {
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--texto-2);
+}
+
+.telemetria-legenda b {
+  color: #fff;
+}
+
+.telemetria-grafico {
+  width: 100%;
+  height: auto;
+  margin: 4px 0;
+}
+
+.telemetria-grade {
+  stroke: var(--borda);
+  stroke-width: 1;
+}
+
+.telemetria-ideal {
+  stroke: #6b6f75;
+  stroke-width: 2;
+  stroke-dasharray: 6 6;
+}
+
+.telemetria-eixo {
+  fill: var(--texto-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.telemetria-eixo.forte {
+  fill: #fff;
+}
+
+.botao-posso {
+  align-self: stretch;
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 14px;
+  background: var(--card-2);
+  font-weight: 800;
+  font-size: 15px;
+}
+
+.veredito {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid var(--borda);
+}
+
+.veredito-cabe {
+  border-color: var(--pastel-azul);
+}
+
+.veredito-aperta {
+  border-color: var(--ambar);
+}
+
+.veredito-estoura {
+  border-color: var(--negativo);
+}
+
+.veredito-titulo {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.veredito-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--texto-2);
+}
+
+.veredito-linha b {
+  color: #fff;
+}

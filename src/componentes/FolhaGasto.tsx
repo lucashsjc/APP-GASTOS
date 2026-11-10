@@ -19,7 +19,8 @@ import { Folha } from './Folha'
 import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
 
 export type ModoGasto =
-  | { aba: Aba; origem: 'topo' | 'certos' }
+  /** `sugestao`: valor e parcelas vindos do "Posso comprar?". */
+  | { aba: Aba; origem: 'topo' | 'certos'; sugestao?: { valor_centavos: number; parcelas: number } }
   | { aba: Aba; gasto: Gasto }
   /** `ocorrencia`: a do mês aberto, para mudar a data só nele. */
   | { aba: Aba; recorrencia: Recorrencia; ocorrencia?: Certo }
@@ -91,9 +92,10 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       }
     }
     const origem = 'origem' in modo ? modo.origem : 'topo'
+    const sugestao = 'sugestao' in modo ? modo.sugestao : undefined
     return {
-      tipo: (origem === 'certos' ? 'todo_mes' : 'uma') as Tipo,
-      valor: '',
+      tipo: (origem === 'certos' ? 'todo_mes' : sugestao && sugestao.parcelas > 1 ? 'parcelado' : 'uma') as Tipo,
+      valor: sugestao ? reaisDigitados(sugestao.valor_centavos) : '',
       descricao: '',
       // Pelo + do topo, a data é hoje; pela lista de certos, um dia do mês que está aberto.
       data: origem === 'topo' || mes === mesAtual ? hoje : dataNoMes(mes, diaDe(hoje)),
@@ -103,7 +105,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
       dinheiroAParte: false,
       forma: 'credito' as Forma,
       certo: origem === 'certos',
-      parcelas: 2,
+      parcelas: sugestao && sugestao.parcelas > 1 ? sugestao.parcelas : 2,
     }
   })()
 

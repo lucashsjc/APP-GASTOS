@@ -6,6 +6,7 @@ import { FolhaValor } from '../componentes/FolhaValor'
 import { IconeLapis, IconeProximo, IconeSeta, Logo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
+import { CardTelemetria } from '../componentes/Telemetria'
 import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
 import { repo } from '../data/repo'
@@ -90,6 +91,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
       ) : (
         <CardCajuPrincipal aoDepositar={() => setFolhaValor('deposito')} />
       )}
+
+      <CardTelemetria
+        aba={aba}
+        aoLancar={(valor, parcelas) => setFolha({ aba, origem: 'topo', sugestao: { valor_centavos: valor, parcelas } })}
+      />
 
       <CardPagamentos certos={certos} outros={outros} />
 
