@@ -43,9 +43,8 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const totalAParte = aParte.reduce((s, i) => s + i.valor_centavos, 0)
 
   const acoesCerto = useAcoesCerto(aba, setFolha)
-  // No Caju a lista vem separada por dia (como no extrato do Caju): a data fica no título do dia e a
-  // linha mostra a categoria e o horário.
-  const porDia = aba === 'caju'
+  // A lista vem separada por dia (como no extrato do Caju): a data fica no título do dia e a linha
+  // mostra a categoria, o horário e, no Nubank, crédito ou débito.
   const detalheDoDia = (item: Certo | Gasto) =>
     [
       item.categoria,
@@ -68,7 +67,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <LinhaGasto
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
-            detalhe={porDia ? detalheDoDia(item) : `${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
+            detalhe={detalheDoDia(item)}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -84,14 +83,8 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <LinhaGasto
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
-            hora={porDia ? null : item.hora}
-            detalhe={
-              porDia
-                ? detalheDoDia(item)
-                : item.mes_conta && item.mes_conta !== mesDe(item.data)
-                  ? `${dataCurta(item.data)} · conta em ${nomeDoMes(item.mes_conta)}`
-                  : undefined
-            }
+            hora={null}
+            detalhe={detalheDoDia(item)}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -127,11 +120,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         ) : normais.length === 0 ? (
           <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
         ) : (
-          porDia ? (
-            <ListaPorDia itens={normais} linha={linha} />
-          ) : (
-            <ul className="lista lista-numerada">{normais.map(linha)}</ul>
-          )
+          <ListaPorDia itens={normais} linha={linha} />
         )}
         {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
       </section>
@@ -141,7 +130,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <h2>
             À parte <span>{formatarReais(totalAParte)}</span>
           </h2>
-          <ul className="lista lista-numerada">{aParte.map(linha)}</ul>
+          <ListaPorDia itens={aParte} linha={linha} />
           <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
         </section>
       )}
