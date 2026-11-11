@@ -1,6 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom'
 import { ehAreaBanco } from '../lib/areas'
-import { LogoLK } from './Abertura'
 import { BotaoMenu } from './MenuLateral'
 
 const LINKS = [
@@ -20,7 +19,6 @@ export function Cabecalho() {
     <header className="cabecalho">
       <div className="cabecalho-topo">
         <div className="cabecalho-marca">
-          <LogoLK largura={62} />
           <span>
             <small>Minha rotina</small>
             <small>Lucas · {new Date().getFullYear()}</small>

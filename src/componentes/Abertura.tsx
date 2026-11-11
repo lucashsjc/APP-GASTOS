@@ -22,28 +22,39 @@ export function LogoLK({ largura = 220 }: { largura?: number }) {
 }
 
 /**
- * Tela de abertura: o logo entra como numa largada e, depois de um instante, a tela some e mostra o
- * app (que já vai carregando por trás). Aparece uma vez a cada vez que o app é aberto.
+ * Tela de abertura: o logo entra como numa largada e fica esperando um toque para abrir o app (que já vai
+ * carregando por trás). Aparece uma vez a cada vez que o app é aberto.
  */
 export function Abertura() {
-  const [fase, setFase] = useState<'entrando' | 'saindo' | 'fim'>('entrando')
+  const [fase, setFase] = useState<'esperando' | 'saindo' | 'fim'>('esperando')
 
   useEffect(() => {
-    const sair = window.setTimeout(() => setFase('saindo'), 1300)
-    const fim = window.setTimeout(() => setFase('fim'), 1750)
-    return () => {
-      window.clearTimeout(sair)
-      window.clearTimeout(fim)
-    }
-  }, [])
+    if (fase !== 'saindo') return
+    const fim = window.setTimeout(() => setFase('fim'), 450)
+    return () => window.clearTimeout(fim)
+  }, [fase])
+
+  useEffect(() => {
+    if (fase !== 'esperando') return
+    const tecla = (e: KeyboardEvent) => (e.key === 'Enter' || e.key === ' ') && setFase('saindo')
+    document.addEventListener('keydown', tecla)
+    return () => document.removeEventListener('keydown', tecla)
+  }, [fase])
 
   if (fase === 'fim') return null
   return (
-    <div className={`abertura${fase === 'saindo' ? ' saindo' : ''}`} aria-hidden="true">
-      <div className="abertura-logo">
+    <button
+      type="button"
+      className={`abertura${fase === 'saindo' ? ' saindo' : ''}`}
+      onClick={() => setFase('saindo')}
+      aria-label="Toque para começar"
+      autoFocus
+    >
+      <span className="abertura-logo">
         <LogoLK largura={240} />
         <span className="abertura-rastro" />
-      </div>
-    </div>
+      </span>
+      <span className="abertura-toque">Toque para começar</span>
+    </button>
   )
 }
