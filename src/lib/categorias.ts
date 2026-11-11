@@ -26,9 +26,17 @@ export function categoria(nome: string): Categoria {
 
 // Regras de categoria da importação (seção 9). O que não se encaixa vai para Outros.
 const REGRAS: [RegExp, string][] = [
-  [/\b(uber|gasolina)\b/, 'Transporte'],
-  [/\b(porto|spotify|icloud)\b/, 'Fixos'],
-  [/\bremedio/, 'Saúde'],
+  [/\b(uber|99|gasolina|posto|combustivel|estacionamento|pedagio|onibus|metro)\b/, 'Transporte'],
+  [/\b(porto|spotify|icloud|netflix|youtube|amazon prime|academia)\b/, 'Fixos'],
+  [/\b(remedio|farmacia|drogaria|consulta|dentista)/, 'Saúde'],
+  [/\b(mercado|supermercado|atacadao|assai|emporio|hortifruti|padaria)\b/, 'Mercado'],
+  [
+    /\b(lanche|ifood|acai|agua|coca|refri|refrigerante|mango|cafe|pizza|hamburguer|burger|restaurante|cantina|almoco|janta|jantar|sorvete|salgado|pastel|suco|cerveja|mc ?donalds|bk|subway)\b/,
+    'Alimentação',
+  ],
+  [/\b(gta|jogo|game|steam|playstation|psn|xbox|cinema|show|ingresso|bar|balada)\b/, 'Lazer'],
+  [/\b(americanas|shopee|mercado livre|amazon|magalu|tampa|ps5|roupa|tenis|camiseta|loja)\b/, 'Compras'],
+  [/\b(presente|aniversario)\b/, 'Presentes'],
 ]
 
 export function sugerirCategoria(descricao: string): string {

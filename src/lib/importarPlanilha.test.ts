@@ -178,8 +178,8 @@ describe('plano de importação', () => {
     expect(categoria('PORTO')).toBe('Fixos')
     expect(categoria('Spotify')).toBe('Fixos')
     expect(categoria('Remédio')).toBe('Saúde')
-    expect(categoria('Mercado')).toBe('Outros')
-    expect(categoria('Tampa PS5')).toBe('Outros')
+    expect(categoria('Mercado')).toBe('Mercado')
+    expect(categoria('Tampa PS5')).toBe('Compras')
   })
 
   it('o valor da coluna C vira o recebido dos meses até o atual', () => {
