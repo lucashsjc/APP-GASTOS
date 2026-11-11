@@ -43,6 +43,18 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const totalAParte = aParte.reduce((s, i) => s + i.valor_centavos, 0)
 
   const acoesCerto = useAcoesCerto(aba, setFolha)
+  // No Caju a lista vem separada por dia (como no extrato do Caju): a data fica no título do dia e a
+  // linha mostra a categoria e o horário.
+  const porDia = aba === 'caju'
+  const detalheDoDia = (item: Certo | Gasto) =>
+    [
+      item.categoria,
+      !('chave' in item) && item.hora,
+      'chave' in item && etiquetaCerto(item),
+      !('chave' in item) && item.mes_conta && item.mes_conta !== mesDe(item.data) && `conta em ${nomeDoMes(item.mes_conta)}`,
+    ]
+      .filter(Boolean)
+      .join(' · ')
   const linha = (item: Certo | Gasto) =>
     'chave' in item ? (
       <li key={item.chave}>
@@ -56,7 +68,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <LinhaGasto
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
-            detalhe={`${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
+            detalhe={porDia ? detalheDoDia(item) : `${dataCurta(item.data)} · ${etiquetaCerto(item)}`}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -72,7 +84,14 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           <LinhaGasto
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
-            detalhe={item.mes_conta && item.mes_conta !== mesDe(item.data) ? `${dataCurta(item.data)} · conta em ${nomeDoMes(item.mes_conta)}` : undefined}
+            hora={porDia ? null : item.hora}
+            detalhe={
+              porDia
+                ? detalheDoDia(item)
+                : item.mes_conta && item.mes_conta !== mesDe(item.data)
+                  ? `${dataCurta(item.data)} · conta em ${nomeDoMes(item.mes_conta)}`
+                  : undefined
+            }
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -108,7 +127,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         ) : normais.length === 0 ? (
           <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
         ) : (
-          <ul className="lista lista-numerada">{normais.map(linha)}</ul>
+          porDia ? (
+            <ListaPorDia itens={normais} linha={linha} />
+          ) : (
+            <ul className="lista lista-numerada">{normais.map(linha)}</ul>
+          )
         )}
         {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
       </section>
@@ -324,4 +347,32 @@ function CardPagamentos({ certos, outros }: { certos: Certo[]; outros: Gasto[] }
       )}
     </section>
   )
+}
+
+/** Os gastos separados por dia, com a data e o total do dia no título (do mais recente para o mais antigo). */
+function ListaPorDia({ itens, linha }: { itens: (Certo | Gasto)[]; linha: (item: Certo | Gasto) => React.ReactNode }) {
+  const dias = new Map<string, (Certo | Gasto)[]>()
+  for (const item of itens) dias.set(item.data, [...(dias.get(item.data) ?? []), item])
+  const horaDe = (i: Certo | Gasto) => ('chave' in i ? '' : (i.hora ?? ''))
+  return (
+    <div className="lista-por-dia">
+      {[...dias.entries()]
+        .sort((a, b) => b[0].localeCompare(a[0]))
+        .map(([data, doDia]) => (
+          <section key={data} className="dia-grupo">
+            <h3 className="dia-titulo">
+              <span>{dataPorExtenso(data)}</span>
+              <span>{formatarReais(doDia.reduce((s, i) => s + i.valor_centavos, 0))}</span>
+            </h3>
+            <ul className="lista lista-dia">{[...doDia].sort((a, b) => horaDe(b).localeCompare(horaDe(a))).map(linha)}</ul>
+          </section>
+        ))}
+    </div>
+  )
+}
+
+/** "9 de novembro de 2026". */
+function dataPorExtenso(data: string): string {
+  const [ano, mes, dia] = data.split('-')
+  return `${Number(dia)} de ${nomeDoMes(`${ano}-${mes}`)} de ${ano}`
 }

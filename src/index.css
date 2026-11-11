@@ -3744,3 +3744,45 @@ a.botao-secundario {
 .veredito-linha b {
   color: #fff;
 }
+
+/* ---------- Caju: gastos separados por dia (como no extrato do Caju) ---------- */
+
+.lista-por-dia {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dia-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dia-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin: 0;
+  padding: 0 4px 6px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--texto-2);
+}
+
+.dia-titulo span:last-child {
+  font-variant-numeric: tabular-nums;
+}
+
+.lista-dia {
+  gap: 0;
+}
+
+.lista-dia > li {
+  border-radius: 0;
+  border-bottom: 1px solid var(--borda);
+}
+
+.lista-dia > li:last-child {
+  border-bottom: none;
+}
