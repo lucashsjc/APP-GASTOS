@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { ehAreaBanco } from '../lib/areas'
 import { LogoLK } from './Abertura'
 import { BotaoMenu } from './MenuLateral'
@@ -26,7 +26,12 @@ export function Cabecalho() {
             <small>Lucas · {new Date().getFullYear()}</small>
           </span>
         </div>
-        <BotaoMenu />
+        <div className="cabecalho-acoes">
+          <Link to="/assistente" className={`botao-assistente ${pathname === '/assistente' ? 'ativo' : ''}`} aria-label="Assistente com IA">
+            <span aria-hidden="true">✦</span> IA
+          </Link>
+          <BotaoMenu />
+        </div>
       </div>
       <nav className="cabecalho-nav" aria-label="Áreas">
         {LINKS.map((l) => (

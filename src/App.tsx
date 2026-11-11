@@ -10,6 +10,7 @@ import { ProvedorFaculdade } from './faculdade/estado'
 import PaginaFaculdade from './faculdade/PaginaFaculdade'
 import PaginaHoje from './hoje/PaginaHoje'
 import { ehAreaBanco } from './lib/areas'
+import PaginaAssistente from './assistente/PaginaAssistente'
 import Ajustes from './pages/Ajustes'
 import PaginaProjetos from './projetos/PaginaProjetos'
 import PaginaReadme from './projetos/PaginaReadme'
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/caju/certos" element={<Certos aba="caju" />} />
             <Route path="/nubank/para-onde" element={<ParaOnde aba="nubank" />} />
             <Route path="/caju/para-onde" element={<ParaOnde aba="caju" />} />
+            <Route path="/assistente" element={<PaginaAssistente />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />
             <Route path="/ajustes/importar" element={<Importar />} />
             <Route
