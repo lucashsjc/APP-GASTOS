@@ -61,6 +61,7 @@ export default function App() {
         {modoDemonstracao && <div className="aviso-demo">Modo demonstração: dados de exemplo, só neste aparelho.</div>}
         <main className="conteudo">
           <Cabecalho />
+          <Transicao>
           <Routes>
             <Route path="/" element={<PaginaHoje />} />
             <Route path="/nubank" element={<PaginaAba aba="nubank" />} />
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/projetos/:repo" element={<PaginaReadme />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Transicao>
         </main>
         <ErroEAviso />
         <BarraCartoes />
@@ -93,6 +95,16 @@ export default function App() {
       </BrowserRouter>
       </ProvedorFaculdade>
     </ProvedorDeDados>
+  )
+}
+
+/** Cada tela entra com um deslize curto (a chave muda com a rota e a animação roda de novo). */
+function Transicao({ children }: { children: React.ReactNode }) {
+  const { pathname } = useLocation()
+  return (
+    <div key={pathname} className="transicao">
+      {children}
+    </div>
   )
 }
 

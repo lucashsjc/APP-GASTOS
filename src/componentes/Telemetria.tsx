@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import type { Aba } from '../data/types'
 import { useEstado } from '../estado'
 import { cardCaju, resumoNubank } from '../lib/calculos'
 import { diasRestantesNoMes, mesDe, nomeDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { ideal, ritmoDoMes, simularCompra, type Ritmo } from '../lib/ritmo'
+import { Confete } from '../vivo/Confete'
+import { useContagem } from '../vivo/useContagem'
+import { Velocimetro } from '../vivo/Velocimetro'
 import { Folha } from './Folha'
 
 /** Card "Telemetria do mês": o delta contra o ritmo ideal e o gráfico, com o botão "Posso comprar?". */
@@ -13,6 +16,19 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
   const [simulando, setSimulando] = useState(false)
   const r = ritmoDoMes(dados, aba, mes, hoje)
   const atual = mes === mesDe(hoje)
+  // Mês passado que fechou abaixo do ritmo: bandeira quadriculada e confete (uma vez por mês e cartão).
+  const fechouNoRitmo = !!r && !atual && r.delta <= 0
+  const chave = `confete:${aba}:${mes}`
+  const [festa, setFesta] = useState(() => fechouNoRitmo && !jaComemorou(chave))
+  const [chaveVista, setChaveVista] = useState(chave)
+  if (chaveVista !== chave) {
+    setChaveVista(chave)
+    setFesta(fechouNoRitmo && !jaComemorou(chave))
+  }
+  const fimDaFesta = useCallback(() => {
+    marcarComemorado(chave)
+    setFesta(false)
+  }, [chave])
 
   return (
     <section className="card telemetria">
@@ -24,10 +40,19 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
               {r.delta <= 0 ? 'Abaixo do ritmo' : 'Acima do ritmo'}
             </span>
           </div>
-          <strong className={`telemetria-delta ${r.delta <= 0 ? 'bom' : 'ruim'}`}>
-            {r.delta <= 0 ? '−' : '+'}
-            {formatarReais(Math.abs(r.delta))}
-          </strong>
+          {fechouNoRitmo && <p className="telemetria-bandeira">🏁 Mês fechado dentro do ritmo</p>}
+          <div className="telemetria-painel">
+            <Velocimetro
+              gasto={r.real[r.real.length - 1] ?? 0}
+              total={r.orcamento}
+              ideal={ideal(r, r.diaAtual)}
+              rotulo="do dia a dia"
+            />
+            <div>
+              <span className="telemetria-rotulo">{r.delta <= 0 ? 'Folga' : 'Passou'}</span>
+              <Delta delta={r.delta} />
+            </div>
+          </div>
           <p className="telemetria-legenda">
             {atual ? 'Até hoje' : `No fim de ${nomeDoMes(mes)}`}: você gastou {formatarReais(r.real[r.real.length - 1] ?? 0)} no dia
             a dia; o ritmo ideal era {formatarReais(ideal(r, r.diaAtual))}.
@@ -51,6 +76,7 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
           Posso comprar?
         </button>
       )}
+      {festa && <Confete aoTerminar={fimDaFesta} />}
       {simulando && (
         <FolhaPossoComprar
           aba={aba}
@@ -63,6 +89,32 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
         />
       )}
     </section>
+  )
+}
+
+function jaComemorou(chave: string): boolean {
+  try {
+    return localStorage.getItem(chave) === '1'
+  } catch {
+    return true
+  }
+}
+
+function marcarComemorado(chave: string) {
+  try {
+    localStorage.setItem(chave, '1')
+  } catch {
+    // sem armazenamento: só não lembra
+  }
+}
+
+/** O delta contra o ritmo, correndo até o valor. */
+function Delta({ delta }: { delta: number }) {
+  const v = useContagem(Math.abs(delta))
+  return (
+    <strong className={`telemetria-delta ${delta <= 0 ? 'bom' : 'ruim'}`}>
+      {formatarReais(v)}
+    </strong>
   )
 }
 
@@ -82,7 +134,7 @@ function Grafico({ r }: { r: Ritmo }) {
         <line key={f} x1={0} x2={L} y1={A * f} y2={A * f} className="telemetria-grade" />
       ))}
       <line x1={x(1)} y1={y(ideal(r, 1))} x2={x(r.dias)} y2={y(r.orcamento)} className="telemetria-ideal" />
-      {ultimo > 1 && <polyline points={pontos} fill="none" stroke={cor} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />}
+      {ultimo > 1 && <polyline className="telemetria-linha" pathLength={1} points={pontos} fill="none" stroke={cor} strokeWidth={3} strokeLinejoin="round" strokeLinecap="round" />}
       {ultimo > 0 && <circle cx={x(ultimo)} cy={y(r.real[ultimo - 1])} r={5} fill={cor} />}
       <text x={0} y={A + 16} className="telemetria-eixo">
         1

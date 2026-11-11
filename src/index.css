@@ -3877,3 +3877,204 @@ a.botao-secundario {
   font-weight: 900;
   color: #fff;
 }
+
+/* ---------- Visual vivo: transições, toque, velocímetro, confete ---------- */
+
+.transicao {
+  display: contents;
+}
+
+.transicao > * {
+  animation: tela-entrar 0.32s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes tela-entrar {
+  from {
+    opacity: 0;
+    translate: 0 14px;
+  }
+}
+
+/* Cards e botões "afundam" um pouco no toque e voltam com uma mola. */
+.card,
+.carrossel-card,
+.botao-principal,
+.botao-posso,
+.barra-abas a,
+.cabecalho-nav a {
+  transition:
+    scale 0.35s cubic-bezier(0.3, 1.6, 0.5, 1),
+    box-shadow 0.25s ease,
+    filter 0.2s ease;
+}
+
+.card:active,
+.carrossel-card:active {
+  scale: 0.982;
+  box-shadow: 0 0 0 1px rgba(46, 229, 157, 0.35), 0 0 28px rgba(46, 229, 157, 0.18);
+  transition-duration: 0.08s;
+}
+
+.botao-principal:active,
+.botao-posso:active,
+.barra-abas a:active,
+.cabecalho-nav a:active {
+  scale: 0.94;
+  filter: brightness(1.15);
+  transition-duration: 0.08s;
+}
+
+/* Cartão principal: um brilho que passa devagar, como luz num carro. */
+.card-principal {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-principal::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, 0.07) 48%, transparent 60%);
+  translate: -120% 0;
+  animation: brilho 6s ease-in-out 1.2s infinite;
+  pointer-events: none;
+}
+
+@keyframes brilho {
+  0%,
+  70% {
+    translate: -120% 0;
+  }
+  100% {
+    translate: 120% 0;
+  }
+}
+
+.telemetria-painel {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  align-items: center;
+  gap: 12px;
+}
+
+.telemetria-painel .telemetria-delta {
+  display: block;
+  font-size: 32px;
+}
+
+.telemetria-bandeira {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--pastel-azul);
+  letter-spacing: 0.02em;
+}
+
+.telemetria-linha {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: desenhar 1.1s cubic-bezier(0.3, 0.7, 0.2, 1) 0.15s forwards;
+}
+
+@keyframes desenhar {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.velocimetro {
+  margin: 0;
+}
+
+.velocimetro svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.velo-fundo {
+  fill: none;
+  stroke: #1e1e1e;
+  stroke-width: 12;
+  stroke-linecap: round;
+}
+
+.velo-faixa {
+  fill: none;
+  stroke-width: 12;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 6px rgba(46, 229, 157, 0.45));
+}
+
+.velocimetro.ruim .velo-faixa {
+  filter: drop-shadow(0 0 6px rgba(255, 77, 94, 0.5));
+}
+
+.velo-marca {
+  stroke: #3a3a3a;
+  stroke-width: 2;
+}
+
+.velo-ideal {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.velo-ponteiro {
+  stroke: #fff;
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.velo-eixo {
+  fill: #121212;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.velo-numero {
+  fill: #fff;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.velo-rotulo {
+  fill: var(--texto-2);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.confete {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 60;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .transicao > *,
+  .card-principal::after,
+  .telemetria-linha {
+    animation: none;
+  }
+  .telemetria-linha {
+    stroke-dashoffset: 0;
+  }
+}
+
+.velo-faixa {
+  stroke: var(--pastel-azul);
+}
+
+.velocimetro.ruim .velo-faixa {
+  stroke: var(--negativo);
+}
+
+.telemetria-painel .telemetria-delta {
+  font-size: 30px;
+  white-space: nowrap;
+}
