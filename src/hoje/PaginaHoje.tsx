@@ -105,7 +105,7 @@ export default function PaginaHoje() {
       <header className="topo">
         <div className="topo-com-menu">
           <BotaoMenu />
-          <h1>{saudacao()}!</h1>
+          <h1>{saudacao()}, Lucas!</h1>
         </div>
         <p className="data-hoje">{dataPorExtenso(hoje)}</p>
       </header>
