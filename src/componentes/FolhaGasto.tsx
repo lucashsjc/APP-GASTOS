@@ -21,20 +21,11 @@ import { Folha } from './Folha'
 import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
 
 export type ModoGasto =
-  /** `sugestao`: valor e parcelas vindos do "Posso comprar?", ou o que o assistente leu de uma foto. */
-  | { aba: Aba; origem: 'topo' | 'certos'; sugestao?: Sugestao }
+  /** `sugestao`: valor e parcelas vindos do "Posso comprar?". */
+  | { aba: Aba; origem: 'topo' | 'certos'; sugestao?: { valor_centavos: number; parcelas: number } }
   | { aba: Aba; gasto: Gasto }
   /** `ocorrencia`: a do mês aberto, para mudar a data só nele. */
   | { aba: Aba; recorrencia: Recorrencia; ocorrencia?: Certo }
-
-export interface Sugestao {
-  valor_centavos: number
-  parcelas: number
-  descricao?: string
-  data?: string
-  hora?: string
-  carteira?: Carteira | null
-}
 
 type Tipo = 'uma' | 'parcelado' | 'todo_mes'
 
@@ -48,7 +39,7 @@ function reaisDigitados(centavos: number): string {
   return formatarReais(centavos).replace('R$ ', '')
 }
 
-export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFechar: () => void; aoSalvar?: () => void }) {
+export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () => void }) {
   const { dados, hoje, mes, executar, avisar } = useEstado()
   const aba = modo.aba
   const mesAtual = mesDe(hoje)
@@ -107,9 +98,9 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
     return {
       tipo: (origem === 'certos' ? 'todo_mes' : sugestao && sugestao.parcelas > 1 ? 'parcelado' : 'uma') as Tipo,
       valor: sugestao ? reaisDigitados(sugestao.valor_centavos) : '',
-      descricao: sugestao?.descricao ?? '',
+      descricao: '',
       // Pelo + do topo, a data é hoje; pela lista de certos, um dia do mês que está aberto.
-      data: sugestao?.data || (origem === 'topo' || mes === mesAtual ? hoje : dataNoMes(mes, diaDe(hoje))),
+      data: origem === 'topo' || mes === mesAtual ? hoje : dataNoMes(mes, diaDe(hoje)),
       categoria: '',
       observacao: '',
       separado: false,
@@ -120,22 +111,19 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
     }
   })()
 
-  const sugestaoInicial = 'sugestao' in modo ? modo.sugestao : undefined
   const [tipo, setTipo] = useState<Tipo>(inicial.tipo)
   const [valorTexto, setValorTexto] = useState(inicial.valor)
   const [descricao, setDescricao] = useState(inicial.descricao)
   const [data, setData] = useState(inicial.data)
   // Horário da compra: o que já estava gravado ou, num gasto novo de hoje, a hora de agora.
   const [hora, setHora] = useState(
-    gastoEditado
-      ? (gastoEditado.hora ?? '')
-      : sugestaoInicial?.hora || (!recEditada && !sugestaoInicial?.data && inicial.data === hoje ? horaSP() : ''),
+    gastoEditado ? (gastoEditado.hora ?? '') : !recEditada && inicial.data === hoje ? horaSP() : '',
   )
   const [dia, setDia] = useState(recEditada?.dia ?? diaDe(inicial.data))
   // Data da ocorrência do mês aberto (muda só nesse mês).
   const [dataNoMesAberto, setDataNoMesAberto] = useState(ocorrencia?.data ?? '')
   // Carteira do Caju: null = pela categoria (Transporte → mobilidade, o resto → refeição).
-  const [carteira, setCarteira] = useState<Carteira | null>(gastoEditado?.carteira ?? sugestaoInicial?.carteira ?? null)
+  const [carteira, setCarteira] = useState<Carteira | null>(gastoEditado?.carteira ?? null)
   const [categoria, setCategoria] = useState(inicial.categoria)
   const [categoriaEscolhida, setCategoriaEscolhida] = useState(Boolean(inicial.categoria))
   const [forma, setForma] = useState<Forma>(inicial.forma)
@@ -275,7 +263,6 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
     } else if (tipo === 'uma' && (mesFinal ?? mesDe(data)) !== mes && (!editando || mesFinal !== (gastoEditado?.mes_conta ?? null))) {
       avisar(`Gasto salvo em ${nomeDoMes(mesFinal ?? mesDe(data))}.`)
     }
-    aoSalvar?.()
     aoFechar()
   }
 
