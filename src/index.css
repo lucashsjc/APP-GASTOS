@@ -3827,3 +3827,53 @@ a.botao-secundario {
   font-weight: 600;
   color: var(--pastel-azul);
 }
+
+/* Depósito do Caju: um valor para cada carteira. */
+.deposito-carteiras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.campo-reais {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--card);
+  border-radius: 14px;
+  padding: 0 12px;
+  min-height: 56px;
+}
+
+.campo-reais span {
+  color: var(--texto-2);
+  font-weight: 700;
+}
+
+.campo .campo-reais input {
+  background: none;
+  border: none;
+  padding: 12px 0;
+  font-size: 22px;
+  font-weight: 900;
+  min-height: 0;
+}
+
+.campo .campo-reais input:focus {
+  outline: none;
+}
+
+.deposito-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 2px 4px;
+  font-size: 14px;
+  color: var(--texto-2);
+}
+
+.deposito-total strong {
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+}

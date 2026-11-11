@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
+import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
 import { IconeLapis, IconeProximo, IconeSeta, Logo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
@@ -197,15 +198,14 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         />
       )}
       {folhaValor === 'deposito' && (
-        <FolhaValor
-          titulo="Depósito no Caju"
+        <FolhaDeposito
           dataInicial={mes === mesDe(hoje) ? hoje : dataNoMes(mes, diaDe(hoje))}
-          textoBotao="Registrar depósito"
-          classeBotao="botao-caju"
-          comMes
-          comCarteira
-          aoSalvar={(valor, data, mesConta, carteira) =>
-            executar(() => repo.criarDeposito({ aba: 'caju', data, valor_centavos: valor, mes_conta: mesConta, carteira }))
+          aoSalvar={(depositos, data, mesConta) =>
+            executar(async () => {
+              for (const d of depositos) {
+                await repo.criarDeposito({ aba: 'caju', data, valor_centavos: d.valor, mes_conta: mesConta, carteira: d.carteira })
+              }
+            })
           }
           aoFechar={() => setFolhaValor(null)}
         />
