@@ -338,7 +338,7 @@ function CardPagamentos({ certos, outros }: { certos: Certo[]; outros: Gasto[] }
   )
 }
 
-/** Os gastos separados por dia, com a data e o total do dia no título (do mais recente para o mais antigo). */
+/** Os gastos separados por dia, com a data no título (do mais recente para o mais antigo). */
 function ListaPorDia({ itens, linha }: { itens: (Certo | Gasto)[]; linha: (item: Certo | Gasto) => React.ReactNode }) {
   const dias = new Map<string, (Certo | Gasto)[]>()
   for (const item of itens) dias.set(item.data, [...(dias.get(item.data) ?? []), item])
@@ -349,10 +349,7 @@ function ListaPorDia({ itens, linha }: { itens: (Certo | Gasto)[]; linha: (item:
         .sort((a, b) => b[0].localeCompare(a[0]))
         .map(([data, doDia]) => (
           <section key={data} className="dia-grupo">
-            <h3 className="dia-titulo">
-              <span>{dataPorExtenso(data)}</span>
-              <span>{formatarReais(doDia.reduce((s, i) => s + i.valor_centavos, 0))}</span>
-            </h3>
+            <h3 className="dia-titulo">{dataPorExtenso(data)}</h3>
             <ul className="lista lista-dia">{[...doDia].sort((a, b) => horaDe(b).localeCompare(horaDe(a))).map(linha)}</ul>
           </section>
         ))}
