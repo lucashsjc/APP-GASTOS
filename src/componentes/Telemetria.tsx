@@ -14,6 +14,7 @@ import { Folha } from './Folha'
 export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: number, parcelas: number) => void }) {
   const { dados, hoje, mes } = useEstado()
   const [simulando, setSimulando] = useState(false)
+  const [comGrafico, setComGrafico] = useState(false)
   const r = ritmoDoMes(dados, aba, mes, hoje)
   const atual = mes === mesDe(hoje)
   // Mês passado que fechou abaixo do ritmo: bandeira quadriculada e confete (uma vez por mês e cartão).
@@ -53,17 +54,21 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
               <Delta delta={r.delta} />
             </div>
           </div>
-          <p className="telemetria-legenda">
-            {atual ? 'Até hoje' : `No fim de ${nomeDoMes(mes)}`}: você gastou {formatarReais(r.real[r.real.length - 1] ?? 0)} no dia
-            a dia; o ritmo ideal era {formatarReais(ideal(r, r.diaAtual))}.
-          </p>
-          <Grafico r={r} />
           {atual && (
             <p className="telemetria-legenda">
               {r.porDiaDaqui === null
                 ? 'O dinheiro do dia a dia deste mês já acabou.'
-                : <>Para fechar no ritmo: até <b>{formatarReais(r.porDiaDaqui)}</b> por dia até o fim do mês.</>}
+                : <>Até <b>{formatarReais(r.porDiaDaqui)}</b> por dia para fechar no ritmo.</>}
             </p>
+          )}
+          {comGrafico && (
+            <>
+              <Grafico r={r} />
+              <p className="telemetria-legenda">
+                {atual ? 'Até hoje' : `No fim de ${nomeDoMes(mes)}`}: você gastou {formatarReais(r.real[r.real.length - 1] ?? 0)} no
+                dia a dia; o ritmo ideal era {formatarReais(ideal(r, r.diaAtual))}.
+              </p>
+            </>
           )}
         </>
       ) : (
@@ -71,11 +76,18 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
           {aba === 'nubank' ? 'Coloque o recebido do mês' : 'Registre o depósito do Caju'} para ver a telemetria do mês.
         </p>
       )}
-      {atual && (
-        <button type="button" className="botao-posso" onClick={() => setSimulando(true)}>
-          Posso comprar?
-        </button>
-      )}
+      <div className="telemetria-acoes">
+        {r && (
+          <button type="button" className="botao-texto" onClick={() => setComGrafico((v) => !v)} aria-expanded={comGrafico}>
+            {comGrafico ? 'Esconder gráfico' : 'Ver gráfico'}
+          </button>
+        )}
+        {atual && (
+          <button type="button" className="botao-posso" onClick={() => setSimulando(true)}>
+            Posso comprar?
+          </button>
+        )}
+      </div>
       {festa && <Confete aoTerminar={fimDaFesta} />}
       {simulando && (
         <FolhaPossoComprar

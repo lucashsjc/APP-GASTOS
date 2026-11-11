@@ -4,10 +4,10 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAssinatura, IconeBusca, IconeLapis, IconeProximo, IconeResumo, IconeSeta, Logo } from '../componentes/icones'
+import { IconeAssinatura, IconeBusca, IconeLapis, IconeLimite, IconeProximo, IconeResumo, IconeSeta, Logo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
-import { CardLimites } from '../componentes/Limites'
+import { CardLimites, FolhaLimites } from '../componentes/Limites'
 import { CardTelemetria } from '../componentes/Telemetria'
 import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
@@ -40,6 +40,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const { dados, hoje, mes, executar, carregando } = useEstado()
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
+  const [editandoLimites, setEditandoLimites] = useState(false)
 
   const certos = certosDoMes(dados, aba, mes, hoje)
   const outros = outrosDoMes(dados, aba, mes)
@@ -125,20 +126,25 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
 
       <nav className="atalhos" aria-label="Atalhos">
         <Link to={`/${aba}/resumo`} className="atalho">
-          <IconeResumo tamanho={20} />
-          <span>Resumo do mês</span>
+          <IconeResumo tamanho={16} />
+          <span>Resumo</span>
+        </Link>
+        <button type="button" className="atalho" onClick={() => setEditandoLimites(true)}>
+          <IconeLimite tamanho={16} />
+          <span>Limites</span>
+        </button>
+        <Link to="/assinaturas" className="atalho">
+          <IconeAssinatura tamanho={16} />
+          <span>Assinaturas</span>
         </Link>
         <Link to="/busca" className="atalho">
-          <IconeBusca tamanho={20} />
+          <IconeBusca tamanho={16} />
           <span>Buscar</span>
-        </Link>
-        <Link to="/assinaturas" className="atalho">
-          <IconeAssinatura tamanho={20} />
-          <span>Assinaturas</span>
         </Link>
       </nav>
 
-      <CardLimites aba={aba} />
+      <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
+      {editandoLimites && <FolhaLimites aba={aba} aoFechar={() => setEditandoLimites(false)} />}
 
       <CardPagamentos certos={certos} outros={outros} />
 

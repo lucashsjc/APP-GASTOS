@@ -1,29 +1,33 @@
-/* Tema "equipe": fundo preto, cinzas escuros, verde-neon de destaque e cards escuros com brilho verde. */
+/* Tema "energético": azul-marinho de fundo, vermelho de destaque e amarelo nos estados ativos. */
 :root {
-  --fundo: #000;
-  --card: #121212;
-  --card-2: #1e1e1e;
-  --borda: #262626;
+  --fundo: #050a1e;
+  --card: #0d1633;
+  --card-2: #16214a;
+  --borda: #24315f;
   --texto: #fff;
-  --texto-2: #9a9aa3;
+  --texto-2: #9aa4c4;
   --verde: #3fd07a;
   --ambar: #ffc247;
-  --negativo: #ff5148;
+  --negativo: #ff4d6a;
   /* Verde-neon escuro de destaque (botões, linha do topo); o texto em cima dele é preto. */
-  --vermelho: #19c46a;
-  --sobre-destaque: #000;
+  --vermelho: #e4002b;
+  --sobre-destaque: #fff;
   /* Estados ativos (pílulas, abas) em verde-neon claro, com texto preto. */
   --pastel-lilas: #fff;
-  --pastel-azul: #2ee59d;
+  --pastel-azul: #ffc906;
   --pastel-rosa: #fff;
   --sobre-pastel: #000;
   --sobre-pastel-2: #4a4a52;
   --nubank: #8a05be;
   --caju: #e8195d;
   /* Cards de destaque: escuros, com um brilho verde (o Nubank e o Caju só aparecem no logo). */
-  --cartao-nubank: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
-  --cartao-caju: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
+  --cartao-nubank: radial-gradient(120% 90% at 80% 10%, #2a2f7a 0, #121a4a 45%, #070d26 100%);
+  --cartao-caju: radial-gradient(120% 90% at 80% 10%, #2a2f7a 0, #121a4a 45%, #070d26 100%);
   --faculdade: #fff;
+  /* Cor do brilho (sombras e destaques), em R, G, B. */
+  --brilho: 228, 0, 43;
+  --amarelo: #ffc906;
+  --folha: #0b1430;
   --raio: 18px;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
@@ -277,7 +281,7 @@ p {
   overflow-y: auto;
   padding: 18px 14px 14px;
   border-radius: 28px;
-  background: #1c1c1f;
+  background: var(--folha);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
   animation: entrar-esquerda 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
 }
@@ -897,7 +901,7 @@ p {
   display: flex;
   gap: 4px;
   padding: 6px;
-  background: rgba(40, 40, 44, 0.92);
+  background: rgba(13, 22, 51, 0.92);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-radius: 24px;
@@ -950,7 +954,7 @@ p {
   max-height: 92vh;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: #1c1c1f;
+  background: var(--folha);
   border-radius: 28px 28px 0 0;
   padding: 8px 16px calc(var(--seguro-baixo) + 20px);
   animation: subir 0.28s cubic-bezier(0.2, 0.9, 0.3, 1);
@@ -1192,7 +1196,7 @@ p {
   /* Na folha, o botão de salvar fica sempre à vista. */
   position: sticky;
   bottom: 0;
-  box-shadow: 0 -12px 16px #1c1c1f;
+  box-shadow: 0 -12px 16px var(--folha);
 }
 
 .botao-principal {
@@ -1623,7 +1627,7 @@ p {
   width: 28px;
   height: 28px;
   border-radius: 9px;
-  background: #2a2a30;
+  background: var(--card-2);
   opacity: 0.6;
 }
 
@@ -1813,7 +1817,7 @@ p {
   font-weight: 700;
   border-radius: 99px;
   padding: 3px 9px;
-  background: #2a2a30;
+  background: var(--card-2);
   color: var(--texto-2);
 }
 
@@ -2517,7 +2521,7 @@ a.botao-secundario {
 
 .botao-mais {
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(25, 196, 106, 0.35);
+  box-shadow: 0 6px 16px rgba(var(--brilho), 0.35);
 }
 
 /* O card principal vira o cartão: roxo no Nubank, laranja no Caju, com o outro cartão aparecendo atrás. */
@@ -2531,7 +2535,7 @@ a.botao-secundario {
 
 .card-principal.card-nubank {
   background: var(--cartao-nubank);
-  box-shadow: 0 14px 0 -7px #c2185b, 0 22px 40px rgba(138, 5, 190, 0.35);
+  box-shadow: 0 14px 0 -7px var(--vermelho), 0 22px 40px rgba(var(--brilho), 0.3);
 }
 
 .card-principal.card-caju {
@@ -2778,7 +2782,7 @@ a.botao-secundario {
 }
 
 .menu-resumo-link {
-  background: #000;
+  background: var(--fundo);
 }
 
 .link-secao {
@@ -2884,7 +2888,7 @@ a.botao-secundario {
 }
 
 .calendario-dia.com-prova {
-  background: rgba(25, 196, 106, 0.18);
+  background: rgba(var(--brilho), 0.18);
 }
 
 .calendario-dia.escolhido {
@@ -3003,7 +3007,7 @@ a.botao-secundario {
   min-height: 52px;
   border-radius: 12px;
   border: 1px solid var(--borda);
-  background: #000;
+  background: var(--fundo);
   text-align: center;
   font-size: 22px;
   font-weight: 900;
@@ -3031,7 +3035,7 @@ a.botao-secundario {
   place-items: center;
   min-height: 52px;
   border-radius: 12px;
-  background: #000;
+  background: var(--fundo);
   font-size: 22px;
   font-weight: 900;
 }
@@ -3266,7 +3270,7 @@ a.botao-secundario {
   z-index: 100;
   display: grid;
   place-items: center;
-  background: #000;
+  background: var(--fundo);
   transition: opacity 0.45s ease;
 }
 
@@ -3282,7 +3286,7 @@ a.botao-secundario {
 
 .abertura-logo .logo-lk {
   display: block;
-  filter: drop-shadow(0 10px 30px rgba(25, 196, 106, 0.35));
+  filter: drop-shadow(0 10px 30px rgba(var(--brilho), 0.35));
 }
 
 /* Rastro de velocidade que passa por trás do logo. */
@@ -3442,7 +3446,7 @@ a.botao-secundario {
 .menu-resumo,
 .carrossel-card {
   background: var(--cartao-nubank);
-  box-shadow: inset 0 0 0 1px rgba(46, 229, 157, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(var(--brilho), 0.12);
 }
 
 .card-principal::before,
@@ -3454,7 +3458,7 @@ a.botao-secundario {
   width: 140px;
   height: 520px;
   border-radius: 0;
-  background: linear-gradient(90deg, transparent, rgba(46, 229, 157, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--brilho), 0.28), transparent);
   transform: rotate(35deg);
   pointer-events: none;
 }
@@ -3598,7 +3602,7 @@ a.botao-secundario {
 }
 
 .abertura-logo .logo-lk {
-  filter: drop-shadow(0 10px 30px rgba(46, 229, 157, 0.3));
+  filter: drop-shadow(0 10px 30px rgba(var(--brilho), 0.3));
 }
 
 /* ---------- Telemetria do mês e "Posso comprar?" ---------- */
@@ -3640,7 +3644,7 @@ a.botao-secundario {
 
 .telemetria-selo.ruim {
   background: var(--negativo);
-  color: #000;
+  color: #fff;
 }
 
 .telemetria-delta {
@@ -3911,7 +3915,7 @@ a.botao-secundario {
 .card:active,
 .carrossel-card:active {
   scale: 0.982;
-  box-shadow: 0 0 0 1px rgba(46, 229, 157, 0.35), 0 0 28px rgba(46, 229, 157, 0.18);
+  box-shadow: 0 0 0 1px rgba(var(--brilho), 0.35), 0 0 28px rgba(var(--brilho), 0.18);
   transition-duration: 0.08s;
 }
 
@@ -3993,7 +3997,7 @@ a.botao-secundario {
 
 .velo-fundo {
   fill: none;
-  stroke: #1e1e1e;
+  stroke: var(--card-2);
   stroke-width: 12;
   stroke-linecap: round;
 }
@@ -4002,7 +4006,7 @@ a.botao-secundario {
   fill: none;
   stroke-width: 12;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(46, 229, 157, 0.45));
+  filter: drop-shadow(0 0 6px rgba(var(--brilho), 0.45));
 }
 
 .velocimetro.ruim .velo-faixa {
@@ -4027,7 +4031,7 @@ a.botao-secundario {
 }
 
 .velo-eixo {
-  fill: #121212;
+  fill: var(--card);
   stroke: #fff;
   stroke-width: 2;
 }
@@ -4100,7 +4104,7 @@ a.botao-secundario {
   padding: 14px 12px;
   border-radius: 18px;
   background: var(--card);
-  border: 1px solid #1f1f1f;
+  border: 1px solid var(--borda);
   color: #fff;
   font-size: 13px;
   font-weight: 700;
@@ -4180,7 +4184,7 @@ a.botao-secundario {
 .limite-barra {
   height: 8px;
   border-radius: 99px;
-  background: #242424;
+  background: var(--card-2);
   overflow: hidden;
 }
 
@@ -4234,7 +4238,7 @@ a.botao-secundario {
   padding: 0 12px;
   height: 44px;
   border-radius: 12px;
-  background: #1e1e1e;
+  background: var(--card-2);
   color: var(--texto-2);
 }
 
@@ -4251,7 +4255,7 @@ a.botao-secundario {
 
 .card-resumo {
   background: var(--cartao-nubank);
-  border: 1px solid #1d2a24;
+  border: 1px solid var(--borda);
   gap: 6px;
 }
 
@@ -4273,12 +4277,15 @@ a.botao-secundario {
   color: #fff;
 }
 
-.bom {
-  color: var(--pastel-azul) !important;
+.resumo-sub .bom,
+.resumo-selo.bom {
+  color: var(--pastel-azul);
 }
 
-.ruim {
-  color: var(--negativo) !important;
+.resumo-sub .ruim,
+.resumo-selo.ruim,
+.resumo-subiram .ruim {
+  color: var(--negativo);
 }
 
 .resumo-selo {
@@ -4288,7 +4295,7 @@ a.botao-secundario {
   border-radius: 99px;
   font-size: 13px;
   font-weight: 800;
-  background: rgba(46, 229, 157, 0.12);
+  background: rgba(var(--brilho), 0.12);
 }
 
 .resumo-selo.ruim {
@@ -4412,13 +4419,13 @@ a.botao-secundario {
   padding: 0 16px;
   border-radius: 16px;
   background: var(--card);
-  border: 1px solid #262626;
+  border: 1px solid var(--borda);
   color: var(--texto-2);
 }
 
 .campo-busca:focus-within {
   border-color: var(--pastel-azul);
-  box-shadow: 0 0 0 3px rgba(46, 229, 157, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--brilho), 0.15);
 }
 
 .campo-busca input {
@@ -4470,4 +4477,263 @@ a.botao-secundario {
   .limite-barra span {
     animation: none;
   }
+}
+
+/* ---------- Tema energético: títulos condensados em itálico, faixas vermelha e amarela ---------- */
+
+h1,
+.secao h2,
+.valor-grande,
+.telemetria-delta,
+.busca-total,
+.velo-numero,
+.cabecalho-nav a,
+.atalho span,
+.resumo-grande {
+  font-family: 'Barlow Condensed', 'Inter', sans-serif;
+  font-style: italic;
+  letter-spacing: 0.005em;
+}
+
+h1 {
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 34px;
+}
+
+.secao h2 {
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 21px;
+}
+
+.secao h2 span {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+}
+
+.valor-grande {
+  font-weight: 900;
+}
+
+.cabecalho-nav a {
+  font-size: 19px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.cabecalho-nav a.ativo {
+  color: #fff;
+  box-shadow: inset 0 -3px 0 var(--amarelo);
+}
+
+.atalho span {
+  font-size: 16px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* Linha do cabeçalho: vermelha com um fio amarelo embaixo. */
+.cabecalho {
+  border-bottom: 3px solid var(--vermelho);
+  box-shadow: 0 3px 0 var(--amarelo);
+  margin-bottom: 10px;
+}
+
+.cabecalho-marca small {
+  color: var(--amarelo);
+}
+
+/* Cartões principais: marinho com a faixa vermelha e amarela embaixo (no lugar do brilho diagonal). */
+.card-principal::before,
+.carrossel-card::before {
+  content: '';
+  position: absolute;
+  inset: auto 0 0 0;
+  top: auto;
+  left: 0;
+  width: auto;
+  height: 6px;
+  border-radius: 0;
+  transform: none;
+  rotate: none;
+  animation: none;
+  background: linear-gradient(90deg, var(--vermelho) 0 70%, var(--amarelo) 70% 100%);
+  pointer-events: none;
+}
+
+.card-principal.card-nubank,
+.card-principal.card-caju,
+.card-resumo {
+  border: 1px solid var(--borda);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Botões principais vermelhos com texto branco; ativos em amarelo com texto azul-marinho. */
+.botao-principal,
+.botao-lancar,
+.botao-enviar {
+  color: #fff;
+}
+
+.segmentado button.ativo,
+.barra-abas a.active {
+  color: #050a1e;
+}
+
+.velo-marca {
+  stroke: var(--borda);
+}
+
+.abertura {
+  background: radial-gradient(90% 60% at 50% 45%, #1b2466 0, #050a1e 70%);
+}
+
+.abertura-logo .logo-lk {
+  filter: drop-shadow(0 12px 40px rgba(255, 201, 6, 0.35));
+}
+
+/* ---------- Mais limpo: menos faixas, menos brilho, menos cor ---------- */
+
+.card-principal::before,
+.carrossel-card::before,
+.card-principal::after {
+  display: none;
+}
+
+.cabecalho {
+  border-bottom: 2px solid var(--vermelho);
+  box-shadow: none;
+}
+
+.cabecalho-nav a {
+  font-size: 17px;
+  text-transform: none;
+}
+
+.cabecalho-nav a.ativo {
+  box-shadow: none;
+  color: #fff;
+}
+
+.secao h2 {
+  text-transform: none;
+  font-size: 22px;
+}
+
+.card {
+  border: 0;
+}
+
+.card-principal.card-nubank,
+.card-principal.card-caju,
+.card-resumo {
+  border: 0;
+  box-shadow: none;
+}
+
+/* Atalhos em pílulas pequenas, numa linha só. */
+.atalhos {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: -4px 0;
+}
+
+.atalho {
+  flex: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  background: transparent;
+  font-size: 14px;
+}
+
+.atalho span {
+  font-family: 'Inter', sans-serif;
+  font-style: normal;
+  font-size: 14px;
+  font-weight: 600;
+  text-transform: none;
+}
+
+.atalho svg {
+  color: var(--texto-2);
+}
+
+/* Telemetria compacta. */
+.telemetria-acoes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.telemetria-acoes .botao-posso {
+  width: auto;
+  padding: 10px 18px;
+  margin: 0;
+}
+
+/* "Não pago" discreto em cada gasto: só um texto cinza pequeno. */
+.selo-pago {
+  color: var(--texto-2) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  text-transform: none !important;
+  letter-spacing: 0 !important;
+  background: none !important;
+}
+
+.selo-pago::before {
+  border-color: var(--texto-2) !important;
+  background: none !important;
+}
+
+.selo-pago.pago {
+  color: var(--pastel-azul) !important;
+}
+
+.selo-pago.pago::before {
+  background: var(--pastel-azul) !important;
+  border-color: var(--pastel-azul) !important;
+}
+
+.telemetria-acoes .botao-posso {
+  align-self: auto;
+  background: var(--vermelho);
+  color: #fff;
+}
+
+/* Pago / não pago numa linha só. */
+.card-pagamentos {
+  padding: 12px 16px;
+}
+
+.card-pagamentos-linha {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.card-pagamentos-linha strong {
+  font-size: 17px;
+}
+
+.card-pagamentos-linha .botao-secundario {
+  margin-left: auto;
+  width: auto;
+  padding: 8px 12px;
+  font-size: 13px;
+  background: none;
+  border: 1px solid var(--borda);
+  border-radius: 999px;
 }
