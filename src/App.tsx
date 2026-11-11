@@ -11,6 +11,9 @@ import PaginaFaculdade from './faculdade/PaginaFaculdade'
 import PaginaHoje from './hoje/PaginaHoje'
 import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
+import Assinaturas from './pages/Assinaturas'
+import Busca from './pages/Busca'
+import ResumoMes from './pages/ResumoMes'
 import PaginaProjetos from './projetos/PaginaProjetos'
 import PaginaReadme from './projetos/PaginaReadme'
 import Certos from './pages/Certos'
@@ -70,6 +73,10 @@ export default function App() {
             <Route path="/caju/certos" element={<Certos aba="caju" />} />
             <Route path="/nubank/para-onde" element={<ParaOnde aba="nubank" />} />
             <Route path="/caju/para-onde" element={<ParaOnde aba="caju" />} />
+            <Route path="/nubank/resumo" element={<ResumoMes aba="nubank" />} />
+            <Route path="/caju/resumo" element={<ResumoMes aba="caju" />} />
+            <Route path="/busca" element={<Busca />} />
+            <Route path="/assinaturas" element={<Assinaturas />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />
             <Route path="/ajustes/importar" element={<Importar />} />
             <Route

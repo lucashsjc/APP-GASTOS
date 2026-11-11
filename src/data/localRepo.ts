@@ -89,6 +89,16 @@ export function criarRepoLocal(): Repo {
       alterar((d) => (d.depositos = d.depositos.filter((x) => x.id !== id)))
     },
 
+    async salvarLimite(aba, categoria, valorCentavos) {
+      alterar((d) => {
+        d.limites = (d.limites ?? []).filter((l) => !(l.aba === aba && l.categoria === categoria))
+        d.limites.push({ id: crypto.randomUUID(), aba, categoria, valor_centavos: valorCentavos })
+      })
+    },
+    async excluirLimite(id) {
+      alterar((d) => (d.limites = (d.limites ?? []).filter((l) => l.id !== id)))
+    },
+
     async restaurarExemplo() {
       gravar(dadosDeExemplo(hojeSP()))
     },

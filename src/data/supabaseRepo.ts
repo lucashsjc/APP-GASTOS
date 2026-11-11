@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Repo } from './repo'
-import type { Deposito, Gasto, Recebido, Recorrencia } from './types'
+import type { Deposito, Gasto, Limite, Recebido, Recorrencia } from './types'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -158,19 +158,36 @@ export function criarRepoSupabase(): Repo {
     }
   }
 
+  /** Limites por categoria. Antes do 015_limites.sql a tabela não existe: vem vazio. */
+  async function lerLimites(): Promise<Limite[]> {
+    const { data, error } = await db.from('limites').select('id, aba, categoria, valor_centavos')
+    if (error && (error.code === 'PGRST205' || error.code === '42P01')) return []
+    erro(error)
+    return (data ?? []) as Limite[]
+  }
+
+  function erroDeLimite(e: { code?: string; message: string } | null) {
+    if (e && (e.code === 'PGRST205' || e.code === '42P01')) {
+      throw new Error('Para usar limites por categoria, rode o supabase/015_limites.sql no Supabase (e feche e abra o app).')
+    }
+    erro(e)
+  }
+
   return {
     async carregar() {
-      const [gastos, recorrencias, recebidos, depositos] = await Promise.all([
+      const [gastos, recorrencias, recebidos, depositos, limites] = await Promise.all([
         tudo<Gasto>('gastos'),
         tudo<Recorrencia>('recorrencias'),
         tudo<Recebido>('recebidos'),
         tudo<Deposito>('depositos'),
+        lerLimites(),
       ])
       return {
         gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null, carteira: g.carteira ?? null })),
         recorrencias: recorrencias.map(comPadroes),
         recebidos,
         depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null, carteira: d.carteira ?? null })),
+        limites,
       }
     },
 
@@ -230,6 +247,17 @@ export function criarRepoSupabase(): Repo {
     async excluirDeposito(id) {
       const { error } = await db.from('depositos').delete().eq('id', id)
       erro(error)
+    },
+
+    async salvarLimite(aba, categoria, valorCentavos) {
+      const { error } = await db
+        .from('limites')
+        .upsert({ aba, categoria, valor_centavos: valorCentavos }, { onConflict: 'user_id,aba,categoria' })
+      erroDeLimite(error)
+    },
+    async excluirLimite(id) {
+      const { error } = await db.from('limites').delete().eq('id', id)
+      erroDeLimite(error)
     },
   }
 }

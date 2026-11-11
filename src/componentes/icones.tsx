@@ -239,3 +239,32 @@ export const IconeHoje = (p: Props) => (
     <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
   </Svg>
 )
+
+export const IconeBusca = (p: Props) => (
+  <Svg {...p}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="M16 16l4.5 4.5" />
+  </Svg>
+)
+
+export const IconeResumo = (p: Props) => (
+  <Svg {...p}>
+    <path d="M5 4v15h15" />
+    <path d="M9 15l3-4 3 2 4-6" />
+  </Svg>
+)
+
+export const IconeAssinatura = (p: Props) => (
+  <Svg {...p}>
+    <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+    <path d="M20 4v4h-4" />
+    <path d="M12 8v4l2.5 1.5" />
+  </Svg>
+)
+
+export const IconeLimite = (p: Props) => (
+  <Svg {...p}>
+    <path d="M4 18a8 8 0 1 1 16 0" />
+    <path d="M12 18l4-5" />
+  </Svg>
+)

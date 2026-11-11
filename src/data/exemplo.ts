@@ -166,5 +166,11 @@ export function dadosDeExemplo(hoje: string): Dados {
         carteira,
       })),
     ),
+    limites: [
+      { id: id(), aba: 'nubank', categoria: 'Alimentação', valor_centavos: 25000 },
+      { id: id(), aba: 'nubank', categoria: 'Transporte', valor_centavos: 15000 },
+      { id: id(), aba: 'caju', categoria: 'Mercado', valor_centavos: 30000 },
+      { id: id(), aba: 'caju', categoria: 'Alimentação', valor_centavos: 12000 },
+    ],
   }
 }

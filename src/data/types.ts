@@ -105,9 +105,19 @@ export interface Deposito {
 
 export type NovoDeposito = Omit<Deposito, 'id'>
 
+/** Limite do mês para uma categoria num cartão (ex.: Alimentação no Nubank até R$ 200). */
+export interface Limite {
+  id: string
+  aba: Aba
+  categoria: string
+  valor_centavos: number
+}
+
 export interface Dados {
   gastos: Gasto[]
   recorrencias: Recorrencia[]
   recebidos: Recebido[]
   depositos: Deposito[]
+  /** Opcional: antes do supabase/015_limites.sql, vem vazio. */
+  limites?: Limite[]
 }

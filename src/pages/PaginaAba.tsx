@@ -4,9 +4,10 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeLapis, IconeProximo, IconeSeta, Logo } from '../componentes/icones'
+import { IconeAssinatura, IconeBusca, IconeLapis, IconeProximo, IconeResumo, IconeSeta, Logo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
+import { CardLimites } from '../componentes/Limites'
 import { CardTelemetria } from '../componentes/Telemetria'
 import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
@@ -121,6 +122,23 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         aba={aba}
         aoLancar={(valor, parcelas) => setFolha({ aba, origem: 'topo', sugestao: { valor_centavos: valor, parcelas } })}
       />
+
+      <nav className="atalhos" aria-label="Atalhos">
+        <Link to={`/${aba}/resumo`} className="atalho">
+          <IconeResumo tamanho={20} />
+          <span>Resumo do mês</span>
+        </Link>
+        <Link to="/busca" className="atalho">
+          <IconeBusca tamanho={20} />
+          <span>Buscar</span>
+        </Link>
+        <Link to="/assinaturas" className="atalho">
+          <IconeAssinatura tamanho={20} />
+          <span>Assinaturas</span>
+        </Link>
+      </nav>
+
+      <CardLimites aba={aba} />
 
       <CardPagamentos certos={certos} outros={outros} />
 

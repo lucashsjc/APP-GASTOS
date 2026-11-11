@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import type { Aba } from '../data/types'
-import { IconeAjustes, IconeMais } from './icones'
+import { IconeAjustes, IconeBusca, IconeMais } from './icones'
 import { BotaoMenu } from './MenuLateral'
 import { SeletorMes } from './SeletorMes'
 
@@ -13,9 +13,14 @@ export function Topo({ aba, titulo, aoAdicionar }: { aba: Aba; titulo: string; a
           <BotaoMenu />
           <h1>{titulo}</h1>
         </div>
-        <Link to="/ajustes" className="botao-icone" aria-label="Ajustes">
-          <IconeAjustes />
-        </Link>
+        <div className="topo-icones">
+          <Link to="/busca" className="botao-icone" aria-label="Buscar gastos">
+            <IconeBusca />
+          </Link>
+          <Link to="/ajustes" className="botao-icone" aria-label="Ajustes">
+            <IconeAjustes />
+          </Link>
+        </div>
       </div>
       <div className="topo-linha">
         <SeletorMes />
