@@ -35,6 +35,7 @@ const COLUNAS = {
     'dinheiro_a_parte',
     'mes_conta',
     'hora',
+    'carteira',
   ],
   recorrencias: [
     'id',
@@ -51,7 +52,7 @@ const COLUNAS = {
     'dinheiro_a_parte',
   ],
   recebidos: ['id', 'aba', 'mes', 'valor_centavos'],
-  depositos: ['id', 'aba', 'data', 'valor_centavos', 'mes_conta'],
+  depositos: ['id', 'aba', 'data', 'valor_centavos', 'mes_conta', 'carteira'],
 }
 
 type Tabela = keyof typeof COLUNAS
@@ -67,6 +68,7 @@ const OPCIONAIS: Record<string, { sql: string; uso: string }> = {
   dinheiro_a_parte: { sql: '007_dinheiro_a_parte.sql', uso: 'marcar como pago com dinheiro à parte' },
   mes_conta: { sql: '008_mes_conta.sql', uso: 'descontar o gasto em outro mês' },
   hora: { sql: '012_horario_do_gasto.sql', uso: 'guardar o horário da compra' },
+  carteira: { sql: '014_carteiras_do_caju.sql', uso: 'separar refeição e mobilidade no Caju' },
 }
 
 /** O SQL de uma coluna opcional, quando ela chegou numa tabela em outro SQL. */
@@ -165,10 +167,10 @@ export function criarRepoSupabase(): Repo {
         tudo<Deposito>('depositos'),
       ])
       return {
-        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null })),
+        gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null, carteira: g.carteira ?? null })),
         recorrencias: recorrencias.map(comPadroes),
         recebidos,
-        depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null })),
+        depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null, carteira: d.carteira ?? null })),
       }
     },
 
@@ -178,7 +180,7 @@ export function criarRepoSupabase(): Repo {
       const { data, error } = await db.from('gastos').insert(linhas).select(colunas('gastos'))
       erroDeGravacao('gastos', error)
       confirmarColunas('gastos', linhas[0])
-      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null }))
+      return (data as unknown as Gasto[]).map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null, carteira: g.carteira ?? null }))
     },
     async atualizarGasto(id, dados) {
       const linha = preparar('gastos', dados)
@@ -223,7 +225,7 @@ export function criarRepoSupabase(): Repo {
       erroDeGravacao('depositos', error)
       confirmarColunas('depositos', linha)
       const deposito = data as unknown as Deposito
-      return { ...deposito, mes_conta: deposito.mes_conta ?? null }
+      return { ...deposito, mes_conta: deposito.mes_conta ?? null, carteira: deposito.carteira ?? null }
     },
     async excluirDeposito(id) {
       const { error } = await db.from('depositos').delete().eq('id', id)

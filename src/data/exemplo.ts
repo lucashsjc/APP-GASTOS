@@ -105,6 +105,7 @@ export function dadosDeExemplo(hoje: string): Dados {
     dinheiro_a_parte: false,
     mes_conta: null,
     hora: null,
+    carteira: null,
   })
 
   const gastos: Gasto[] = [
@@ -155,11 +156,15 @@ export function dadosDeExemplo(hoje: string): Dados {
       mes: somarMeses(atual, i),
       valor_centavos: 180000,
     })),
-    depositos: [0, 1, 2].map((i) => ({
-      id: id(),
-      aba: 'caju' as const,
-      data: dataNoMes(somarMeses(inicio, i), i === 2 ? 1 : 5),
-      valor_centavos: 45000,
-    })),
+    // Em cada mês: R$ 450 na refeição e R$ 150 na mobilidade.
+    depositos: [0, 1, 2].flatMap((i) =>
+      (['refeicao', 'mobilidade'] as const).map((carteira) => ({
+        id: id(),
+        aba: 'caju' as const,
+        data: dataNoMes(somarMeses(inicio, i), i === 2 ? 1 : 5),
+        valor_centavos: carteira === 'refeicao' ? 45000 : 15000,
+        carteira,
+      })),
+    ),
   }
 }

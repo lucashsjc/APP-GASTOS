@@ -5,6 +5,7 @@ import type { Dados, Gasto, Recorrencia } from '../data/types'
 import { gastosDoMes, maisFrequente } from './analise'
 import {
   cardCaju,
+  carteiraDe,
   certosDoMes,
   depositosDoMes,
   datasDasParcelas,
@@ -51,6 +52,7 @@ function gasto(dados: Partial<Gasto>): Gasto {
     dinheiro_a_parte: false,
     mes_conta: null,
     hora: null,
+    carteira: null,
     ...dados,
   }
 }
@@ -328,18 +330,18 @@ describe('saldo do Caju (cada mês separado)', () => {
   })
 
   it('mês passado: saldo no fim daquele mês, só com o dinheiro dele', () => {
-    expect(cardCaju(caju(), '2026-09', HOJE)).toEqual({ modo: 'passado', saldo: 19000 })
+    expect(cardCaju(caju(), '2026-09', HOJE)).toMatchObject({ modo: 'passado', saldo: 19000 })
   })
 
   it('mês futuro: depósitos que valem para ele − os gastos previstos nele', () => {
     // Novembro: depósito de 50000 − todo mês de 10,00.
-    expect(cardCaju(caju(), '2026-11', HOJE)).toEqual({ modo: 'futuro', saldo: 49000 })
+    expect(cardCaju(caju(), '2026-11', HOJE)).toMatchObject({ modo: 'futuro', saldo: 49000 })
     // Dezembro ainda não tem depósito.
-    expect(cardCaju(caju(), '2026-12', HOJE)).toEqual({ modo: 'futuro', saldo: -1000 })
+    expect(cardCaju(caju(), '2026-12', HOJE)).toMatchObject({ modo: 'futuro', saldo: -1000 })
   })
 
   it('mês atual: mostra quanto dá por dia', () => {
-    expect(cardCaju(caju(), '2026-10', HOJE)).toEqual({ modo: 'atual', saldo: 24000, porDia: 2181, diasRestantes: 11 })
+    expect(cardCaju(caju(), '2026-10', HOJE)).toMatchObject({ modo: 'atual', saldo: 24000, porDia: 2181, diasRestantes: 11 })
   })
 
   it('o depósito do fim de outubro que vale para novembro entra só em novembro', () => {
@@ -532,5 +534,42 @@ describe('descontar no mês', () => {
     const dados = vazio()
     dados.gastos.push(gasto({ data: '2026-10-30' }))
     expect(outrosDoMes(dados, 'nubank', '2026-10')).toHaveLength(1)
+  })
+})
+
+describe('carteiras do Caju (refeição e mobilidade)', () => {
+  function caju(): Dados {
+    const dados = vazio()
+    dados.depositos.push({ id: 'r', aba: 'caju', data: '2026-10-01', valor_centavos: 60000, carteira: 'refeicao' })
+    dados.depositos.push({ id: 'm', aba: 'caju', data: '2026-10-01', valor_centavos: 20000, carteira: 'mobilidade' })
+    // Transporte sai da mobilidade sozinho; o resto, da refeição.
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-05', valor_centavos: 3000, categoria: 'Transporte' }))
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-06', valor_centavos: 4500, categoria: 'Alimentação' }))
+    // Americanas é Compras no app, mas o Caju descontou da refeição; o posto foi escolhido à mão.
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-07', valor_centavos: 1398, categoria: 'Compras' }))
+    dados.gastos.push(gasto({ aba: 'caju', forma: null, data: '2026-10-08', valor_centavos: 5000, categoria: 'Outros', carteira: 'mobilidade' }))
+    return dados
+  }
+
+  it('cada carteira com o seu saldo e o total junto', () => {
+    const c = cardCaju(caju(), '2026-10', HOJE)
+    expect(c.carteiras.map((x) => [x.carteira, x.saldo])).toEqual([
+      ['refeicao', 60000 - 4500 - 1398],
+      ['mobilidade', 20000 - 3000 - 5000],
+    ])
+    expect(c.saldo).toBe(80000 - 4500 - 1398 - 3000 - 5000)
+  })
+
+  it('carteira pela categoria ou a escolhida', () => {
+    expect(carteiraDe({ categoria: 'Transporte' })).toBe('mobilidade')
+    expect(carteiraDe({ categoria: 'Alimentação' })).toBe('refeicao')
+    expect(carteiraDe({ categoria: 'Alimentação', carteira: 'mobilidade' })).toBe('mobilidade')
+  })
+
+  it('depósito sem carteira conta como refeição', () => {
+    const dados = vazio()
+    dados.depositos.push({ id: 'x', aba: 'caju', data: '2026-10-01', valor_centavos: 10000 })
+    expect(saldoCajuDoMes(dados, '2026-10', HOJE, 'refeicao')).toBe(10000)
+    expect(saldoCajuDoMes(dados, '2026-10', HOJE, 'mobilidade')).toBe(0)
   })
 })

@@ -13,7 +13,17 @@ import { repo } from '../data/repo'
 import { definirPago } from '../data/acoes'
 import type { Aba, Gasto } from '../data/types'
 import { useEstado } from '../estado'
-import { cardCaju, certosDoMes, depositosDoMes, outrosDoMes, resumoNubank, resumoPagamento, type Certo } from '../lib/calculos'
+import {
+  CARTEIRAS,
+  cardCaju,
+  carteiraDe,
+  certosDoMes,
+  depositosDoMes,
+  outrosDoMes,
+  resumoNubank,
+  resumoPagamento,
+  type Certo,
+} from '../lib/calculos'
 import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 
@@ -45,9 +55,11 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const acoesCerto = useAcoesCerto(aba, setFolha)
   // A lista vem separada por dia (como no extrato do Caju): a data fica no título do dia e a linha
   // mostra a categoria, o horário e, no Nubank, crédito ou débito.
+  // No Caju, no lugar da categoria aparece a carteira de onde saiu (como no extrato do Caju).
+  const nomeDaCarteira = (item: Certo | Gasto) => CARTEIRAS.find((c) => c.id === carteiraDe(item))!.nome
   const detalheDoDia = (item: Certo | Gasto) =>
     [
-      item.categoria,
+      aba === 'caju' ? nomeDaCarteira(item) : item.categoria,
       !('chave' in item) && item.hora,
       'chave' in item && etiquetaCerto(item),
       !('chave' in item) && item.mes_conta && item.mes_conta !== mesDe(item.data) && `conta em ${nomeDoMes(item.mes_conta)}`,
@@ -156,7 +168,12 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
                     aoApagar={() => executar(() => repo.excluirDeposito(d.id))}
                   >
                     <LinhaGasto descricao="Depósito" categoria="Outros" valor_centavos={d.valor_centavos} data={d.data}
-                      detalhe={mesDe(d.data) !== mes ? `Caiu em ${dataCurta(d.data)}` : undefined}
+                      detalhe={[
+                        CARTEIRAS.find((c) => c.id === (d.carteira ?? 'refeicao'))!.nome,
+                        mesDe(d.data) !== mes && `caiu em ${dataCurta(d.data)}`,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')}
                       positivo
                       icone="Depósito"
                     />
@@ -186,8 +203,9 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
           textoBotao="Registrar depósito"
           classeBotao="botao-caju"
           comMes
-          aoSalvar={(valor, data, mesConta) =>
-            executar(() => repo.criarDeposito({ aba: 'caju', data, valor_centavos: valor, mes_conta: mesConta }))
+          comCarteira
+          aoSalvar={(valor, data, mesConta, carteira) =>
+            executar(() => repo.criarDeposito({ aba: 'caju', data, valor_centavos: valor, mes_conta: mesConta, carteira }))
           }
           aoFechar={() => setFolhaValor(null)}
         />
@@ -273,6 +291,15 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
       {c.modo === 'futuro' && (
         <p className="aviso-por-dia">Depósitos que valem para {nomeDoMes(mes)} menos os gastos já previstos nele.</p>
       )}
+      <div className="carteiras-caju">
+        {c.carteiras.map((x) => (
+          <div key={x.carteira} className="carteira-caju">
+            <small>{x.nome}</small>
+            <strong className={x.saldo < 0 ? 'negativo' : undefined}>{formatarReais(x.saldo)}</strong>
+            {c.modo === 'atual' && <span>{x.porDia === null ? 'acabou' : `${formatarReais(x.porDia)}/dia`}</span>}
+          </div>
+        ))}
+      </div>
       <div className="card-principal-rodape">
         <button type="button" className="botao-claro" onClick={aoDepositar}>
           + Registrar depósito

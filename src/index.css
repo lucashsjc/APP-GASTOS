@@ -3786,3 +3786,44 @@ a.botao-secundario {
 .lista-dia > li:last-child {
   border-bottom: none;
 }
+
+/* ---------- Carteiras do Caju (refeição e mobilidade) ---------- */
+
+.carteiras-caju {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.carteira-caju {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.carteira-caju small {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.carteira-caju strong {
+  font-size: 18px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.carteira-caju strong.negativo {
+  color: var(--negativo);
+}
+
+.carteira-caju span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--pastel-azul);
+}

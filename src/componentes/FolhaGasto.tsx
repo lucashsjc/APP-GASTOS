@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react'
 import { aplicarPlanoRecorrencia, moverOcorrencia } from '../data/acoes'
 import { repo } from '../data/repo'
-import type { Aba, Forma, Gasto, NovoGasto, Recorrencia } from '../data/types'
+import type { Aba, Carteira, Forma, Gasto, NovoGasto, Recorrencia } from '../data/types'
 import { useEstado } from '../estado'
 import {
   type Certo,
+  CARTEIRAS,
+  carteiraDe,
   descricoesMaisUsadas,
   observacoesMaisUsadas,
   dividirParcelas,
@@ -120,6 +122,8 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [dia, setDia] = useState(recEditada?.dia ?? diaDe(inicial.data))
   // Data da ocorrência do mês aberto (muda só nesse mês).
   const [dataNoMesAberto, setDataNoMesAberto] = useState(ocorrencia?.data ?? '')
+  // Carteira do Caju: null = pela categoria (Transporte → mobilidade, o resto → refeição).
+  const [carteira, setCarteira] = useState<Carteira | null>(gastoEditado?.carteira ?? null)
   const [categoria, setCategoria] = useState(inicial.categoria)
   const [categoriaEscolhida, setCategoriaEscolhida] = useState(Boolean(inicial.categoria))
   const [forma, setForma] = useState<Forma>(inicial.forma)
@@ -177,11 +181,13 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     }
     const extras = { observacao: observacao.trim(), separado, dinheiro_a_parte: aba === 'nubank' && dinheiroAParte }
     const horaFinal = tipo === 'uma' && /^\d{2}:\d{2}$/.test(hora) ? hora : null
+    const carteiraFinal = aba === 'caju' ? carteira : null
     const unico = (tipoGasto: NovoGasto['tipo']): NovoGasto => ({
       ...comum,
       ...extras,
       mes_conta: mesFinal,
       hora: horaFinal,
+      carteira: carteiraFinal,
       valor_centavos: valor,
       data,
       tipo: tipoGasto,
@@ -215,7 +221,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
         await repo.excluirGastos(grupo.map((g) => g.id))
         await repo.criarGastos(
           gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, gastoEditado.grupo_id ?? crypto.randomUUID()).map(
-            (p) => ({ ...p, ...extras, pago: pagas.has(p.parcela_numero) }),
+            (p) => ({ ...p, ...extras, carteira: carteiraFinal, pago: pagas.has(p.parcela_numero) }),
           ),
         )
       } else if (gastoEditado) {
@@ -226,13 +232,18 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           valor_centavos: valor,
           data,
           tipo: tipoGasto,
+          carteira: carteiraFinal,
           ...(tipoGasto === 'parcela' ? {} : { mes_conta: mesFinal, hora: horaFinal }),
         })
       } else if (tipo === 'uma') {
         await repo.criarGastos([unico(certo ? 'certo_unico' : 'unico')])
       } else if (tipo === 'parcelado') {
         await repo.criarGastos(
-          gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, crypto.randomUUID()).map((p) => ({ ...p, ...extras })),
+          gerarParcelas({ ...comum, total_centavos: valor, data, parcelas }, crypto.randomUUID()).map((p) => ({
+            ...p,
+            ...extras,
+            carteira: carteiraFinal,
+          })),
         )
       } else {
         await repo.criarRecorrencia({
@@ -473,6 +484,29 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             <small>Aparece separado e não soma com os outros gastos do mês (mas desconta do livre).</small>
           </span>
         </label>
+
+        {aba === 'caju' && !recEditada && tipo !== 'todo_mes' && (
+          <div className="campo">
+            <span>Carteira do Caju</span>
+            <div className="segmentado pequeno" role="radiogroup" aria-label="Carteira do Caju">
+              {CARTEIRAS.map((c) => {
+                const ativa = (carteira ?? carteiraDe({ categoria: categoria || sugerirCategoria(descricao) })) === c.id
+                return (
+                  <button
+                    key={c.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={ativa}
+                    className={ativa ? 'ativo' : ''}
+                    onClick={() => setCarteira(c.id)}
+                  >
+                    {c.nome}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {aba === 'nubank' && (
           <div className="campo">

@@ -1,7 +1,7 @@
 // Regras de cálculo do app (seção 7 da descrição). Tudo aqui é função pura: recebe os dados e o
 // dia de hoje (em São Paulo) e devolve números em centavos. Os testes ficam em calculos.test.ts.
 
-import type { Aba, Dados, Deposito, Forma, Gasto, NovaRecorrencia, NovoGasto, Recorrencia } from '../data/types'
+import type { Aba, Carteira, Dados, Deposito, Forma, Gasto, NovaRecorrencia, NovoGasto, Recorrencia } from '../data/types'
 import {
   dataNoMes,
   diaDe,
@@ -39,6 +39,8 @@ export interface Certo {
   separado: boolean
   /** Pago com dinheiro à parte: fora das contas do card. */
   dinheiro_a_parte: boolean
+  /** Carteira do Caju escolhida à mão (null = pela categoria). */
+  carteira: Carteira | null
 }
 
 /** Já caiu = data até hoje, ou marcado à mão como caído. */
@@ -82,6 +84,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       observacao: ajuste?.observacao || r.observacao,
       separado: r.separado,
       dinheiro_a_parte: r.dinheiro_a_parte,
+      carteira: ajuste?.carteira ?? null,
       parcela_numero: null,
       parcela_total: null,
     })
@@ -110,6 +113,7 @@ export function certosDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): 
       observacao: g.observacao,
       separado: g.separado,
       dinheiro_a_parte: g.dinheiro_a_parte,
+      carteira: g.carteira,
       parcela_numero: g.parcela_numero,
       parcela_total: g.parcela_total,
     })
@@ -214,12 +218,27 @@ export function depositosDoMes(dados: Dados, mes: string): Deposito[] {
  * separado: o que sobrou de um mês não passa para o outro. No mês atual, só os gastos já caídos
  * até hoje; nos outros meses, todos os gastos do mês (nos futuros, os fixos e parcelas previstos).
  */
-export function saldoCajuDoMes(dados: Dados, mes: string, hoje: string): number {
-  const depositos = somar(depositosDoMes(dados, mes).map((d) => d.valor_centavos))
+export function saldoCajuDoMes(dados: Dados, mes: string, hoje: string, carteira?: Carteira): number {
+  const daCarteira = (c: Carteira) => carteira === undefined || c === carteira
+  const depositos = somar(
+    depositosDoMes(dados, mes)
+      .filter((d) => daCarteira(d.carteira ?? 'refeicao'))
+      .map((d) => d.valor_centavos),
+  )
   const atual = mes === mesDe(hoje)
   const certos = certosDoMes(dados, 'caju', mes, hoje).filter((c) => !atual || c.caiu)
   const outros = outrosDoMes(dados, 'caju', mes).filter((g) => !atual || jaCaiu(g.data, hoje, g.caiu_manual))
-  return depositos - somar([...certos, ...outros].map((g) => g.valor_centavos))
+  return depositos - somar([...certos, ...outros].filter((g) => daCarteira(carteiraDe(g))).map((g) => g.valor_centavos))
+}
+
+export const CARTEIRAS: { id: Carteira; nome: string }[] = [
+  { id: 'refeicao', nome: 'Refeição' },
+  { id: 'mobilidade', nome: 'Mobilidade' },
+]
+
+/** A carteira do Caju de um gasto: a escolhida ou, sem escolha, Transporte → mobilidade e o resto → refeição. */
+export function carteiraDe(g: { carteira?: Carteira | null; categoria: string }): Carteira {
+  return g.carteira ?? (g.categoria === 'Transporte' ? 'mobilidade' : 'refeicao')
 }
 
 /** Quanto dá para gastar por dia até o fim do mês, contando hoje. Null = saldo esgotado. */
@@ -228,10 +247,19 @@ export function porDiaCaju(saldo: number, hoje: string): number | null {
   return Math.floor(saldo / diasRestantesNoMes(hoje))
 }
 
-export type CardCaju =
+export interface SaldoCarteira {
+  carteira: Carteira
+  nome: string
+  saldo: number
+  /** Por dia até o fim do mês (só no mês atual; null se acabou). */
+  porDia: number | null
+}
+
+export type CardCaju = (
   | { modo: 'atual'; saldo: number; porDia: number | null; diasRestantes: number }
   | { modo: 'passado'; saldo: number }
   | { modo: 'futuro'; saldo: number }
+) & { carteiras: SaldoCarteira[] }
 
 /**
  * O que o card do Caju mostra no mês escolhido (sempre só com o dinheiro daquele mês):
@@ -242,8 +270,14 @@ export type CardCaju =
 export function cardCaju(dados: Dados, mes: string, hoje: string): CardCaju {
   const saldo = saldoCajuDoMes(dados, mes, hoje)
   const mesAtual = mesDe(hoje)
-  if (mes === mesAtual) return { modo: 'atual', saldo, porDia: porDiaCaju(saldo, hoje), diasRestantes: diasRestantesNoMes(hoje) }
-  return { modo: mes < mesAtual ? 'passado' : 'futuro', saldo }
+  const carteiras = CARTEIRAS.map(({ id, nome }) => {
+    const s = saldoCajuDoMes(dados, mes, hoje, id)
+    return { carteira: id, nome, saldo: s, porDia: mes === mesAtual ? porDiaCaju(s, hoje) : null }
+  })
+  if (mes === mesAtual) {
+    return { modo: 'atual', saldo, porDia: porDiaCaju(saldo, hoje), diasRestantes: diasRestantesNoMes(hoje), carteiras }
+  }
+  return { modo: mes < mesAtual ? 'passado' : 'futuro', saldo, carteiras }
 }
 
 // ---------- Parcelas ----------

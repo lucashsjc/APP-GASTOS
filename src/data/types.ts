@@ -41,11 +41,17 @@ export interface Gasto {
   mes_conta: string | null
   /** Horário da compra (HH:MM), se foi informado. */
   hora: string | null
+  /** Carteira do Caju de onde sai (null = pela categoria: Transporte → mobilidade, o resto → refeição). */
+  carteira: Carteira | null
 }
 
+/** As carteiras do Caju: cada uma recebe o seu dinheiro e paga os seus gastos. */
+export type Carteira = 'refeicao' | 'mobilidade'
+
 /** Ao criar, os campos de controle são opcionais (não pago, sem observação, nada à parte). */
-export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte' | 'mes_conta' | 'hora'> & {
+export type NovoGasto = Omit<Gasto, 'id' | 'pago' | 'observacao' | 'separado' | 'dinheiro_a_parte' | 'mes_conta' | 'hora' | 'carteira'> & {
   hora?: string | null
+  carteira?: Carteira | null
   pago?: boolean
   observacao?: string
   separado?: boolean
@@ -93,6 +99,8 @@ export interface Deposito {
   valor_centavos: number
   /** Mês (AAAA-MM) para o qual o depósito vale, quando não é o mês da data (ex.: caiu no fim do mês para o seguinte). */
   mes_conta?: string | null
+  /** Carteira do Caju que recebeu (null = refeição). */
+  carteira?: Carteira | null
 }
 
 export type NovoDeposito = Omit<Deposito, 'id'>
