@@ -4,7 +4,8 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
+import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
+import { SeletorMes } from '../componentes/SeletorMes'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
 import { CardLimites, FolhaLimites } from '../componentes/Limites'
@@ -36,7 +37,11 @@ function porcento(parte: number, todo: number): string {
   return `${Math.min(100, Math.max(0, (parte / todo) * 100))}%`
 }
 
-export default function PaginaAba({ aba }: { aba: Aba }) {
+/**
+ * A aba do cartão em dois jeitos: a tela simples (o que ainda tem, por carteira no Caju, e os gastos) e,
+ * pelo botão "Detalhes", a tela com tudo: cartão completo, ritmo, atalhos, limites e pagamentos.
+ */
+export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalhado?: boolean }) {
   const { dados, hoje, mes, executar, carregando } = useEstado()
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
@@ -109,48 +114,136 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const depositos = aba === 'caju' ? depositosDoMes(dados, mes) : []
   const recebido = dados.recebidos.find((r) => r.mes === mes)?.valor_centavos ?? 0
 
+  const folhas = (
+    <>
+      {folha && <FolhaGasto modo={folha} aoFechar={() => setFolha(null)} />}
+      {editandoLimites && <FolhaLimites aba={aba} aoFechar={() => setEditandoLimites(false)} />}
+      {folhaValor === 'recebido' && (
+        <FolhaValor
+          titulo={`Recebido em ${nomeDoMes(mes)}`}
+          inicial={recebido}
+          textoBotao="Salvar recebido"
+          classeBotao="botao-nubank"
+          aceitaZero
+          aoSalvar={(valor) => executar(() => repo.salvarRecebido(mes, valor))}
+          aoFechar={() => setFolhaValor(null)}
+        />
+      )}
+      {folhaValor === 'deposito' && (
+        <FolhaDeposito
+          dataInicial={mes === mesDe(hoje) ? hoje : dataNoMes(mes, diaDe(hoje))}
+          aoSalvar={(depositos, data, mesConta) =>
+            executar(async () => {
+              for (const d of depositos) {
+                await repo.criarDeposito({ aba: 'caju', data, valor_centavos: d.valor, mes_conta: mesConta, carteira: d.carteira })
+              }
+            })
+          }
+          aoFechar={() => setFolhaValor(null)}
+        />
+      )}
+    </>
+  )
+
+  if (detalhado) {
+    return (
+      <div className={`pagina pagina-${aba}`}>
+        <header className="topo">
+          <div className="topo-linha">
+            <Link to={`/${aba}`} className="voltar">
+              <IconeAnterior tamanho={18} /> {NOMES[aba]}
+            </Link>
+          </div>
+          <h1>Detalhes</h1>
+          <div className="topo-linha">
+            <SeletorMes />
+          </div>
+        </header>
+
+        {aba === 'nubank' ? (
+          <CardNubank aoEditarRecebido={() => setFolhaValor('recebido')} />
+        ) : (
+          <CardCajuPrincipal aoDepositar={() => setFolhaValor('deposito')} />
+        )}
+
+        <CardTelemetria
+          aba={aba}
+          aoLancar={(valor, parcelas) => setFolha({ aba, origem: 'topo', sugestao: { valor_centavos: valor, parcelas } })}
+        />
+        <nav className="atalhos" aria-label="Atalhos">
+          <Link to={`/${aba}/resumo`} className="atalho">
+            <IconeResumo tamanho={16} />
+            <span>Resumo</span>
+          </Link>
+          <button type="button" className="atalho" onClick={() => setEditandoLimites(true)}>
+            <IconeLimite tamanho={16} />
+            <span>Limites</span>
+          </button>
+          <Link to={`/${aba}/para-onde`} className="atalho">
+            <IconeCategoria nome="Compras" tamanho={16} />
+            <span>Categorias</span>
+          </Link>
+          <Link to="/assinaturas" className="atalho">
+            <IconeAssinatura tamanho={16} />
+            <span>Assinaturas</span>
+          </Link>
+          <Link to="/busca" className="atalho">
+            <IconeBusca tamanho={16} />
+            <span>Buscar</span>
+          </Link>
+        </nav>
+
+        <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
+
+        <CardPagamentos certos={certos} outros={outros} />
+
+        <Link to={`/${aba}/certos`} className="card link-fixos">
+          <span>
+            <strong>Fixos e parcelas</strong>
+            <small>Gastos de todo mês (PORTO, Spotify…) e compras parceladas, que entram sozinhos em cada mês.</small>
+          </span>
+          <IconeProximo tamanho={18} />
+        </Link>
+
+        {aba === 'caju' && depositos.length > 0 && (
+          <section className="secao">
+            <h2>Depósitos do mês</h2>
+            <ul className="lista">
+              {depositos
+                .sort((a, b) => b.data.localeCompare(a.data))
+                .map((d) => (
+                  <li key={d.id}>
+                    <ItemDeslizavel
+                      pergunta={`Apagar o depósito de ${formatarReais(d.valor_centavos)}?`}
+                      aoApagar={() => executar(() => repo.excluirDeposito(d.id))}
+                    >
+                      <LinhaGasto descricao="Depósito" categoria="Outros" valor_centavos={d.valor_centavos} data={d.data}
+                        detalhe={[
+                          CARTEIRAS.find((c) => c.id === (d.carteira ?? 'refeicao'))!.nome,
+                          mesDe(d.data) !== mes && `caiu em ${dataCurta(d.data)}`,
+                        ]
+                          .filter(Boolean)
+                          .join(' · ')}
+                        positivo
+                        icone="Depósito"
+                      />
+                    </ItemDeslizavel>
+                  </li>
+                ))}
+            </ul>
+          </section>
+        )}
+
+        {folhas}
+      </div>
+    )
+  }
+
   return (
     <div className={`pagina pagina-${aba}`}>
-      <Topo aba={aba} titulo={NOMES[aba]} aoAdicionar={() => setFolha({ aba, origem: 'topo' })} />
+      <Topo aba={aba} titulo={NOMES[aba]} aoAdicionar={() => setFolha({ aba, origem: 'topo' })} detalhes={`/${aba}/detalhes`} />
 
-      {aba === 'nubank' ? (
-        <CardNubank aoEditarRecebido={() => setFolhaValor('recebido')} />
-      ) : (
-        <CardCajuPrincipal aoDepositar={() => setFolhaValor('deposito')} />
-      )}
-
-      <CardTelemetria
-        aba={aba}
-        aoLancar={(valor, parcelas) => setFolha({ aba, origem: 'topo', sugestao: { valor_centavos: valor, parcelas } })}
-      />
-
-      <nav className="atalhos" aria-label="Atalhos">
-        <Link to={`/${aba}/resumo`} className="atalho">
-          <IconeResumo tamanho={16} />
-          <span>Resumo</span>
-        </Link>
-        <button type="button" className="atalho" onClick={() => setEditandoLimites(true)}>
-          <IconeLimite tamanho={16} />
-          <span>Limites</span>
-        </button>
-        <Link to={`/${aba}/para-onde`} className="atalho">
-          <IconeCategoria nome="Compras" tamanho={16} />
-          <span>Categorias</span>
-        </Link>
-        <Link to="/assinaturas" className="atalho">
-          <IconeAssinatura tamanho={16} />
-          <span>Assinaturas</span>
-        </Link>
-        <Link to="/busca" className="atalho">
-          <IconeBusca tamanho={16} />
-          <span>Buscar</span>
-        </Link>
-      </nav>
-
-      <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
-      {editandoLimites && <FolhaLimites aba={aba} aoFechar={() => setEditandoLimites(false)} />}
-
-      <CardPagamentos certos={certos} outros={outros} />
+      <ResumoSimples aba={aba} aoDepositar={() => setFolhaValor('deposito')} aoEditarRecebido={() => setFolhaValor('recebido')} />
 
       <section className="secao">
         <h2>
@@ -176,69 +269,64 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
         </section>
       )}
 
-      <Link to={`/${aba}/certos`} className="card link-fixos">
-        <span>
-          <strong>Fixos e parcelas</strong>
-          <small>Gastos de todo mês (PORTO, Spotify…) e compras parceladas, que entram sozinhos em cada mês.</small>
-        </span>
-        <IconeProximo tamanho={18} />
-      </Link>
-
-      {aba === 'caju' && depositos.length > 0 && (
-        <section className="secao">
-          <h2>Depósitos do mês</h2>
-          <ul className="lista">
-            {depositos
-              .sort((a, b) => b.data.localeCompare(a.data))
-              .map((d) => (
-                <li key={d.id}>
-                  <ItemDeslizavel
-                    pergunta={`Apagar o depósito de ${formatarReais(d.valor_centavos)}?`}
-                    aoApagar={() => executar(() => repo.excluirDeposito(d.id))}
-                  >
-                    <LinhaGasto descricao="Depósito" categoria="Outros" valor_centavos={d.valor_centavos} data={d.data}
-                      detalhe={[
-                        CARTEIRAS.find((c) => c.id === (d.carteira ?? 'refeicao'))!.nome,
-                        mesDe(d.data) !== mes && `caiu em ${dataCurta(d.data)}`,
-                      ]
-                        .filter(Boolean)
-                        .join(' · ')}
-                      positivo
-                      icone="Depósito"
-                    />
-                  </ItemDeslizavel>
-                </li>
-              ))}
-          </ul>
-        </section>
-      )}
-
-      {folha && <FolhaGasto modo={folha} aoFechar={() => setFolha(null)} />}
-      {folhaValor === 'recebido' && (
-        <FolhaValor
-          titulo={`Recebido em ${nomeDoMes(mes)}`}
-          inicial={recebido}
-          textoBotao="Salvar recebido"
-          classeBotao="botao-nubank"
-          aceitaZero
-          aoSalvar={(valor) => executar(() => repo.salvarRecebido(mes, valor))}
-          aoFechar={() => setFolhaValor(null)}
-        />
-      )}
-      {folhaValor === 'deposito' && (
-        <FolhaDeposito
-          dataInicial={mes === mesDe(hoje) ? hoje : dataNoMes(mes, diaDe(hoje))}
-          aoSalvar={(depositos, data, mesConta) =>
-            executar(async () => {
-              for (const d of depositos) {
-                await repo.criarDeposito({ aba: 'caju', data, valor_centavos: d.valor, mes_conta: mesConta, carteira: d.carteira })
-              }
-            })
-          }
-          aoFechar={() => setFolhaValor(null)}
-        />
-      )}
+      {folhas}
     </div>
+  )
+}
+
+/** Topo da tela simples: o que ainda tem (pequeno) e, no Caju, quanto tem em cada carteira. */
+function ResumoSimples({ aba, aoDepositar, aoEditarRecebido }: { aba: Aba; aoDepositar: () => void; aoEditarRecebido: () => void }) {
+  const { dados, hoje, mes } = useEstado()
+  if (aba === 'nubank') {
+    const r = resumoNubank(dados, mes, hoje)
+    return (
+      <section className="resumo-simples-card">
+        <div className="resumo-simples-total">
+          <small>Livre para gastar</small>
+          <strong className={r.livre < 0 ? 'negativo-texto' : undefined}>{formatarReais(r.livre)}</strong>
+        </div>
+        {r.recebido > 0 ? (
+          <div className="resumo-simples-partes">
+            <div>
+              <small>Gasto</small>
+              <span>{formatarReais(r.certos.total + r.outros + r.aParte)}</span>
+            </div>
+            <div>
+              <small>Recebido</small>
+              <span>{formatarReais(r.recebido)}</span>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="botao-texto" onClick={aoEditarRecebido}>
+            Colocar o recebido do mês
+          </button>
+        )}
+      </section>
+    )
+  }
+  const c = cardCaju(dados, mes, hoje)
+  const temDeposito = depositosDoMes(dados, mes).length > 0
+  return (
+    <section className="resumo-simples-card">
+      <div className="resumo-simples-total">
+        <small>{c.modo === 'passado' ? `Sobrou em ${nomeDoMes(mes)}` : 'Saldo no Caju'}</small>
+        <strong className={c.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(c.saldo)}</strong>
+      </div>
+      {temDeposito ? (
+        <div className="resumo-simples-partes">
+          {c.carteiras.map((x) => (
+            <div key={x.carteira}>
+              <small>{x.nome}</small>
+              <span className={x.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(x.saldo)}</span>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <button type="button" className="botao-texto" onClick={aoDepositar}>
+          Registrar o depósito do mês
+        </button>
+      )}
+    </section>
   )
 }
 

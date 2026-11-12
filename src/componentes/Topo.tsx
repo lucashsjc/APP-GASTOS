@@ -1,11 +1,11 @@
 import { Link } from 'react-router-dom'
 import type { Aba } from '../data/types'
-import { IconeAjustes, IconeBusca, IconeMais } from './icones'
+import { IconeAjustes, IconeBusca, IconeMais, IconeResumo } from './icones'
 import { BotaoMenu } from './MenuLateral'
 import { SeletorMes } from './SeletorMes'
 
 /** Topo das abas: menu, nome, Ajustes, seletor de mês e o botão + (pequeno, sem cobrir a lista). */
-export function Topo({ aba, titulo, aoAdicionar }: { aba: Aba; titulo: string; aoAdicionar?: () => void }) {
+export function Topo({ aba, titulo, aoAdicionar, detalhes }: { aba: Aba; titulo: string; aoAdicionar?: () => void; detalhes?: string }) {
   return (
     <header className="topo">
       <div className="topo-linha">
@@ -13,14 +13,20 @@ export function Topo({ aba, titulo, aoAdicionar }: { aba: Aba; titulo: string; a
           <BotaoMenu />
           <h1>{titulo}</h1>
         </div>
-        <div className="topo-icones">
-          <Link to="/busca" className="botao-icone" aria-label="Buscar gastos">
-            <IconeBusca />
+        {detalhes ? (
+          <Link to={detalhes} className="botao-detalhes">
+            <IconeResumo tamanho={16} /> Detalhes
           </Link>
-          <Link to="/ajustes" className="botao-icone" aria-label="Ajustes">
-            <IconeAjustes />
-          </Link>
-        </div>
+        ) : (
+          <div className="topo-icones">
+            <Link to="/busca" className="botao-icone" aria-label="Buscar gastos">
+              <IconeBusca />
+            </Link>
+            <Link to="/ajustes" className="botao-icone" aria-label="Ajustes">
+              <IconeAjustes />
+            </Link>
+          </div>
+        )}
       </div>
       <div className="topo-linha">
         <SeletorMes />

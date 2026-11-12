@@ -73,6 +73,8 @@ export default function App() {
             <Route path="/caju/certos" element={<Certos aba="caju" />} />
             <Route path="/nubank/para-onde" element={<ParaOnde aba="nubank" />} />
             <Route path="/caju/para-onde" element={<ParaOnde aba="caju" />} />
+            <Route path="/nubank/detalhes" element={<PaginaAba aba="nubank" detalhado />} />
+            <Route path="/caju/detalhes" element={<PaginaAba aba="caju" detalhado />} />
             <Route path="/nubank/resumo" element={<ResumoMes aba="nubank" />} />
             <Route path="/caju/resumo" element={<ResumoMes aba="caju" />} />
             <Route path="/busca" element={<Busca />} />
