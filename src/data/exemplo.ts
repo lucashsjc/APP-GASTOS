@@ -170,6 +170,11 @@ export function dadosDeExemplo(hoje: string): Dados {
       { id: id(), mes: somarMeses(inicio, 0), valor_centavos: 25000, tipo: 'guardar' as const, descricao: 'Caixinha' },
     ],
     metaGuardar: 20000,
+    desejos: [
+      { id: id(), nome: 'Tênis de corrida', valor_centavos: 39990 },
+      { id: id(), nome: 'Fone bluetooth', valor_centavos: 120000 },
+      { id: id(), nome: 'Viagem de fim de ano', valor_centavos: 250000 },
+    ],
     limites: [
       { id: id(), aba: 'nubank', categoria: 'Alimentação', valor_centavos: 25000 },
       { id: id(), aba: 'nubank', categoria: 'Transporte', valor_centavos: 15000 },

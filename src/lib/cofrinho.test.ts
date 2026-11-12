@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { completarGasto } from '../data/completar'
 import type { Dados, NovoGasto } from '../data/types'
 import { resumoNubank } from './calculos'
-import { resumoCofrinho } from './cofrinho'
+import { planoDoDesejo, resumoCofrinho } from './cofrinho'
 import { ritmoDoMes } from './ritmo'
 
 const gasto = (g: Partial<NovoGasto>, id: string) =>
@@ -75,5 +75,15 @@ describe('cofrinho', () => {
     const d = { ...dados(), guardados: undefined, metaGuardar: undefined }
     expect(resumoNubank(d, '2026-08', '2026-11-12').livre).toBe(50000)
     expect(resumoCofrinho(d, '2026-11-12').total).toBe(0)
+  })
+})
+
+describe('compras futuras', () => {
+  it('cabe no livre, dá com o cofrinho ou em quantos meses guardando a meta', () => {
+    expect(planoDoDesejo(30000, 50000, 0, null)).toEqual({ tipo: 'cabe', sobra: 20000 })
+    expect(planoDoDesejo(30000, 10000, 40000, null)).toEqual({ tipo: 'cofrinho', sobraNoCofrinho: 10000 })
+    // Falta 2.000 − 500 guardados = 1.500; guardando 200 por mês: 8 meses.
+    expect(planoDoDesejo(200000, 10000, 50000, 20000)).toEqual({ tipo: 'meses', meses: 8, falta: 150000 })
+    expect(planoDoDesejo(200000, 10000, 50000, null)).toEqual({ tipo: 'sem-meta', falta: 150000 })
   })
 })

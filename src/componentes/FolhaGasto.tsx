@@ -15,17 +15,23 @@ import {
   planejarEdicaoRecorrencia,
 } from '../lib/calculos'
 import { CATEGORIAS, sugerirCategoria } from '../lib/categorias'
-import { dataNoMes, diaDe, horaSP, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
+import { dataCurta, dataNoMes, diaDe, horaSP, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { Folha } from './Folha'
 import { IconeCarteira, IconeCategoria, IconeCheck } from './icones'
 
 export type ModoGasto =
-  /** `sugestao`: valor e parcelas vindos do "Posso comprar?". */
-  | { aba: Aba; origem: 'topo' | 'certos'; sugestao?: { valor_centavos: number; parcelas: number } }
+  /** `sugestao`: valor e parcelas do "Posso comprar?", ou o nome de uma compra futura. */
+  | { aba: Aba; origem: 'topo' | 'certos'; sugestao?: Sugestao }
   | { aba: Aba; gasto: Gasto }
   /** `ocorrencia`: a do mês aberto, para mudar a data só nele. */
   | { aba: Aba; recorrencia: Recorrencia; ocorrencia?: Certo }
+
+export interface Sugestao {
+  valor_centavos: number
+  parcelas: number
+  descricao?: string
+}
 
 type Tipo = 'uma' | 'parcelado' | 'todo_mes'
 
@@ -39,7 +45,7 @@ function reaisDigitados(centavos: number): string {
   return formatarReais(centavos).replace('R$ ', '')
 }
 
-export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () => void }) {
+export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFechar: () => void; aoSalvar?: () => void }) {
   const { dados, hoje, mes, executar, avisar } = useEstado()
   const aba = modo.aba
   const mesAtual = mesDe(hoje)
@@ -98,7 +104,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     return {
       tipo: (origem === 'certos' ? 'todo_mes' : sugestao && sugestao.parcelas > 1 ? 'parcelado' : 'uma') as Tipo,
       valor: sugestao ? reaisDigitados(sugestao.valor_centavos) : '',
-      descricao: '',
+      descricao: sugestao?.descricao ?? '',
       // Pelo + do topo, a data é hoje; pela lista de certos, um dia do mês que está aberto.
       data: origem === 'topo' || mes === mesAtual ? hoje : dataNoMes(mes, diaDe(hoje)),
       categoria: '',
@@ -133,6 +139,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
   const [parcelas, setParcelas] = useState(inicial.parcelas)
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState<string | null>(null)
+  // Gasto novo pelo +: começa só com valor e nome; o resto fica em "Mais opções" (com os valores automáticos).
+  const rapido = !gastoEditado && !recEditada && 'origem' in modo && modo.origem === 'topo' && !(modo.sugestao && modo.sugestao.parcelas > 1)
+  const [completo, setCompleto] = useState(!rapido)
 
   const editando = Boolean(gastoEditado || recEditada)
   const valor = lerReais(valorTexto)
@@ -263,6 +272,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
     } else if (tipo === 'uma' && (mesFinal ?? mesDe(data)) !== mes && (!editando || mesFinal !== (gastoEditado?.mes_conta ?? null))) {
       avisar(`Gasto salvo em ${nomeDoMes(mesFinal ?? mesDe(data))}.`)
     }
+    aoSalvar?.()
     aoFechar()
   }
 
@@ -293,7 +303,7 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           {textoParcelas && <small className="destaque-parcelas">{textoParcelas}</small>}
         </label>
 
-        {!editando && (
+        {!editando && completo && (
           <div className="segmentado" role="radiogroup" aria-label="Tipo">
             {TIPOS.map((t) => (
               <button
@@ -335,6 +345,23 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
           </div>
         )}
 
+        {!completo && (
+          <button type="button" className="mais-opcoes" onClick={() => setCompleto(true)}>
+            <span>
+              {[
+                categoria || sugerirCategoria(descricao) || 'Categoria automática',
+                aba === 'nubank' ? (forma === 'debito' ? 'Débito' : 'Crédito') : null,
+                data === hoje ? `Hoje${hora ? ` ${hora}` : ''}` : dataCurta(data),
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </span>
+            <b>Mais opções</b>
+          </button>
+        )}
+
+        {completo && (
+          <>
         {tipo === 'parcelado' && (
           <div className="campo">
             <span>Parcelas</span>
@@ -549,6 +576,9 @@ export function FolhaGasto({ modo, aoFechar }: { modo: ModoGasto; aoFechar: () =
             ))}
           </div>
         </div>
+
+          </>
+        )}
 
         {erro && <p className="erro">{erro}</p>}
 

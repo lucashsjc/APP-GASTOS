@@ -29,6 +29,10 @@ export interface Repo {
   excluirGuardado(id: string): Promise<void>
   salvarMetaGuardar(valorCentavos: number | null): Promise<void>
 
+  /** Compras futuras. */
+  criarDesejo(nome: string, valorCentavos: number): Promise<void>
+  excluirDesejo(id: string): Promise<void>
+
   /** Só no modo demonstração: volta aos dados de exemplo. */
   restaurarExemplo?(): Promise<void>
 }

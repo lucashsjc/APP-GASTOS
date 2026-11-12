@@ -128,6 +128,13 @@ export interface Guardado {
 
 export type NovoGuardado = Omit<Guardado, 'id'>
 
+/** Compra futura (lista de desejos). */
+export interface Desejo {
+  id: string
+  nome: string
+  valor_centavos: number
+}
+
 export interface Dados {
   gastos: Gasto[]
   recorrencias: Recorrencia[]
@@ -139,4 +146,6 @@ export interface Dados {
   guardados?: Guardado[]
   /** Quanto guardar por mês (null = sem meta). */
   metaGuardar?: number | null
+  /** Compras futuras. Opcional: antes do supabase/016_cofrinho.sql, vem vazio. */
+  desejos?: Desejo[]
 }

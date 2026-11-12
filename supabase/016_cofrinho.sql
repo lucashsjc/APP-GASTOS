@@ -1,4 +1,4 @@
--- Cofrinho: o dinheiro do Nubank que foi guardado (ex.: na caixinha) sai do livre do mês, e o app mostra
+-- Cofrinho e compras futuras. O dinheiro do Nubank que foi guardado (ex.: na caixinha) sai do livre do mês, e o app mostra
 -- quanto tem guardado no total. Também guarda a meta de quanto guardar por mês.
 -- Rodar no Supabase: SQL Editor → New query → colar → Run. Pode rodar mais de uma vez.
 
@@ -32,3 +32,20 @@ create policy "dono do cofrinho" on cofrinho
   for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 grant select, insert, update, delete on cofrinho to authenticated;
+
+-- Compras futuras (lista de desejos): o que quer comprar, com o valor, para planejar.
+create table if not exists desejos (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users on delete cascade,
+  nome text not null check (length(trim(nome)) > 0),
+  valor_centavos integer not null check (valor_centavos > 0),
+  criado_em timestamptz not null default now()
+);
+
+alter table desejos enable row level security;
+
+drop policy if exists "dono dos desejos" on desejos;
+create policy "dono dos desejos" on desejos
+  for all to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+
+grant select, insert, update, delete on desejos to authenticated;

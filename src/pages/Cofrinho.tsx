@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Folha } from '../componentes/Folha'
-import { IconeAnterior, IconePorquinho } from '../componentes/icones'
+import { IconeAnterior, IconePorquinho, IconeProximo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { Valor } from '../componentes/Valor'
 import { repo } from '../data/repo'
@@ -91,6 +91,14 @@ export default function Cofrinho() {
           <p className="nota">Defina quanto quer guardar por mês. O que você guardar sai do livre para gastar.</p>
         )}
       </section>
+
+      <Link to="/compras-futuras" className="card link-fixos">
+        <span>
+          <strong>Compras futuras</strong>
+          <small>A lista do que você quer comprar, e se já dá com o livre ou com o cofrinho.</small>
+        </span>
+        <IconeProximo tamanho={18} />
+      </Link>
 
       {r.sobras.length > 0 && (
         <section className="card">

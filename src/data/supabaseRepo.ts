@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Repo } from './repo'
-import type { Deposito, Gasto, Guardado, Limite, Recebido, Recorrencia } from './types'
+import type { Deposito, Desejo, Gasto, Guardado, Limite, Recebido, Recorrencia } from './types'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -167,17 +167,20 @@ export function criarRepoSupabase(): Repo {
   }
 
   /** Cofrinho. Antes do 016_cofrinho.sql as tabelas não existem: vem vazio. */
-  async function lerCofrinho(): Promise<{ guardados: Guardado[]; meta: number | null }> {
-    const [g, m] = await Promise.all([
+  async function lerCofrinho(): Promise<{ guardados: Guardado[]; meta: number | null; desejos: Desejo[] }> {
+    const [g, m, w] = await Promise.all([
       db.from('guardados').select('id, mes, valor_centavos, tipo, descricao').order('mes'),
       db.from('cofrinho').select('meta_mensal').maybeSingle(),
+      db.from('desejos').select('id, nome, valor_centavos').order('criado_em'),
     ])
-    if (g.error && tabelaFalta(g.error)) return { guardados: [], meta: null }
+    if (g.error && tabelaFalta(g.error)) return { guardados: [], meta: null, desejos: [] }
     erro(g.error)
     if (m.error && !tabelaFalta(m.error)) erro(m.error)
+    if (w.error && !tabelaFalta(w.error)) erro(w.error)
     return {
       guardados: (g.data ?? []) as Guardado[],
       meta: (m.data as { meta_mensal: number | null } | null)?.meta_mensal ?? null,
+      desejos: (w.data ?? []) as Desejo[],
     }
   }
 
@@ -215,6 +218,7 @@ export function criarRepoSupabase(): Repo {
         limites,
         guardados: cofrinho.guardados,
         metaGuardar: cofrinho.meta,
+        desejos: cofrinho.desejos,
       }
     },
 
@@ -286,6 +290,15 @@ export function criarRepoSupabase(): Repo {
     },
     async salvarMetaGuardar(valorCentavos) {
       const { error } = await db.from('cofrinho').upsert({ meta_mensal: valorCentavos }, { onConflict: 'user_id' })
+      erroDoCofrinho(error)
+    },
+
+    async criarDesejo(nome, valorCentavos) {
+      const { error } = await db.from('desejos').insert({ nome, valor_centavos: valorCentavos })
+      erroDoCofrinho(error)
+    },
+    async excluirDesejo(id) {
+      const { error } = await db.from('desejos').delete().eq('id', id)
       erroDoCofrinho(error)
     },
 

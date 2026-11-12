@@ -47,3 +47,21 @@ export function resumoCofrinho(dados: Dados, hoje: string, quantosMeses = 12): R
 
   return { total, meta: dados.metaGuardar ?? null, noMes: guardadoDoMes(dados, atual), sobras, historico }
 }
+
+export type PlanoDesejo =
+  | { tipo: 'cabe'; sobra: number }
+  | { tipo: 'cofrinho'; sobraNoCofrinho: number }
+  | { tipo: 'meses'; meses: number; falta: number }
+  | { tipo: 'sem-meta'; falta: number }
+
+/**
+ * Como dá para comprar: com o livre deste mês, com o que está no cofrinho ou, guardando a meta do
+ * mês, em quantos meses junta o que falta.
+ */
+export function planoDoDesejo(valor: number, livre: number, guardado: number, meta: number | null): PlanoDesejo {
+  if (livre >= valor) return { tipo: 'cabe', sobra: livre - valor }
+  if (guardado >= valor) return { tipo: 'cofrinho', sobraNoCofrinho: guardado - valor }
+  const falta = valor - Math.max(0, guardado)
+  if (!meta || meta <= 0) return { tipo: 'sem-meta', falta }
+  return { tipo: 'meses', meses: Math.ceil(falta / meta), falta }
+}

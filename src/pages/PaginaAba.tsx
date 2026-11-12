@@ -4,7 +4,7 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
+import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeMais, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
 import { SeletorMes } from '../componentes/SeletorMes'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
@@ -181,6 +181,10 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
             <span>Cofrinho</span>
           </Link>
         )}
+        <Link to="/compras-futuras" className="atalho">
+          <IconeMais tamanho={16} />
+          <span>Compras futuras</span>
+        </Link>
         <Link to={`/${aba}/resumo`} className="atalho">
             <IconeResumo tamanho={16} />
             <span>Resumo</span>
