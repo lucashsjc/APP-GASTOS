@@ -29,13 +29,13 @@ const REGRAS: [RegExp, string][] = [
   [/\b(uber|99|gasolina|posto|combustivel|estacionamento|pedagio|onibus|metro)\b/, 'Transporte'],
   [/\b(porto|spotify|icloud|netflix|youtube|amazon prime|academia)\b/, 'Fixos'],
   [/\b(remedio|farmacia|drogaria|consulta|dentista)/, 'Saúde'],
-  [/\b(mercado|supermercado|atacadao|assai|emporio|hortifruti|padaria)\b/, 'Mercado'],
+  [/\b(mercado|supermercado|atacadao|assai|emporio|hortifruti|padaria|tauste)\b/, 'Mercado'],
   [
-    /\b(lanche|ifood|acai|agua|coca|refri|refrigerante|mango|cafe|pizza|hamburguer|burger|restaurante|cantina|almoco|janta|jantar|sorvete|salgado|pastel|suco|cerveja|mc ?donalds|bk|subway)\b/,
+    /\b(lanche|ifood|acai|agua|coca|refri|refrigerante|mango|cafe|pizza|hamburguer|burger|restaurante|cantina|almoco|janta|jantar|sorvete|salgado|pastel|suco|cerveja|chopp|bebida|espetinho|marmita|chocolate|mc ?donalds|bk|subway)\b/,
     'Alimentação',
   ],
   [/\b(gta|jogo|game|steam|playstation|psn|xbox|cinema|show|ingresso|bar|balada)\b/, 'Lazer'],
-  [/\b(americanas|shopee|mercado livre|amazon|magalu|tampa|ps5|roupa|tenis|camiseta|loja)\b/, 'Compras'],
+  [/\b(americanas|shopee|mercado livre|amazon|magalu|tampa|ps5|roupa|tenis|camiseta|bone|capinha|loja|shopping)\b/, 'Compras'],
   [/\b(presente|aniversario)\b/, 'Presentes'],
 ]
 

@@ -5,6 +5,7 @@ import { useEstado } from '../estado'
 import { useFaculdade } from '../faculdade/estado'
 import { aulasDoDia, formatarNota, prazoAtividade, provasProximas } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
+import { avisosDinheiro } from '../lib/avisos'
 import { cardCaju, resumoNubank } from '../lib/calculos'
 import { dataCurta, mesDe } from '../lib/datas'
 import { formatarReais, partesDoValor } from '../lib/dinheiro'
@@ -23,6 +24,7 @@ export default function PaginaHoje() {
   const provas = provasProximas(faculdade.dados, hoje)
   // O aviso de nota não se repete quando a prova da matéria já aparece na lista.
   const comProva = new Set(provas.filter((p) => p.precisa !== null).map((p) => p.disciplina?.id))
+  const avisos = avisosDinheiro(dados, hoje)
   const alertas = alertasFaculdade(faculdade.dados).filter((a) => !(a.tipo === 'nota' && comProva.has(a.disciplina.id)))
 
   // Os cards do carrossel: a próxima prova (se tiver), o livre do Nubank, o saldo do Caju e as aulas de hoje.
@@ -111,6 +113,26 @@ export default function PaginaHoje() {
       </header>
 
       <Carrossel slides={slides} />
+
+      {avisos.length > 0 && (
+        <section className="secao">
+          <h2>Avisos</h2>
+          <ul className="lista lista-alertas">
+            {avisos.map((a) => (
+              <li key={a.chave}>
+                <Link to={a.rota} className={`alerta-linha${a.grave ? ' grave' : ''}`}>
+                  <i className={`ponto ponto-grande ${a.grave ? 'ponto-grave' : 'ponto-atencao'}`} />
+                  <span>
+                    <strong>{a.titulo}</strong>
+                    <small>{a.texto}</small>
+                  </span>
+                  <IconeProximo tamanho={16} />
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section className="secao">
         <h2>

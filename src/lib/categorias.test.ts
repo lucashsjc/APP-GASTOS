@@ -21,3 +21,14 @@ describe('categoria sugerida pelo nome', () => {
     expect(sugerirCategoria('Copo')).toBe('Outros')
   })
 })
+
+describe('palavras novas (gastos do Lucas que caíam em Outros)', () => {
+  it('reconhece espetinho, marmita, chopp, Tauste, boné e capinha', () => {
+    expect(sugerirCategoria('Espetinho')).toBe('Alimentação')
+    expect(sugerirCategoria('Marmita')).toBe('Alimentação')
+    expect(sugerirCategoria('Chopp')).toBe('Alimentação')
+    expect(sugerirCategoria('Tauste')).toBe('Mercado')
+    expect(sugerirCategoria('Boné')).toBe('Compras')
+    expect(sugerirCategoria('Capinha')).toBe('Compras')
+  })
+})

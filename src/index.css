@@ -4935,3 +4935,12 @@ a.botao-secundario {
   padding-top: 0;
   border-top: 0;
 }
+
+/* Avisos de dinheiro na tela Hoje. */
+.ponto-atencao {
+  background: var(--ambar);
+}
+
+.ponto-grave {
+  background: var(--negativo);
+}
