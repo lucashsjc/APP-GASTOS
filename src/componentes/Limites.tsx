@@ -10,23 +10,21 @@ import { Folha } from './Folha'
 import { IconeCategoria } from './icones'
 
 /** Card "Limites do mês": uma barra por categoria com limite, verde, amarela (80%) ou vermelha (passou). */
-export function CardLimites({ aba }: { aba: Aba }) {
+export function CardLimites({ aba, aoEditar }: { aba: Aba; aoEditar: () => void }) {
   const { dados, hoje, mes } = useEstado()
-  const [editando, setEditando] = useState(false)
   const usos = usoDosLimites(dados, aba, mes, hoje)
+  // Sem limite criado, o card não aparece (cria pelo atalho "Limites").
+  if (usos.length === 0) return null
 
   return (
     <section className="card limites">
       <div className="limites-topo">
         <h2>Limites de {nomeDoMes(mes)}</h2>
-        <button type="button" className="botao-texto" onClick={() => setEditando(true)}>
-          {usos.length ? 'Editar' : 'Criar limite'}
+        <button type="button" className="botao-texto" onClick={aoEditar}>
+          Editar
         </button>
       </div>
-      {usos.length === 0 ? (
-        <p className="nota">Defina quanto quer gastar por categoria (ex.: Alimentação até R$ 200) e acompanhe a barra.</p>
-      ) : (
-        <ul className="limites-lista">
+      <ul className="limites-lista">
           {usos.map((u) => (
             <li key={u.limite.id} className={`limite limite-${u.situacao}`}>
               <div className="limite-linha">
@@ -49,15 +47,13 @@ export function CardLimites({ aba }: { aba: Aba }) {
               </small>
             </li>
           ))}
-        </ul>
-      )}
-      {editando && <FolhaLimites aba={aba} aoFechar={() => setEditando(false)} />}
+      </ul>
     </section>
   )
 }
 
 /** Um campo de valor por categoria: preencher cria ou muda o limite; apagar o valor tira o limite. */
-function FolhaLimites({ aba, aoFechar }: { aba: Aba; aoFechar: () => void }) {
+export function FolhaLimites({ aba, aoFechar }: { aba: Aba; aoFechar: () => void }) {
   const { dados, executar } = useEstado()
   const atuais = (dados.limites ?? []).filter((l) => l.aba === aba)
   const [textos, setTextos] = useState<Record<string, string>>(() =>

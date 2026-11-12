@@ -14,6 +14,7 @@ import { Folha } from './Folha'
 export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: number, parcelas: number) => void }) {
   const { dados, hoje, mes } = useEstado()
   const [simulando, setSimulando] = useState(false)
+  const [aberto, setAberto] = useState(false)
   const r = ritmoDoMes(dados, aba, mes, hoje)
   const atual = mes === mesDe(hoje)
   // Mês passado que fechou abaixo do ritmo: bandeira quadriculada e confete (uma vez por mês e cartão).
@@ -35,12 +36,24 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
       {r ? (
         <>
           <div className="telemetria-topo">
-            <span className="telemetria-rotulo">Telemetria · {nomeDoMes(mes)}</span>
+            <span className="telemetria-rotulo">Ritmo do mês</span>
             <span className={`telemetria-selo ${r.delta <= 0 ? 'bom' : 'ruim'}`}>
               {r.delta <= 0 ? 'Abaixo do ritmo' : 'Acima do ritmo'}
             </span>
           </div>
           {fechouNoRitmo && <p className="telemetria-bandeira">🏁 Mês fechado dentro do ritmo</p>}
+          {!aberto && (
+            <button type="button" className="telemetria-resumo" onClick={() => setAberto(true)} aria-expanded={false}>
+              <span>
+                {r.delta <= 0 ? 'Folga de ' : 'Passou '}
+                <b className={r.delta <= 0 ? 'bom' : 'ruim'}>{formatarReais(Math.abs(r.delta))}</b>
+                {atual && r.porDiaDaqui !== null && <> · até {formatarReais(r.porDiaDaqui)}/dia</>}
+              </span>
+              <span className="telemetria-mais">Detalhes ›</span>
+            </button>
+          )}
+          {aberto && (
+          <>
           <div className="telemetria-painel">
             <Velocimetro
               gasto={r.real[r.real.length - 1] ?? 0}
@@ -53,17 +66,23 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
               <Delta delta={r.delta} />
             </div>
           </div>
-          <p className="telemetria-legenda">
-            {atual ? 'Até hoje' : `No fim de ${nomeDoMes(mes)}`}: você gastou {formatarReais(r.real[r.real.length - 1] ?? 0)} no dia
-            a dia; o ritmo ideal era {formatarReais(ideal(r, r.diaAtual))}.
-          </p>
-          <Grafico r={r} />
           {atual && (
             <p className="telemetria-legenda">
               {r.porDiaDaqui === null
                 ? 'O dinheiro do dia a dia deste mês já acabou.'
-                : <>Para fechar no ritmo: até <b>{formatarReais(r.porDiaDaqui)}</b> por dia até o fim do mês.</>}
+                : <>Até <b>{formatarReais(r.porDiaDaqui)}</b> por dia para fechar no ritmo.</>}
             </p>
+          )}
+          {aberto && (
+            <>
+              <Grafico r={r} />
+              <p className="telemetria-legenda">
+                {atual ? 'Até hoje' : `No fim de ${nomeDoMes(mes)}`}: você gastou {formatarReais(r.real[r.real.length - 1] ?? 0)} no
+                dia a dia; o ritmo ideal era {formatarReais(ideal(r, r.diaAtual))}.
+              </p>
+            </>
+          )}
+          </>
           )}
         </>
       ) : (
@@ -71,10 +90,19 @@ export function CardTelemetria({ aba, aoLancar }: { aba: Aba; aoLancar: (valor: 
           {aba === 'nubank' ? 'Coloque o recebido do mês' : 'Registre o depósito do Caju'} para ver a telemetria do mês.
         </p>
       )}
-      {atual && (
-        <button type="button" className="botao-posso" onClick={() => setSimulando(true)}>
-          Posso comprar?
-        </button>
+      {(aberto || !r) && (
+      <div className="telemetria-acoes">
+        {r && (
+          <button type="button" className="botao-texto" onClick={() => setAberto(false)} aria-expanded>
+            Fechar
+          </button>
+        )}
+        {atual && (
+          <button type="button" className="botao-posso" onClick={() => setSimulando(true)}>
+            Posso comprar?
+          </button>
+        )}
+      </div>
       )}
       {festa && <Confete aoTerminar={fimDaFesta} />}
       {simulando && (

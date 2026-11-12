@@ -4,10 +4,10 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAssinatura, IconeBusca, IconeLapis, IconeProximo, IconeResumo, IconeSeta, Logo } from '../componentes/icones'
+import { IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
-import { CardLimites } from '../componentes/Limites'
+import { CardLimites, FolhaLimites } from '../componentes/Limites'
 import { CardTelemetria } from '../componentes/Telemetria'
 import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
@@ -40,6 +40,7 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
   const { dados, hoje, mes, executar, carregando } = useEstado()
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
+  const [editandoLimites, setEditandoLimites] = useState(false)
 
   const certos = certosDoMes(dados, aba, mes, hoje)
   const outros = outrosDoMes(dados, aba, mes)
@@ -125,20 +126,29 @@ export default function PaginaAba({ aba }: { aba: Aba }) {
 
       <nav className="atalhos" aria-label="Atalhos">
         <Link to={`/${aba}/resumo`} className="atalho">
-          <IconeResumo tamanho={20} />
-          <span>Resumo do mês</span>
+          <IconeResumo tamanho={16} />
+          <span>Resumo</span>
         </Link>
-        <Link to="/busca" className="atalho">
-          <IconeBusca tamanho={20} />
-          <span>Buscar</span>
+        <button type="button" className="atalho" onClick={() => setEditandoLimites(true)}>
+          <IconeLimite tamanho={16} />
+          <span>Limites</span>
+        </button>
+        <Link to={`/${aba}/para-onde`} className="atalho">
+          <IconeCategoria nome="Compras" tamanho={16} />
+          <span>Categorias</span>
         </Link>
         <Link to="/assinaturas" className="atalho">
-          <IconeAssinatura tamanho={20} />
+          <IconeAssinatura tamanho={16} />
           <span>Assinaturas</span>
+        </Link>
+        <Link to="/busca" className="atalho">
+          <IconeBusca tamanho={16} />
+          <span>Buscar</span>
         </Link>
       </nav>
 
-      <CardLimites aba={aba} />
+      <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
+      {editandoLimites && <FolhaLimites aba={aba} aoFechar={() => setEditandoLimites(false)} />}
 
       <CardPagamentos certos={certos} outros={outros} />
 
@@ -266,14 +276,7 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
             {formatarReais(r.recebido)} <IconeLapis tamanho={13} />
           </strong>
         </button>
-        <div className="formas">
-          <small>Crédito {formatarReais(r.credito)}</small>
-          <small>Débito {formatarReais(r.debito)}</small>
-        </div>
       </div>
-      <Link to="/nubank/para-onde" className="link-card">
-        Para onde foi o dinheiro <IconeSeta tamanho={16} />
-      </Link>
     </section>
   )
 }
@@ -300,8 +303,7 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
             <strong>Saldo esgotado</strong>
           ) : (
             <>
-              Até o fim de {nomeDoMes(mes)} ({c.diasRestantes} {c.diasRestantes === 1 ? 'dia' : 'dias'}): dá para
-              gastar <strong>{formatarReais(c.porDia)}</strong> por dia
+              <strong>{formatarReais(c.porDia)}</strong> por dia · {c.diasRestantes} {c.diasRestantes === 1 ? 'dia' : 'dias'} até o fim do mês
             </>
           )}
         </p>
@@ -322,9 +324,6 @@ function CardCajuPrincipal({ aoDepositar }: { aoDepositar: () => void }) {
         <button type="button" className="botao-claro" onClick={aoDepositar}>
           + Registrar depósito
         </button>
-        <Link to="/caju/para-onde" className="link-card">
-          Para onde foi <IconeSeta tamanho={16} />
-        </Link>
       </div>
     </section>
   )
