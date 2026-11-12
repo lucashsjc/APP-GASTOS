@@ -113,6 +113,21 @@ export interface Limite {
   valor_centavos: number
 }
 
+/**
+ * Dinheiro do Nubank guardado (ex.: na caixinha) ou tirado de lá. "guardar" sai do livre do mês;
+ * "retirar" volta para o livre do mês.
+ */
+export interface Guardado {
+  id: string
+  /** Mês (AAAA-MM) de onde saiu ou para onde voltou o dinheiro. */
+  mes: string
+  valor_centavos: number
+  tipo: 'guardar' | 'retirar'
+  descricao: string
+}
+
+export type NovoGuardado = Omit<Guardado, 'id'>
+
 export interface Dados {
   gastos: Gasto[]
   recorrencias: Recorrencia[]
@@ -120,4 +135,8 @@ export interface Dados {
   depositos: Deposito[]
   /** Opcional: antes do supabase/015_limites.sql, vem vazio. */
   limites?: Limite[]
+  /** Opcional: antes do supabase/016_cofrinho.sql, vem vazio. */
+  guardados?: Guardado[]
+  /** Quanto guardar por mês (null = sem meta). */
+  metaGuardar?: number | null
 }

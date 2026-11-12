@@ -268,3 +268,12 @@ export const IconeLimite = (p: Props) => (
     <path d="M12 18l4-5" />
   </Svg>
 )
+
+export const IconePorquinho = (p: Props) => (
+  <Svg {...p}>
+    <path d="M5 11a7 6 0 0 1 12.5-3.6L20 7v3.5l1 .5v3l-1.5.5A7 6 0 0 1 16 17.6V20h-2.5v-1.6a7.6 7.6 0 0 1-3 0V20H8v-2.4A6 6 0 0 1 5 13" />
+    <path d="M5 11.5H3" />
+    <path d="M10 6.2h4" />
+    <circle cx="15.5" cy="10.5" r=".6" fill="currentColor" />
+  </Svg>
+)

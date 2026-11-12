@@ -4,7 +4,7 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
+import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
 import { SeletorMes } from '../componentes/SeletorMes'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
@@ -28,6 +28,7 @@ import {
   type Certo,
 } from '../lib/calculos'
 import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
+import { resumoCofrinho } from '../lib/cofrinho'
 import { formatarReais } from '../lib/dinheiro'
 
 const NOMES: Record<Aba, string> = { nubank: 'Nubank', caju: 'Caju' }
@@ -174,7 +175,13 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
           aoLancar={(valor, parcelas) => setFolha({ aba, origem: 'topo', sugestao: { valor_centavos: valor, parcelas } })}
         />
         <nav className="atalhos" aria-label="Atalhos">
-          <Link to={`/${aba}/resumo`} className="atalho">
+          {aba === 'nubank' && (
+          <Link to="/cofrinho" className="atalho">
+            <IconePorquinho tamanho={16} />
+            <span>Cofrinho</span>
+          </Link>
+        )}
+        <Link to={`/${aba}/resumo`} className="atalho">
             <IconeResumo tamanho={16} />
             <span>Resumo</span>
           </Link>
@@ -282,6 +289,7 @@ function ResumoSimples({ aba, aoDepositar, aoEditarRecebido }: { aba: Aba; aoDep
   const { dados, hoje, mes } = useEstado()
   if (aba === 'nubank') {
     const r = resumoNubank(dados, mes, hoje)
+    const totalGuardado = resumoCofrinho(dados, hoje).total
     return (
       <section className="resumo-simples-card">
         <div className="resumo-simples-total">
@@ -304,6 +312,20 @@ function ResumoSimples({ aba, aoDepositar, aoEditarRecebido }: { aba: Aba; aoDep
             Colocar o recebido do mês
           </button>
         )}
+        <Link to="/cofrinho" className="resumo-simples-cofrinho">
+          <IconePorquinho tamanho={18} />
+          <span>
+            Cofrinho <b>{formatarReais(totalGuardado)}</b>
+            {r.guardado !== 0 && (
+              <small>
+                {' '}
+                · {r.guardado > 0 ? `${formatarReais(r.guardado)} guardados` : `${formatarReais(-r.guardado)} retirados`} em{' '}
+                {nomeDoMes(mes)}
+              </small>
+            )}
+          </span>
+          <IconeProximo tamanho={16} />
+        </Link>
       </section>
     )
   }
@@ -357,6 +379,13 @@ function CardNubank({ aoEditarRecebido }: { aoEditarRecebido: () => void }) {
               : ''}
         </span>
       </div>
+      {r.guardado !== 0 && (
+        <p className="card-principal-nota">
+          {r.guardado > 0
+            ? `${formatarReais(r.guardado)} foram para o cofrinho (fora do livre)`
+            : `${formatarReais(-r.guardado)} saíram do cofrinho para este mês`}
+        </p>
+      )}
       {r.dinheiroAParte > 0 && (
         <p className="card-principal-nota">Pago com dinheiro à parte: {formatarReais(r.dinheiroAParte)} (fora da conta)</p>
       )}

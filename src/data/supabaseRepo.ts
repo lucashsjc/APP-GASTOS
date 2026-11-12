@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Repo } from './repo'
-import type { Deposito, Gasto, Limite, Recebido, Recorrencia } from './types'
+import type { Deposito, Gasto, Guardado, Limite, Recebido, Recorrencia } from './types'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -166,6 +166,30 @@ export function criarRepoSupabase(): Repo {
     return (data ?? []) as Limite[]
   }
 
+  /** Cofrinho. Antes do 016_cofrinho.sql as tabelas não existem: vem vazio. */
+  async function lerCofrinho(): Promise<{ guardados: Guardado[]; meta: number | null }> {
+    const [g, m] = await Promise.all([
+      db.from('guardados').select('id, mes, valor_centavos, tipo, descricao').order('mes'),
+      db.from('cofrinho').select('meta_mensal').maybeSingle(),
+    ])
+    if (g.error && tabelaFalta(g.error)) return { guardados: [], meta: null }
+    erro(g.error)
+    if (m.error && !tabelaFalta(m.error)) erro(m.error)
+    return {
+      guardados: (g.data ?? []) as Guardado[],
+      meta: (m.data as { meta_mensal: number | null } | null)?.meta_mensal ?? null,
+    }
+  }
+
+  function tabelaFalta(e: { code?: string } | null) {
+    return e?.code === 'PGRST205' || e?.code === '42P01'
+  }
+
+  function erroDoCofrinho(e: { code?: string; message: string } | null) {
+    if (tabelaFalta(e)) throw new Error('Para usar o cofrinho, rode o supabase/016_cofrinho.sql no Supabase (e feche e abra o app).')
+    erro(e)
+  }
+
   function erroDeLimite(e: { code?: string; message: string } | null) {
     if (e && (e.code === 'PGRST205' || e.code === '42P01')) {
       throw new Error('Para usar limites por categoria, rode o supabase/015_limites.sql no Supabase (e feche e abra o app).')
@@ -175,12 +199,13 @@ export function criarRepoSupabase(): Repo {
 
   return {
     async carregar() {
-      const [gastos, recorrencias, recebidos, depositos, limites] = await Promise.all([
+      const [gastos, recorrencias, recebidos, depositos, limites, cofrinho] = await Promise.all([
         tudo<Gasto>('gastos'),
         tudo<Recorrencia>('recorrencias'),
         tudo<Recebido>('recebidos'),
         tudo<Deposito>('depositos'),
         lerLimites(),
+        lerCofrinho(),
       ])
       return {
         gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null, carteira: g.carteira ?? null })),
@@ -188,6 +213,8 @@ export function criarRepoSupabase(): Repo {
         recebidos,
         depositos: depositos.map((d) => ({ ...d, mes_conta: d.mes_conta ?? null, carteira: d.carteira ?? null })),
         limites,
+        guardados: cofrinho.guardados,
+        metaGuardar: cofrinho.meta,
       }
     },
 
@@ -247,6 +274,19 @@ export function criarRepoSupabase(): Repo {
     async excluirDeposito(id) {
       const { error } = await db.from('depositos').delete().eq('id', id)
       erro(error)
+    },
+
+    async criarGuardado(dados) {
+      const { error } = await db.from('guardados').insert(dados)
+      erroDoCofrinho(error)
+    },
+    async excluirGuardado(id) {
+      const { error } = await db.from('guardados').delete().eq('id', id)
+      erroDoCofrinho(error)
+    },
+    async salvarMetaGuardar(valorCentavos) {
+      const { error } = await db.from('cofrinho').upsert({ meta_mensal: valorCentavos }, { onConflict: 'user_id' })
+      erroDoCofrinho(error)
     },
 
     async salvarLimite(aba, categoria, valorCentavos) {

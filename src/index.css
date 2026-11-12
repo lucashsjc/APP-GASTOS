@@ -4729,3 +4729,136 @@ a.botao-secundario {
 .resumo-simples-card .botao-texto {
   align-self: flex-start;
 }
+
+/* ---------- Cofrinho ---------- */
+
+.resumo-simples-cofrinho {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+  font-size: 14px;
+  color: var(--texto-2);
+}
+
+.resumo-simples-cofrinho > svg:first-child {
+  color: var(--pastel-azul);
+  flex: none;
+}
+
+.resumo-simples-cofrinho span {
+  flex: 1;
+  min-width: 0;
+}
+
+.resumo-simples-cofrinho b {
+  color: #fff;
+}
+
+.resumo-simples-cofrinho small {
+  font-size: 13px;
+}
+
+.cofrinho-selo {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(46, 229, 157, 0.15);
+  color: var(--pastel-azul);
+}
+
+.cofrinho-nota {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.cofrinho-botoes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.cofrinho-botoes .botao-principal,
+.cofrinho-botoes .botao-secundario {
+  margin: 0;
+  width: 100%;
+}
+
+.cofrinho-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cofrinho-meta .limites-topo {
+  margin-bottom: 2px;
+}
+
+.cofrinho-meta .limite-barra span {
+  background: var(--pastel-azul);
+  box-shadow: 0 0 10px var(--pastel-azul);
+}
+
+.cofrinho-falta {
+  align-self: flex-start;
+  color: var(--pastel-azul);
+}
+
+.cofrinho-ok {
+  color: var(--pastel-azul);
+  font-weight: 700;
+}
+
+.cofrinho-sobras {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.cofrinho-sobras li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.cofrinho-sobras span {
+  display: flex;
+  flex-direction: column;
+}
+
+.cofrinho-sobras small {
+  color: var(--texto-2);
+  font-size: 13px;
+}
+
+.cofrinho-mes h3 {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: var(--texto-2);
+  margin: 6px 0 2px;
+}
+
+.botao-lancar {
+  flex: none;
+  padding: 8px 18px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--vermelho);
+  color: var(--sobre-destaque);
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.botao-lancar:disabled {
+  background: var(--card-2);
+  color: var(--texto-2);
+}

@@ -157,6 +157,18 @@ export function recebidoDoMes(dados: Dados, mes: string): number {
   return dados.recebidos.find((r) => r.mes === mes)?.valor_centavos ?? 0
 }
 
+/**
+ * Quanto do mês foi para o cofrinho (guardado − retirado). Positivo: saiu do livre; negativo: tirou do
+ * cofrinho para gastar no mês.
+ */
+export function guardadoDoMes(dados: Dados, mes: string): number {
+  return somar(
+    (dados.guardados ?? [])
+      .filter((g) => g.mes === mes)
+      .map((g) => (g.tipo === 'guardar' ? g.valor_centavos : -g.valor_centavos)),
+  )
+}
+
 export interface ResumoNubank {
   recebido: number
   certos: ResumoCertos
@@ -169,6 +181,8 @@ export interface ResumoNubank {
   aParte: number
   /** Total pago com dinheiro à parte (fora de todas as contas do card). */
   dinheiroAParte: number
+  /** Guardado no cofrinho no mês (guardado − retirado); já descontado do livre. */
+  guardado: number
 }
 
 export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNubank {
@@ -191,11 +205,12 @@ export function resumoNubank(dados: Dados, mes: string, hoje: string): ResumoNub
     recebido,
     certos: resumo,
     outros: totalOutros,
-    livre: recebido - total,
+    livre: recebido - total - guardadoDoMes(dados, mes),
     credito: total - debito,
     debito,
     aParte,
     dinheiroAParte,
+    guardado: guardadoDoMes(dados, mes),
   }
 }
 

@@ -99,6 +99,16 @@ export function criarRepoLocal(): Repo {
       alterar((d) => (d.limites = (d.limites ?? []).filter((l) => l.id !== id)))
     },
 
+    async criarGuardado(dados) {
+      alterar((d) => (d.guardados = [...(d.guardados ?? []), { ...dados, id: crypto.randomUUID() }]))
+    },
+    async excluirGuardado(id) {
+      alterar((d) => (d.guardados = (d.guardados ?? []).filter((g) => g.id !== id)))
+    },
+    async salvarMetaGuardar(valorCentavos) {
+      alterar((d) => (d.metaGuardar = valorCentavos))
+    },
+
     async restaurarExemplo() {
       gravar(dadosDeExemplo(hojeSP()))
     },

@@ -3,7 +3,7 @@
 // Testes em ritmo.test.ts.
 
 import type { Aba, Dados } from '../data/types'
-import { certosDoMes, depositosDoMes, outrosDoMes, recebidoDoMes } from './calculos'
+import { certosDoMes, depositosDoMes, guardadoDoMes, outrosDoMes, recebidoDoMes } from './calculos'
 import { diaDe, diasNoMes, mesDe } from './datas'
 import { somar } from './dinheiro'
 
@@ -32,7 +32,10 @@ export function ritmoDoMes(dados: Dados, aba: Aba, mes: string, hoje: string): R
   if (mes > mesAtual) return null
   const certos = certosDoMes(dados, aba, mes, hoje).filter((c) => !c.dinheiro_a_parte)
   const dinheiro =
-    aba === 'nubank' ? recebidoDoMes(dados, mes) : somar(depositosDoMes(dados, mes).map((d) => d.valor_centavos))
+    // No Nubank, o que foi para o cofrinho não é dinheiro do dia a dia.
+    aba === 'nubank'
+      ? recebidoDoMes(dados, mes) - guardadoDoMes(dados, mes)
+      : somar(depositosDoMes(dados, mes).map((d) => d.valor_centavos))
   if (dinheiro <= 0) return null
   const orcamento = dinheiro - somar(certos.map((c) => c.valor_centavos))
   const dias = diasNoMes(mes)

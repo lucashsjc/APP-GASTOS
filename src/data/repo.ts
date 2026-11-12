@@ -1,4 +1,4 @@
-import type { Aba, Dados, Deposito, Gasto, NovaRecorrencia, NovoDeposito, NovoGasto, Recorrencia } from './types'
+import type { Aba, Dados, Deposito, Gasto, NovaRecorrencia, NovoDeposito, NovoGasto, NovoGuardado, Recorrencia } from './types'
 import { criarRepoLocal } from './localRepo'
 import { criarRepoSupabase, supabaseConfigurado } from './supabaseRepo'
 
@@ -23,6 +23,11 @@ export interface Repo {
   /** Um limite por categoria e cartão: grava ou substitui. */
   salvarLimite(aba: Aba, categoria: string, valorCentavos: number): Promise<void>
   excluirLimite(id: string): Promise<void>
+
+  /** Cofrinho: guardar ou retirar dinheiro, e a meta de quanto guardar por mês. */
+  criarGuardado(dados: NovoGuardado): Promise<void>
+  excluirGuardado(id: string): Promise<void>
+  salvarMetaGuardar(valorCentavos: number | null): Promise<void>
 
   /** Só no modo demonstração: volta aos dados de exemplo. */
   restaurarExemplo?(): Promise<void>

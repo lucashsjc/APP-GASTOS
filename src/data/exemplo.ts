@@ -166,6 +166,10 @@ export function dadosDeExemplo(hoje: string): Dados {
         carteira,
       })),
     ),
+    guardados: [
+      { id: id(), mes: somarMeses(inicio, 0), valor_centavos: 25000, tipo: 'guardar' as const, descricao: 'Caixinha' },
+    ],
+    metaGuardar: 20000,
     limites: [
       { id: id(), aba: 'nubank', categoria: 'Alimentação', valor_centavos: 25000 },
       { id: id(), aba: 'nubank', categoria: 'Transporte', valor_centavos: 15000 },
