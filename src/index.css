@@ -4655,3 +4655,77 @@ a.botao-secundario {
 .card-caju .aviso-por-dia strong {
   color: #fff;
 }
+
+/* ---------- Tela simples do cartão ---------- */
+
+.botao-detalhes {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid var(--borda);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.botao-detalhes svg {
+  color: var(--pastel-azul);
+}
+
+.resumo-simples-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--raio);
+  background: var(--card);
+}
+
+.resumo-simples-total {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resumo-simples-total small,
+.resumo-simples-partes small {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--texto-2);
+}
+
+.resumo-simples-total strong {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo-simples-partes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--borda);
+}
+
+.resumo-simples-partes div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resumo-simples-partes span {
+  font-size: 17px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.resumo-simples-card .botao-texto {
+  align-self: flex-start;
+}
