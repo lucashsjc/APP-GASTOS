@@ -88,6 +88,8 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
             {...item}
             forma={aba === 'nubank' ? item.forma : null}
             detalhe={detalheDoDia(item)}
+            // No Caju a compra é paga na hora: sem "pago / não pago".
+            pago={aba === 'caju' ? undefined : item.pago}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -105,6 +107,7 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
             forma={aba === 'nubank' ? item.forma : null}
             hora={null}
             detalhe={detalheDoDia(item)}
+            pago={aba === 'caju' ? undefined : item.pago}
             aoAlternarPago={() => executar(() => definirPago(item, !item.pago))}
           />
         </ItemDeslizavel>
@@ -195,7 +198,7 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
 
         <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
 
-        <CardPagamentos certos={certos} outros={outros} />
+        {aba === 'nubank' && <CardPagamentos certos={certos} outros={outros} />}
 
         <Link to={`/${aba}/certos`} className="card link-fixos">
           <span>

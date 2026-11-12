@@ -94,6 +94,7 @@ export default function Busca() {
                     <LinhaGasto
                       {...g}
                       forma={g.aba === 'nubank' ? g.forma : null}
+                      pago={g.aba === 'caju' ? undefined : g.pago}
                       hora={null}
                       detalhe={[
                         g.aba === 'nubank' ? 'Nubank' : 'Caju',
