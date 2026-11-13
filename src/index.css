@@ -5588,3 +5588,19 @@ a.botao-secundario {
 .pilulas-faculdade .chip {
   text-decoration: none;
 }
+
+.icone-lugar.com-imagem {
+  background: #222226;
+}
+
+.icone-lugar.com-imagem img {
+  display: block;
+  border-radius: 50%;
+}
+
+.icone-lugar.sigla-longa {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  border: 1px solid #2a2a2e;
+}
