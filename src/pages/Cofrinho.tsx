@@ -18,6 +18,7 @@ export default function Cofrinho() {
   const { dados, hoje, executar } = useEstado()
   const navegar = useNavigate()
   const [folha, setFolha] = useState<Folhas>(null)
+  const [devolvendo, setDevolvendo] = useState<Guardado | null>(null)
   const r = resumoCofrinho(dados, hoje)
   const mesAtual = mesDe(hoje)
   const fracaoMeta = r.meta ? Math.min(1, Math.max(0, r.noMes / r.meta)) : 0
@@ -142,7 +143,7 @@ export default function Cofrinho() {
                       pergunta={`Apagar ${g.tipo === 'guardar' ? 'o guardado' : 'a retirada'} de ${formatarReais(g.valor_centavos)}?`}
                       aoApagar={() => executar(() => repo.excluirGuardado(g.id))}
                     >
-                      <LinhaMovimento g={g} />
+                      <LinhaMovimento g={g} aoDevolver={g.tipo === 'guardar' ? () => setDevolvendo(g) : undefined} />
                     </ItemDeslizavel>
                   </li>
                 ))}
@@ -153,6 +154,7 @@ export default function Cofrinho() {
         </section>
       )}
 
+      {devolvendo && <FolhaDevolver g={devolvendo} aoFechar={() => setDevolvendo(null)} />}
       {folha === 'meta' && <FolhaMeta aoFechar={() => setFolha(null)} />}
       {folha && folha !== 'meta' && (
         <FolhaGuardar tipo={folha.tipo} mesInicial={folha.mes} valorInicial={folha.valor} aoFechar={() => setFolha(null)} />
@@ -161,7 +163,7 @@ export default function Cofrinho() {
   )
 }
 
-function LinhaMovimento({ g }: { g: Guardado }) {
+function LinhaMovimento({ g, aoDevolver }: { g: Guardado; aoDevolver?: () => void }) {
   return (
     <div className="linha-gasto">
       <span className="linha-icone" aria-hidden="true">
@@ -176,8 +178,57 @@ function LinhaMovimento({ g }: { g: Guardado }) {
           {g.tipo === 'guardar' ? '+' : '−'}
           {formatarReais(g.valor_centavos)}
         </strong>
+        {aoDevolver && (
+          <button
+            type="button"
+            className="botao-devolver"
+            onClick={(e) => {
+              e.stopPropagation()
+              aoDevolver()
+            }}
+          >
+            Devolver
+          </button>
+        )}
       </span>
     </div>
+  )
+}
+
+/**
+ * Desfaz um guardado: o valor exato sai do cofrinho e volta a contar como livre no mês de onde saiu
+ * (apaga o guardado, como se ele não tivesse acontecido).
+ */
+function FolhaDevolver({ g, aoFechar }: { g: Guardado; aoFechar: () => void }) {
+  const { executar, avisar } = useEstado()
+  const [salvando, setSalvando] = useState(false)
+  const mes = tituloDoMes(g.mes)
+
+  const devolver = async () => {
+    setSalvando(true)
+    const ok = await executar(() => repo.excluirGuardado(g.id))
+    setSalvando(false)
+    if (ok) {
+      avisar(`${formatarReais(g.valor_centavos)} voltaram para o livre de ${nomeDoMes(g.mes)}.`)
+      aoFechar()
+    }
+  }
+
+  return (
+    <Folha titulo="Devolver do cofrinho" aoFechar={aoFechar}>
+      <div className="form-gasto">
+        <p className="devolver-texto">
+          <b>{formatarReais(g.valor_centavos)}</b> saem do cofrinho e voltam para o livre para gastar de <b>{mes}</b>, o
+          mês de onde saíram.
+        </p>
+        <button type="button" className="botao-principal botao-nubank" onClick={devolver} disabled={salvando}>
+          {salvando ? 'Devolvendo…' : `Devolver para ${nomeDoMes(g.mes)}`}
+        </button>
+        <button type="button" className="botao-texto" onClick={aoFechar}>
+          Cancelar
+        </button>
+      </div>
+    </Folha>
   )
 }
 
