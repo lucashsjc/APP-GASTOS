@@ -397,6 +397,15 @@ export function FolhaFalta({
   const [quantidade, setQuantidade] = useState(falta?.quantidade ?? 2)
   const [erro, setErro] = useState<string | null>(null)
   const [salvando, setSalvando] = useState(false)
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false)
+
+  const apagar = async () => {
+    if (!falta) return
+    setSalvando(true)
+    const ok = await executar(() => repoFaculdade.excluir('faltas', falta.id))
+    setSalvando(false)
+    if (ok) aoFechar()
+  }
 
   const salvar = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -433,6 +442,24 @@ export function FolhaFalta({
         </label>
         {erro && <p className="erro">{erro}</p>}
         <Botao salvando={salvando} texto={falta ? 'Salvar alterações' : 'Salvar falta'} />
+        {falta &&
+          (confirmandoApagar ? (
+            <div className="confirmar-apagar">
+              <span>Apagar esta falta ({quantidade} {quantidade === 1 ? 'aula' : 'aulas'})?</span>
+              <div>
+                <button type="button" className="botao-texto" onClick={() => setConfirmandoApagar(false)}>
+                  Não
+                </button>
+                <button type="button" className="botao-perigo" onClick={apagar} disabled={salvando}>
+                  Apagar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" className="botao-texto botao-apagar-falta" onClick={() => setConfirmandoApagar(true)}>
+              Apagar esta falta
+            </button>
+          ))}
       </form>
     </Folha>
   )

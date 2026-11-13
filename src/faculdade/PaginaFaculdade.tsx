@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { IconeAnterior, IconeCheck, IconeLivros, IconeMais, IconeProximo } from '../componentes/icones'
+import { IconeAnterior, IconeCheck, IconeLapis, IconeLivros, IconeMais, IconeProximo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { BotaoMenu } from '../componentes/MenuLateral'
 import { useEstado } from '../estado'
@@ -260,7 +260,7 @@ function SecaoMateria({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => 
         <BlocoSemestre d={d} notas={notas} />
       </section>
 
-      <CardFaltas d={d} abrir={abrir} />
+      <CardFaltas d={d} abrir={abrir} diasAbertos />
 
       <section className="secao">
         <h2>
@@ -594,10 +594,10 @@ function SecaoFaltas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
 
 
 /** As faltas de uma matéria: o total contra o limite, os dias e os botões "Faltei hoje" e "Outro dia". */
-function CardFaltas({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => void }) {
+function CardFaltas({ d, abrir, diasAbertos = false }: { d: Disciplina; abrir: (f: FolhaAberta) => void; diasAbertos?: boolean }) {
   const { dados, executar } = useFaculdade()
   const { hoje, avisar } = useEstado()
-  const [aberta, setAberta] = useState<string | null>(null)
+  const [aberta, setAberta] = useState<string | null>(diasAbertos ? d.id : null)
   const faltarHoje = async (d: Disciplina, ultima?: Falta) => {
     const quantidade = aulasDaDisciplinaNoDia(dados.aulas, d.id, hoje) || ultima?.quantidade || 2
     const ok = await executar(() => repoFaculdade.criar('faltas', { disciplina_id: d.id, data: hoje, quantidade }))
@@ -649,8 +649,9 @@ function CardFaltas({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => vo
                   <span>
                     <strong>{dataCurta(f.data, f.data.slice(0, 4) !== hoje.slice(0, 4))}</strong>
                   </span>
-                  <span className="texto-secundario">
+                  <span className="texto-secundario falta-direita">
                     {f.quantidade} {f.quantidade === 1 ? 'aula' : 'aulas'}
+                    <IconeLapis tamanho={14} />
                   </span>
                 </div>
               </ItemDeslizavel>
