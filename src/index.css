@@ -4944,3 +4944,45 @@ a.botao-secundario {
 .ponto-grave {
   background: var(--negativo);
 }
+
+/* ---------- Botão do Extrato na tela do cartão ---------- */
+
+.link-extrato {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.link-extrato-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(46, 229, 157, 0.12);
+  color: var(--pastel-azul);
+}
+
+.link-extrato-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.link-extrato-texto strong {
+  font-size: 16px;
+}
+
+.link-extrato-texto small {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.link-extrato > svg:last-child {
+  color: var(--texto-2);
+  flex: none;
+}

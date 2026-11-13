@@ -277,3 +277,10 @@ export const IconePorquinho = (p: Props) => (
     <circle cx="15.5" cy="10.5" r=".6" fill="currentColor" />
   </Svg>
 )
+
+export const IconeExtrato = (p: Props) => (
+  <Svg {...p}>
+    <path d="M6 3h12v18l-3-2-3 2-3-2-3 2z" />
+    <path d="M9 8h6M9 12h6M9 16h3" />
+  </Svg>
+)

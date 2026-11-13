@@ -4,7 +4,7 @@ import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
-import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeLimite, IconeMais, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
+import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeExtrato, IconeLimite, IconeMais, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
 import { SeletorMes } from '../componentes/SeletorMes'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
@@ -42,7 +42,7 @@ function porcento(parte: number, todo: number): string {
  * A aba do cartão em dois jeitos: a tela simples (o que ainda tem, por carteira no Caju, e os gastos) e,
  * pelo botão "Detalhes", a tela com tudo: cartão completo, ritmo, atalhos, limites e pagamentos.
  */
-export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalhado?: boolean }) {
+export default function PaginaAba({ aba, detalhado = false, extrato = false }: { aba: Aba; detalhado?: boolean; extrato?: boolean }) {
   const { dados, hoje, mes, executar, carregando } = useEstado()
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
@@ -253,35 +253,79 @@ export default function PaginaAba({ aba, detalhado = false }: { aba: Aba; detalh
     )
   }
 
+  const listas = (
+    <>
+        <section className="secao">
+          <h2>
+            Gastos de {nomeDoMes(mes)} <span>{formatarReais(totalDoMes)}</span>
+          </h2>
+          {carregando ? (
+            <p className="vazio">Carregando…</p>
+          ) : normais.length === 0 ? (
+            <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
+          ) : (
+            <ListaPorDia itens={normais} linha={linha} />
+          )}
+          {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
+        </section>
+
+        {aParte.length > 0 && (
+          <section className="secao secao-a-parte">
+            <h2>
+              À parte <span>{formatarReais(totalAParte)}</span>
+            </h2>
+            <ListaPorDia itens={aParte} linha={linha} />
+            <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
+          </section>
+        )}
+    </>
+  )
+
+  if (extrato) {
+    return (
+      <div className={`pagina pagina-${aba}`}>
+        <header className="topo">
+          <div className="topo-linha">
+            <Link to={`/${aba}`} className="voltar">
+              <IconeAnterior tamanho={18} /> {NOMES[aba]}
+            </Link>
+          </div>
+          <h1>Extrato</h1>
+          <div className="topo-linha">
+            <SeletorMes />
+            <button type="button" className={`botao-mais botao-${aba}`} onClick={() => setFolha({ aba, origem: 'topo' })} aria-label="Novo gasto">
+              <IconeMais tamanho={20} />
+            </button>
+          </div>
+        </header>
+        {listas}
+        {folhas}
+      </div>
+    )
+  }
+
   return (
     <div className={`pagina pagina-${aba}`}>
       <Topo aba={aba} titulo={NOMES[aba]} aoAdicionar={() => setFolha({ aba, origem: 'topo' })} detalhes={`/${aba}/detalhes`} />
 
       <ResumoSimples aba={aba} aoDepositar={() => setFolhaValor('deposito')} aoEditarRecebido={() => setFolhaValor('recebido')} />
 
-      <section className="secao">
-        <h2>
-          Gastos de {nomeDoMes(mes)} <span>{formatarReais(totalDoMes)}</span>
-        </h2>
-        {carregando ? (
-          <p className="vazio">Carregando…</p>
-        ) : normais.length === 0 ? (
-          <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
-        ) : (
-          <ListaPorDia itens={normais} linha={linha} />
-        )}
-        {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
-      </section>
-
-      {aParte.length > 0 && (
-        <section className="secao secao-a-parte">
-          <h2>
-            À parte <span>{formatarReais(totalAParte)}</span>
-          </h2>
-          <ListaPorDia itens={aParte} linha={linha} />
-          <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
-        </section>
-      )}
+      <Link to={`/${aba}/extrato`} className="card link-extrato">
+        <span className="link-extrato-icone" aria-hidden="true">
+          <IconeExtrato tamanho={20} />
+        </span>
+        <span className="link-extrato-texto">
+          <strong>Extrato de {nomeDoMes(mes)}</strong>
+          <small>
+            {carregando
+              ? 'Carregando…'
+              : itens.length === 0
+                ? 'Nenhum gasto ainda'
+                : `${itens.length} ${itens.length === 1 ? 'gasto' : 'gastos'} · ${formatarReais(totalDoMes)}`}
+          </small>
+        </span>
+        <IconeProximo tamanho={18} />
+      </Link>
 
       {folhas}
     </div>
