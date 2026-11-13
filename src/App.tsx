@@ -91,7 +91,9 @@ export default function App() {
               path="/faculdade"
               element={<Outlet />}
             >
-              <Route index element={<Navigate to="notas" replace />} />
+              <Route index element={<Navigate to="materias" replace />} />
+              <Route path="materias" element={<PaginaFaculdade secao="materias" />} />
+              <Route path="materia/:id" element={<PaginaFaculdade secao="materia" />} />
               <Route path="notas" element={<PaginaFaculdade secao="notas" />} />
               <Route path="faltas" element={<PaginaFaculdade secao="faltas" />} />
               <Route path="calendario" element={<PaginaFaculdade secao="calendario" />} />
@@ -146,7 +148,7 @@ function BarraFaculdade() {
   const { pathname } = useLocation()
   if (!pathname.startsWith('/faculdade')) return null
   const itens = [
-    { rota: '/faculdade/notas', nome: 'Notas', Icone: IconeNotas },
+    { rota: '/faculdade/materias', nome: 'Matérias', Icone: IconeNotas },
     { rota: '/faculdade/faltas', nome: 'Faltas', Icone: IconeFaltas },
     { rota: '/faculdade/calendario', nome: 'Calendário', Icone: IconeCalendario },
   ]

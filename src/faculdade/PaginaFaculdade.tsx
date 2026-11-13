@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
 import { IconeAnterior, IconeCheck, IconeLivros, IconeMais, IconeProximo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { BotaoMenu } from '../componentes/MenuLateral'
@@ -16,7 +17,9 @@ import {
   extrasDoBimestre,
   formatarNota,
   lerNota,
+  nomeDoSemestre,
   outrasNotas,
+  provasProximas,
   prazoAtividade,
   provaDoSemestre,
   resumoSemestre,
@@ -29,9 +32,9 @@ import {
 import { repoFaculdade } from './repo'
 import type { Atividade, Disciplina, Falta, Nota, PontoExtra } from './tipos'
 
-export type Secao = 'notas' | 'faltas' | 'calendario'
+export type Secao = 'materias' | 'materia' | 'notas' | 'faltas' | 'calendario'
 
-const TITULOS: Record<Secao, string> = { notas: 'Notas por matéria', faltas: 'Faltas', calendario: 'Calendário' }
+const TITULOS: Record<Secao, string> = { materias: 'Matérias', materia: 'Matéria', notas: 'Notas por matéria', faltas: 'Faltas', calendario: 'Calendário' }
 
 type FolhaAberta =
   | { tipo: 'disciplinas' }
@@ -50,10 +53,14 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
   const [materia, setMateria] = useState<string | null>(null)
   const materiaAberta = dados.disciplinas.find((d) => d.id === materia) ?? dados.disciplinas[0] ?? null
   const [dia, setDia] = useState(hoje)
+  // A matéria aberta pela lista (/faculdade/materia/:id).
+  const { id } = useParams()
+  const daRota = dados.disciplinas.find((d) => d.id === id) ?? null
 
   const adicionar = () => {
     if (!dados.disciplinas.length) return setFolha({ tipo: 'disciplinas' })
-    if (secao === 'notas') return setFolha({ tipo: 'nota', disciplina: materiaAberta?.id })
+    if (secao === 'materia') return setFolha({ tipo: 'nota', disciplina: daRota?.id })
+    if (secao === 'notas' || secao === 'materias') return setFolha({ tipo: 'nota', disciplina: materiaAberta?.id })
     if (secao === 'faltas') return setFolha({ tipo: 'falta' })
     setFolha({ tipo: 'nota', prova: true, data: dia })
   }
@@ -61,10 +68,25 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
   return (
     <div className="pagina pagina-faculdade">
       <header className="topo">
+        {secao === 'materia' && (
+          <div className="topo-linha">
+            <Link to="/faculdade/materias" className="voltar">
+              <IconeAnterior tamanho={18} /> Matérias
+            </Link>
+          </div>
+        )}
         <div className="topo-linha">
           <div className="topo-com-menu">
-            <BotaoMenu />
-            <h1>Faculdade</h1>
+            {secao !== 'materia' && <BotaoMenu />}
+            <h1 className={secao === 'materia' ? 'titulo-materia' : undefined}>
+              {secao === 'materia' && daRota ? (
+                <>
+                  <i className="ponto ponto-grande" style={{ background: daRota.cor }} /> {daRota.nome}
+                </>
+              ) : (
+                'Faculdade'
+              )}
+            </h1>
           </div>
           <button
             type="button"
@@ -77,7 +99,9 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
           </button>
         </div>
         <div className="topo-linha">
-          <h2 className="subtitulo">{TITULOS[secao]}</h2>
+          <h2 className="subtitulo">
+            {secao === 'materias' ? <SubtituloSemestre /> : secao === 'materia' ? 'Notas, faltas e provas' : TITULOS[secao]}
+          </h2>
           <button type="button" className="botao-mais botao-faculdade" onClick={adicionar} aria-label="Adicionar">
             <IconeMais tamanho={20} />
           </button>
@@ -99,6 +123,10 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
             Cadastrar disciplinas
           </button>
         </section>
+      ) : secao === 'materias' ? (
+        <SecaoMaterias abrir={setFolha} />
+      ) : secao === 'materia' ? (
+        daRota ? <SecaoMateria d={daRota} abrir={setFolha} /> : <p className="vazio">Matéria não encontrada.</p>
       ) : secao === 'notas' ? (
         materiaAberta && <SecaoNotas abrir={setFolha} aberta={materiaAberta} aoEscolher={setMateria} />
       ) : secao === 'faltas' ? (
@@ -129,6 +157,134 @@ function CabecalhoDisciplina({ d, children }: { d: Disciplina; children?: React.
   )
 }
 
+// ---------- Matérias ----------
+
+/** "Semestre 2026/2 · próxima prova em 4 dias", embaixo do título. */
+function SubtituloSemestre() {
+  const { dados } = useFaculdade()
+  const { hoje } = useEstado()
+  const proxima = provasProximas(dados, hoje, 120)[0]
+  return (
+    <span className="subtitulo-semestre">
+      Semestre {nomeDoSemestre(hoje)}
+      {proxima && ` · próxima prova ${proxima.dias === 0 ? 'hoje' : proxima.dias === 1 ? 'amanhã' : `em ${proxima.dias} dias`}`}
+    </span>
+  )
+}
+
+type Situacao = { texto: string; nivel: 'bom' | 'atencao' | 'ruim' | 'neutro' }
+
+/** O que mais importa da matéria agora: faltas estourando, a média ou quanto precisa na prova que falta. */
+function situacaoDaMateria(d: Disciplina, notas: Nota[], faltas: Falta[], pontos: PontoExtra[]): Situacao {
+  const f = resumoFaltas(faltas, d.limite_faltas)
+  if (f.nivel === 'estourou') return { texto: 'Passou do limite de faltas', nivel: 'ruim' }
+  const r = resumoDaMateria(notas, d, pontos)
+  if (r.tipo === 'fechado') {
+    return r.passou
+      ? { texto: `Média ${formatarNota(r.media)} · passou`, nivel: 'bom' }
+      : { texto: `Média ${formatarNota(r.media)} · abaixo de ${formatarNota(d.media_minima)}`, nivel: 'ruim' }
+  }
+  if (r.tipo === 'impossivel') return { texto: `Não dá mais para passar na P${r.naProva}`, nivel: 'ruim' }
+  if (r.tipo === 'garantido') return { texto: `Já passou, mesmo com 0 na P${r.naProva}`, nivel: 'bom' }
+  if (r.tipo === 'precisa') return { texto: `Precisa de ${formatarNota(r.valor)} na P${r.naProva}`, nivel: r.valor > 7 ? 'atencao' : 'neutro' }
+  if (f.nivel === 'atencao') return { texto: `Só pode faltar mais ${f.restantes}`, nivel: 'atencao' }
+  return { texto: 'Sem notas ainda', nivel: 'neutro' }
+}
+
+/** A lista das matérias: a situação de cada uma e a barra de faltas. Tocar abre a matéria. */
+function SecaoMaterias({ abrir }: { abrir: (f: FolhaAberta) => void }) {
+  const { dados } = useFaculdade()
+  return (
+    <>
+      <ul className="lista-materias">
+        {dados.disciplinas.map((d) => {
+          const notas = dados.notas.filter((n) => n.disciplina_id === d.id)
+          const faltas = dados.faltas.filter((f) => f.disciplina_id === d.id)
+          const f = resumoFaltas(faltas, d.limite_faltas)
+          const s = situacaoDaMateria(d, notas, faltas, dados.pontos_extras)
+          return (
+            <li key={d.id}>
+              <Link to={`/faculdade/materia/${d.id}`} className="card cartao-materia">
+                <div className="cartao-materia-linha">
+                  <i className="ponto ponto-grande" style={{ background: d.cor }} />
+                  <span className="cartao-materia-texto">
+                    <strong>{d.nome}</strong>
+                    <small className={`situacao-${s.nivel}`}>{s.texto}</small>
+                  </span>
+                  <span className="cartao-materia-faltas">
+                    <strong className={`faltas-${f.nivel}`}>
+                      {f.total}
+                      {f.limite !== null && <em>/{f.limite}</em>}
+                    </strong>
+                    <small>faltas</small>
+                  </span>
+                </div>
+                {f.limite !== null && (
+                  <div className="barra fina" aria-hidden="true">
+                    <span className={`barra-faltas-${f.nivel}`} style={{ width: `${Math.max(2, f.proporcao * 100)}%` }} />
+                  </div>
+                )}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+      <div className="materias-rodape">
+        <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'horario' })}>
+          Horário das aulas
+        </button>
+        <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'extra' })}>
+          Pontos extras
+          {dados.pontos_extras.length > 0 && ` (+${formatarNota(dados.pontos_extras.reduce((t, x) => t + x.pontos, 0))})`}
+        </button>
+      </div>
+    </>
+  )
+}
+
+/** Tudo de uma matéria numa tela: P1, P2 e média, as faltas, as provas e entregas e as outras notas. */
+function SecaoMateria({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => void }) {
+  const { dados } = useFaculdade()
+  const { hoje } = useEstado()
+  const notas = dados.notas.filter((n) => n.disciplina_id === d.id)
+  const eventos = proximosEventos(eventosCalendario(dados), hoje).filter((e) => e.disciplina?.id === d.id)
+  return (
+    <div className="secao-materia">
+      <section className="card card-disciplina">
+        <CabecalhoDisciplina d={d}>
+          <span className="media">
+            <small>Média para passar</small>
+            {formatarNota(d.media_minima)}
+          </span>
+        </CabecalhoDisciplina>
+        <BlocoSemestre d={d} notas={notas} />
+      </section>
+
+      <CardFaltas d={d} abrir={abrir} />
+
+      <section className="secao">
+        <h2>
+          Provas e entregas
+          <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'atividade', data: hoje })}>
+            + Entrega
+          </button>
+        </h2>
+        {eventos.length ? (
+          <ul className="lista">
+            {eventos.map((e) => (
+              <LinhaEvento key={chave(e)} e={e} abrir={abrir} />
+            ))}
+          </ul>
+        ) : (
+          <p className="vazio">Nada marcado para {d.nome}.</p>
+        )}
+      </section>
+
+      <OutrasNotas d={d} abrir={abrir} />
+    </div>
+  )
+}
+
 // ---------- Notas ----------
 
 function SecaoNotas({
@@ -140,11 +296,10 @@ function SecaoNotas({
   aberta: Disciplina
   aoEscolher: (id: string) => void
 }) {
-  const { dados, executar } = useFaculdade()
+  const { dados } = useFaculdade()
   const notasDe = (id: string) => dados.notas.filter((n) => n.disciplina_id === id)
   const d = aberta
   const notas = notasDe(d.id)
-  const outras = outrasNotas(notas).sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
   return (
     <>
       <PontosExtras abrir={abrir} />
@@ -176,43 +331,52 @@ function SecaoNotas({
         <BlocoSemestre d={d} notas={notas} />
       </section>
 
-      <section className="secao">
-        <h2>
-          Outras notas <span>trabalhos, listas…</span>
-        </h2>
-        {outras.length > 0 ? (
-          <ul className="lista">
-            {outras.map((n) => (
-              <li key={n.id}>
-                <ItemDeslizavel
-                  pergunta={`Apagar “${n.descricao}”?`}
-                  aoEditar={() => abrir({ tipo: 'nota', nota: n })}
-                  aoApagar={() => executar(() => repoFaculdade.excluir('notas', n.id))}
-                  aoTocar={() => abrir({ tipo: 'nota', nota: n })}
-                >
-                  <div className="linha-simples">
-                    <span>
-                      <strong>{n.descricao}</strong>
-                      <small>{n.data ? dataCurta(n.data) : 'sem data'}</small>
-                    </span>
-                    {n.valor === null ? (
-                      <span className="prazo">ainda não saiu</span>
-                    ) : (
-                      <strong>{formatarNota(n.valor)}</strong>
-                    )}
-                  </div>
-                </ItemDeslizavel>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="vazio">Nenhuma. A P1 e a P2 ficam no card acima.</p>
-        )}
-        <button type="button" className="botao-secundario" onClick={() => abrir({ tipo: 'nota', disciplina: d.id })}>
-          + Outra nota de {d.nome}
-        </button>
-      </section>
+      <OutrasNotas d={d} abrir={abrir} />
     </>
+  )
+}
+
+/** As notas que não são a P1 nem a P2 (trabalhos, listas…) e o botão de lançar outra. */
+function OutrasNotas({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => void }) {
+  const { dados, executar } = useFaculdade()
+  const outras = outrasNotas(dados.notas.filter((n) => n.disciplina_id === d.id)).sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
+  return (
+    <section className="secao">
+      <h2>
+        Outras notas <span>trabalhos, listas…</span>
+      </h2>
+      {outras.length > 0 ? (
+        <ul className="lista">
+          {outras.map((n) => (
+            <li key={n.id}>
+              <ItemDeslizavel
+                pergunta={`Apagar “${n.descricao}”?`}
+                aoEditar={() => abrir({ tipo: 'nota', nota: n })}
+                aoApagar={() => executar(() => repoFaculdade.excluir('notas', n.id))}
+                aoTocar={() => abrir({ tipo: 'nota', nota: n })}
+              >
+                <div className="linha-simples">
+                  <span>
+                    <strong>{n.descricao}</strong>
+                    <small>{n.data ? dataCurta(n.data) : 'sem data'}</small>
+                  </span>
+                  {n.valor === null ? (
+                    <span className="prazo">ainda não saiu</span>
+                  ) : (
+                    <strong>{formatarNota(n.valor)}</strong>
+                  )}
+                </div>
+              </ItemDeslizavel>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="vazio">Nenhuma. A P1 e a P2 ficam no card acima.</p>
+      )}
+      <button type="button" className="botao-secundario" onClick={() => abrir({ tipo: 'nota', disciplina: d.id })}>
+        + Outra nota de {d.nome}
+      </button>
+    </section>
   )
 }
 
@@ -369,7 +533,6 @@ function PontosExtras({ abrir }: { abrir: (f: FolhaAberta) => void }) {
 function SecaoFaltas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
   const { dados, executar } = useFaculdade()
   const { hoje, avisar } = useEstado()
-  const [aberta, setAberta] = useState<string | null>(null)
 
   const faltarHoje = async (d: Disciplina, ultima?: Falta) => {
     // Usa as aulas do horário de hoje; sem horário, repete a última falta (ou 2).
@@ -422,74 +585,88 @@ function SecaoFaltas({ abrir }: { abrir: (f: FolhaAberta) => void }) {
           </ul>
         )}
       </section>
-      {dados.disciplinas.map((d) => {
-        const faltas = dados.faltas.filter((f) => f.disciplina_id === d.id).sort((a, b) => b.data.localeCompare(a.data))
-        const r = resumoFaltas(faltas, d.limite_faltas)
-        return (
-          <section key={d.id} className="card card-disciplina">
-            <CabecalhoDisciplina d={d}>
-              <span className={`media faltas-${r.nivel}`}>
-                <small>Faltas</small>
-                <span>
-                  {r.total}
-                  {r.limite !== null && <em>/{r.limite}</em>}
-                </span>
-              </span>
-            </CabecalhoDisciplina>
-            {r.limite !== null && (
-              <div className="barra" aria-hidden="true">
-                <span className={`barra-faltas-${r.nivel}`} style={{ width: `${r.proporcao * 100}%` }} />
-              </div>
-            )}
-            <p className="disciplina-legenda">
-              {r.nivel === 'sem_limite'
-                ? 'Sem limite cadastrado (edite a disciplina para colocar).'
-                : r.nivel === 'estourou'
-                  ? `Passou do limite em ${r.total - r.limite!} ${r.total - r.limite! === 1 ? 'aula' : 'aulas'}.`
-                  : r.restantes === 0
-                    ? 'Chegou no limite: não pode faltar mais.'
-                    : `Ainda pode faltar ${r.restantes} ${r.restantes === 1 ? 'aula' : 'aulas'}.`}
-            </p>
-            {faltas.length > 0 && (
-              <button type="button" className="secao-alternar" onClick={() => setAberta(aberta === d.id ? null : d.id)}>
-                {aberta === d.id ? 'Esconder os dias' : `Ver os dias (${faltas.length})`} {aberta === d.id ? '▴' : '▾'}
-              </button>
-            )}
-            {faltas.length > 0 && aberta === d.id && (
-              <ul className="lista lista-interna">
-                {faltas.map((f) => (
-                  <li key={f.id}>
-                    <ItemDeslizavel
-                      pergunta={`Apagar a falta de ${dataCurta(f.data)}?`}
-                      aoEditar={() => abrir({ tipo: 'falta', falta: f })}
-                      aoApagar={() => executar(() => repoFaculdade.excluir('faltas', f.id))}
-                      aoTocar={() => abrir({ tipo: 'falta', falta: f })}
-                    >
-                      <div className="linha-simples">
-                        <span>
-                          <strong>{dataCurta(f.data, f.data.slice(0, 4) !== hoje.slice(0, 4))}</strong>
-                        </span>
-                        <span className="texto-secundario">
-                          {f.quantidade} {f.quantidade === 1 ? 'aula' : 'aulas'}
-                        </span>
-                      </div>
-                    </ItemDeslizavel>
-                  </li>
-                ))}
-              </ul>
-            )}
-            <div className="botoes-disciplina">
-              <button type="button" className="botao-secundario" onClick={() => faltarHoje(d, faltas[0])}>
-                + Faltei hoje
-              </button>
-              <button type="button" className="botao-secundario" onClick={() => abrir({ tipo: 'falta', disciplina: d.id })}>
-                Outro dia
-              </button>
-            </div>
-          </section>
-        )
-      })}
+      {dados.disciplinas.map((d) => (
+        <CardFaltas key={d.id} d={d} abrir={abrir} />
+      ))}
     </div>
+  )
+}
+
+
+/** As faltas de uma matéria: o total contra o limite, os dias e os botões "Faltei hoje" e "Outro dia". */
+function CardFaltas({ d, abrir }: { d: Disciplina; abrir: (f: FolhaAberta) => void }) {
+  const { dados, executar } = useFaculdade()
+  const { hoje, avisar } = useEstado()
+  const [aberta, setAberta] = useState<string | null>(null)
+  const faltarHoje = async (d: Disciplina, ultima?: Falta) => {
+    const quantidade = aulasDaDisciplinaNoDia(dados.aulas, d.id, hoje) || ultima?.quantidade || 2
+    const ok = await executar(() => repoFaculdade.criar('faltas', { disciplina_id: d.id, data: hoje, quantidade }))
+    if (ok) avisar(`Falta registrada em ${d.nome} (${quantidade} ${quantidade === 1 ? 'aula' : 'aulas'}).`)
+  }
+    const faltas = dados.faltas.filter((f) => f.disciplina_id === d.id).sort((a, b) => b.data.localeCompare(a.data))
+    const r = resumoFaltas(faltas, d.limite_faltas)
+  return (
+    <section className="card card-disciplina">
+      <CabecalhoDisciplina d={d}>
+        <span className={`media faltas-${r.nivel}`}>
+          <small>Faltas</small>
+          <span>
+            {r.total}
+            {r.limite !== null && <em>/{r.limite}</em>}
+          </span>
+        </span>
+      </CabecalhoDisciplina>
+      {r.limite !== null && (
+        <div className="barra" aria-hidden="true">
+          <span className={`barra-faltas-${r.nivel}`} style={{ width: `${r.proporcao * 100}%` }} />
+        </div>
+      )}
+      <p className="disciplina-legenda">
+        {r.nivel === 'sem_limite'
+          ? 'Sem limite cadastrado (edite a disciplina para colocar).'
+          : r.nivel === 'estourou'
+            ? `Passou do limite em ${r.total - r.limite!} ${r.total - r.limite! === 1 ? 'aula' : 'aulas'}.`
+            : r.restantes === 0
+              ? 'Chegou no limite: não pode faltar mais.'
+              : `Ainda pode faltar ${r.restantes} ${r.restantes === 1 ? 'aula' : 'aulas'}.`}
+      </p>
+      {faltas.length > 0 && (
+        <button type="button" className="secao-alternar" onClick={() => setAberta(aberta === d.id ? null : d.id)}>
+          {aberta === d.id ? 'Esconder os dias' : `Ver os dias (${faltas.length})`} {aberta === d.id ? '▴' : '▾'}
+        </button>
+      )}
+      {faltas.length > 0 && aberta === d.id && (
+        <ul className="lista lista-interna">
+          {faltas.map((f) => (
+            <li key={f.id}>
+              <ItemDeslizavel
+                pergunta={`Apagar a falta de ${dataCurta(f.data)}?`}
+                aoEditar={() => abrir({ tipo: 'falta', falta: f })}
+                aoApagar={() => executar(() => repoFaculdade.excluir('faltas', f.id))}
+                aoTocar={() => abrir({ tipo: 'falta', falta: f })}
+              >
+                <div className="linha-simples">
+                  <span>
+                    <strong>{dataCurta(f.data, f.data.slice(0, 4) !== hoje.slice(0, 4))}</strong>
+                  </span>
+                  <span className="texto-secundario">
+                    {f.quantidade} {f.quantidade === 1 ? 'aula' : 'aulas'}
+                  </span>
+                </div>
+              </ItemDeslizavel>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="botoes-disciplina">
+        <button type="button" className="botao-secundario" onClick={() => faltarHoje(d, faltas[0])}>
+          + Faltei hoje
+        </button>
+        <button type="button" className="botao-secundario" onClick={() => abrir({ tipo: 'falta', disciplina: d.id })}>
+          Outro dia
+        </button>
+      </div>
+    </section>
   )
 }
 
