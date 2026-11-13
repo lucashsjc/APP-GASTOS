@@ -1,37 +1,37 @@
-/* Tema "brasa": fundo cinza-azulado escuro, laranja de destaque e o card principal em degradê quente. */
+/* Tema "grafite": fundo preto, cards cinza-grafite em degradê suave e verde-limão de destaque. */
 :root {
-  --fundo: #16181e;
-  --card: #1f222a;
-  --card-2: #2a2e38;
-  --borda: #333744;
+  --fundo: #0a0a0b;
+  --card: #18181a;
+  --card-2: #262629;
+  --borda: #2c2c30;
   --texto: #fff;
-  --texto-2: #9ca1ae;
+  --texto-2: #8e8e95;
   --verde: #3fd07a;
   --ambar: #ffc247;
   --negativo: #ff5148;
-  /* Verde-neon escuro de destaque (botões, linha do topo); o texto em cima dele é preto. */
-  --vermelho: #ff6b2c;
-  --sobre-destaque: #fff;
-  /* Estados ativos (pílulas, abas) em verde-neon claro, com texto preto. */
+  /* Verde-limão de destaque (botões, +, linha do topo); o texto em cima dele é quase preto. */
+  --vermelho: #d4f03c;
+  --sobre-destaque: #111;
+  /* Estados ativos (pílulas, abas) em verde-limão, com texto quase preto. */
   --pastel-lilas: #fff;
-  --pastel-azul: #ff8a3d;
+  --pastel-azul: #d4f03c;
   --pastel-rosa: #fff;
-  --sobre-pastel: #fff;
+  --sobre-pastel: #111;
   --sobre-pastel-2: #4a4a52;
   --nubank: #8a05be;
   --caju: #e8195d;
-  /* Cards de destaque: escuros, com um brilho verde (o Nubank e o Caju só aparecem no logo). */
-  --cartao-nubank: linear-gradient(135deg, #f6a93b 0%, #f2622c 48%, #c9213a 100%);
-  --cartao-caju: linear-gradient(135deg, #f6a93b 0%, #f2622c 48%, #c9213a 100%);
+  /* Cards de destaque: grafite em degradê, mais claro em cima (o Nubank e o Caju só aparecem no logo). */
+  --cartao-nubank: linear-gradient(180deg, #2a2a2d 0%, #18181a 60%, #121213 100%);
+  --cartao-caju: linear-gradient(180deg, #2a2a2d 0%, #18181a 60%, #121213 100%);
   --faculdade: #fff;
-  --raio: 22px;
+  --raio: 26px;
   /* Cor do brilho (sombras e destaques), em R, G, B. */
-  --brilho: 255, 107, 44;
+  --brilho: 212, 240, 60;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
 
   color-scheme: dark;
-  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1;
   color: var(--texto);
   background: var(--fundo);
@@ -4989,48 +4989,81 @@ a.botao-secundario {
   flex: none;
 }
 
+/* ---------- Tema grafite: ajustes ---------- */
 
-/* ---------- Tema brasa: ajustes ---------- */
-
-/* Card do saldo (tela simples) no degradê quente, como um card de destaque. */
-.resumo-simples-card:not(.sem-total) {
-  background: var(--cartao-nubank);
-  box-shadow: 0 18px 40px rgba(201, 33, 58, 0.28);
+/* Cards em grafite com degradê suave e uma borda clara bem leve, como vidro escuro. */
+.card,
+.resumo-simples-card,
+.carrossel-card,
+.card-principal {
+  background: linear-gradient(180deg, #232326 0%, #161618 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 40px rgba(0, 0, 0, 0.45);
 }
 
-.resumo-simples-card:not(.sem-total) .resumo-simples-total small,
-.resumo-simples-card:not(.sem-total) .resumo-simples-partes small,
-.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho {
-  color: rgba(255, 255, 255, 0.78);
+/* Títulos e números mais leves, como na referência. */
+h1 {
+  font-weight: 600;
+  letter-spacing: -0.02em;
 }
 
-.resumo-simples-card:not(.sem-total) .resumo-simples-partes,
-.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho {
-  border-top-color: rgba(255, 255, 255, 0.28);
+.secao h2,
+.resumo-titulo,
+.limites-topo h2 {
+  font-weight: 500;
 }
 
-.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho > svg:first-child,
-.resumo-simples-card:not(.sem-total) .botao-texto {
-  color: #fff;
+.valor-grande,
+.resumo-simples-total strong {
+  font-weight: 700;
+  letter-spacing: -0.03em;
 }
 
-.resumo-simples-card:not(.sem-total) .negativo-texto {
-  color: #fff;
-  text-decoration: underline;
-}
-
-/* Botões e pílulas: laranja com texto branco. */
+/* Botões principais: pílula verde-limão com texto escuro. */
 .botao-principal,
 .botao-lancar,
-.botao-mais {
-  color: #fff;
+.botao-mais,
+.botao-posso {
+  color: #111;
+  border-radius: 999px;
 }
 
-.card {
-  border: 1px solid rgba(255, 255, 255, 0.04);
+.botao-principal {
+  background: linear-gradient(180deg, #e2fb5a 0%, #c3e02c 100%);
+  box-shadow: 0 10px 30px rgba(212, 240, 60, 0.25);
 }
 
-/* Cabeçalho: a área ativa em laranja, sem a linha verde. */
+.botao-secundario,
+.botao-detalhes,
+.atalho {
+  background: #232326;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 999px;
+}
+
+/* Selo verde-limão com bolinha, como o "30% Better". */
+.telemetria-selo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #232326 !important;
+  color: #fff !important;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.telemetria-selo::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--vermelho);
+}
+
+.telemetria-selo.ruim::before {
+  background: var(--negativo);
+}
+
+/* Cabeçalho: área ativa em verde-limão, linha discreta. */
 .cabecalho {
   border-bottom-color: var(--borda);
 }
@@ -5040,32 +5073,50 @@ a.botao-secundario {
 }
 
 .cabecalho-nav a.ativo {
-  color: var(--vermelho);
+  color: #fff;
+  box-shadow: inset 0 -2px 0 var(--vermelho);
 }
 
-/* Barra Nubank/Caju: vidro escuro, com a aba ativa em laranja. */
+/* Barra Nubank/Caju em vidro escuro, com a aba ativa em verde-limão. */
 .barra-abas {
-  background: rgba(31, 34, 42, 0.92);
-  border: 1px solid var(--borda);
+  background: rgba(24, 24, 26, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.barra-abas a.active {
+  color: #111;
 }
 
 .botao-detalhes svg,
 .link-extrato-icone,
 .atalho svg,
-.cofrinho-selo {
+.cofrinho-selo,
+.resumo-simples-cofrinho > svg:first-child {
   color: var(--vermelho);
 }
 
 .link-extrato-icone,
 .cofrinho-selo {
-  background: rgba(255, 107, 44, 0.14);
+  background: rgba(212, 240, 60, 0.1);
 }
 
-/* No card em degradê, a barra do gasto fica branca para aparecer. */
-.card-principal .barra span:first-child {
-  background: #fff;
+.linha-icone {
+  border-radius: 50%;
+  background: #232326;
+}
+
+/* Barras do mês no degradê verde-limão. */
+.card-principal .barra span:first-child,
+.limite-barra span {
+  background: linear-gradient(90deg, #c3e02c, #e2fb5a);
 }
 
 .card-principal .barra {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Sem o brilho diagonal antigo nos cards de destaque. */
+.card-principal::before,
+.carrossel-card::before {
+  display: none;
 }
