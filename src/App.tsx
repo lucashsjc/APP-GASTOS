@@ -1,15 +1,14 @@
 import { useEffect, useState } from 'react'
 import { Cabecalho } from './componentes/Cabecalho'
-import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
+import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { IconeCalendario, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
+import { IconeFaculdade, IconeHoje, Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
 import { ProvedorFaculdade } from './faculdade/estado'
 import PaginaFaculdade from './faculdade/PaginaFaculdade'
 import PaginaHoje from './hoje/PaginaHoje'
-import { ehAreaBanco } from './lib/areas'
 import Ajustes from './pages/Ajustes'
 import Assinaturas from './pages/Assinaturas'
 import Busca from './pages/Busca'
@@ -107,8 +106,7 @@ export default function App() {
           </Transicao>
         </main>
         <ErroEAviso />
-        <BarraCartoes />
-        <BarraFaculdade />
+        <BarraPrincipal />
       </BrowserRouter>
       </ProvedorFaculdade>
     </ProvedorDeDados>
@@ -125,42 +123,25 @@ function Transicao({ children }: { children: React.ReactNode }) {
   )
 }
 
-/** Barra Nubank/Caju: só dentro da área Banco. */
-function BarraCartoes() {
+/** Barra de baixo de todas as telas, como nos apps de banco: a área aberta fica numa pílula grafite. */
+function BarraPrincipal() {
   const { pathname } = useLocation()
-  if (!ehAreaBanco(pathname)) return null
-  return (
-    <nav className="barra-abas" aria-label="Cartões">
-      <NavLink to="/nubank" className="aba-nubank">
-        <Logo aba="nubank" tamanho={28} />
-        <span>Nubank</span>
-      </NavLink>
-      <NavLink to="/caju" className="aba-caju">
-        <Logo aba="caju" tamanho={28} />
-        <span>Caju</span>
-      </NavLink>
-    </nav>
-  )
-}
-
-/** Barra Notas/Faltas/Atividades: só dentro da Faculdade. */
-function BarraFaculdade() {
-  const { pathname } = useLocation()
-  if (!pathname.startsWith('/faculdade')) return null
+  // Telas do Nubank que ficam fora de /nubank (cofrinho, compras futuras, busca, assinaturas).
+  const doNubank = /^\/(nubank|cofrinho|compras-futuras|busca|assinaturas)(\/|$)/.test(pathname)
   const itens = [
-    { rota: '/faculdade/materias', nome: 'Matérias', Icone: IconeNotas },
-    { rota: '/faculdade/faltas', nome: 'Faltas', Icone: IconeFaltas },
-    { rota: '/faculdade/calendario', nome: 'Calendário', Icone: IconeCalendario },
+    { rota: '/', nome: 'Hoje', ativo: pathname === '/', icone: <IconeHoje tamanho={22} /> },
+    { rota: '/nubank', nome: 'Nubank', ativo: doNubank, icone: <Logo aba="nubank" tamanho={24} /> },
+    { rota: '/caju', nome: 'Caju', ativo: pathname.startsWith('/caju'), icone: <Logo aba="caju" tamanho={24} /> },
+    { rota: '/faculdade', nome: 'Faculdade', ativo: pathname.startsWith('/faculdade'), icone: <IconeFaculdade tamanho={22} /> },
   ]
+  if (pathname.startsWith('/ajustes') || pathname.startsWith('/projetos') || pathname.startsWith('/trabalho')) return null
   return (
-    <nav className="barra-abas barra-faculdade" aria-label="Faculdade">
-      {itens.map(({ rota, nome, Icone }) => (
-        <NavLink key={rota} to={rota}>
-          <span className="aba-icone">
-            <Icone tamanho={18} />
-          </span>
-          <span>{nome}</span>
-        </NavLink>
+    <nav className="barra-principal" aria-label="Áreas">
+      {itens.map((i) => (
+        <Link key={i.rota} to={i.rota} className={i.ativo ? 'ativo' : undefined} aria-current={i.ativo ? 'page' : undefined}>
+          <span className="barra-principal-icone">{i.icone}</span>
+          {i.nome}
+        </Link>
       ))}
     </nav>
   )

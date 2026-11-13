@@ -1,7 +1,8 @@
 import { dataCurta } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 import type { Forma } from '../data/types'
-import { IconeCarteira, IconeCategoria, IconeNota } from './icones'
+import { IconeGasto } from './IconeGasto'
+import { IconeCarteira, IconeNota } from './icones'
 
 interface Props {
   descricao: string
@@ -30,9 +31,7 @@ export function LinhaGasto({ descricao, categoria, valor_centavos, data, forma, 
   const partes = [hora ? quando.replace(dataCurta(data), `${dataCurta(data)} ${hora}`) : quando, forma === 'debito' ? 'Débito' : forma === 'credito' ? 'Crédito' : null]
   return (
     <div className="linha-gasto">
-      <span className="linha-icone" aria-hidden="true">
-        <IconeCategoria nome={icone ?? categoria} />
-      </span>
+      <IconeGasto descricao={descricao} categoria={categoria} icone={icone} />
       <span className="linha-texto">
         <strong>{descricao}</strong>
         <small>

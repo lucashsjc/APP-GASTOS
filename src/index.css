@@ -5491,3 +5491,100 @@ a.botao-secundario {
   flex-direction: row !important;
   white-space: nowrap;
 }
+
+/* ---------- Barra de baixo (todas as telas), como nos apps de banco ---------- */
+
+.barra-principal {
+  position: fixed;
+  left: 50%;
+  translate: -50% 0;
+  bottom: calc(var(--seguro-baixo) + 12px);
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  width: min(448px, calc(100% - 24px));
+  padding: 6px;
+  border-radius: 28px;
+  background: rgba(30, 28, 30, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55);
+}
+
+.barra-principal a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px 7px;
+  border-radius: 22px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a1a1a8;
+  text-decoration: none;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.barra-principal-icone {
+  display: grid;
+  place-items: center;
+  height: 24px;
+}
+
+.barra-principal a:not(.ativo) .barra-principal-icone .logo {
+  filter: grayscale(1) brightness(1.4);
+  opacity: 0.55;
+}
+
+.barra-principal a.ativo {
+  background: #333236;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.barra-principal a.ativo .barra-principal-icone {
+  color: #ff5168;
+}
+
+.barra-principal a:active {
+  scale: 0.95;
+}
+
+/* ---------- Ícone de cada gasto: a cor e a inicial do lugar ---------- */
+
+.icone-lugar {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+/* ---------- O cartão por trás dos botões ---------- */
+
+.carteira-faixa {
+  align-items: center;
+  text-decoration: none;
+}
+
+.carteira-faixa-nome {
+  color: #fff;
+  font-weight: 600;
+}
+
+.carteira-faixa .logo {
+  flex: none;
+  border-radius: 7px;
+}
+
+/* ---------- Faculdade: Matérias / Faltas / Calendário em pílulas ---------- */
+
+.pilulas-faculdade {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.pilulas-faculdade .chip {
+  text-decoration: none;
+}

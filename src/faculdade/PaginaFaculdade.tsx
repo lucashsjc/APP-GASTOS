@@ -106,6 +106,21 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
             <IconeMais tamanho={20} />
           </button>
         </div>
+        {secao !== 'materia' && (
+          <nav className="pilulas-faculdade" aria-label="Faculdade">
+            {(
+              [
+                ['materias', 'Matérias'],
+                ['faltas', 'Faltas'],
+                ['calendario', 'Calendário'],
+              ] as const
+            ).map(([s, nome]) => (
+              <Link key={s} to={`/faculdade/${s}`} className={`chip${secao === s ? ' ativo' : ''}`}>
+                {nome}
+              </Link>
+            ))}
+          </nav>
+        )}
       </header>
 
       {erro ? (

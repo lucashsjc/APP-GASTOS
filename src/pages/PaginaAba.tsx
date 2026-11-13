@@ -6,6 +6,7 @@ import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
 import { IconeAnterior, IconeAssinatura, IconeBusca, IconeCategoria, IconeLapis, IconeExtrato, IconeLimite, IconeMais, IconePorquinho, IconeProximo, IconeResumo, Logo } from '../componentes/icones'
 import { SeletorMes } from '../componentes/SeletorMes'
+import { IconeGasto } from '../componentes/IconeGasto'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
 import { CardLimites, FolhaLimites } from '../componentes/Limites'
@@ -349,9 +350,9 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
         )}
         <Link to={`/${aba}/detalhes`} className="carteira-acao">
           <span>
-            <IconeResumo tamanho={20} />
+            <IconeGrade />
           </span>
-          Detalhes
+          Mais
         </Link>
       </nav>
 
@@ -371,9 +372,7 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
             {ultimos.map((item) => (
               <li key={'chave' in item ? item.chave : item.id}>
                 <button type="button" className="carteira-gasto" onClick={() => abrir(item)}>
-                  <span className="linha-icone" aria-hidden="true">
-                    <IconeCategoria nome={item.categoria} />
-                  </span>
+                  <IconeGasto descricao={item.descricao} categoria={item.categoria} />
                   <span className="carteira-gasto-texto">
                     <strong>{item.descricao}</strong>
                     <small>
@@ -400,6 +399,15 @@ function horaDoItem(item: Certo | Gasto): string {
   return 'chave' in item ? '' : (item.hora ?? '')
 }
 
+const IconeGrade = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round" aria-hidden="true">
+    <rect x="4" y="4" width="6.5" height="6.5" rx="1.6" />
+    <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.6" />
+    <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.6" />
+    <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.6" />
+  </svg>
+)
+
 const IconeCarteiraAcao = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
     <path d="M12 4v11M7 10l5 5 5-5" />
@@ -418,14 +426,13 @@ function SaldoCarteira({ aba }: { aba: Aba }) {
           <small>Livre para gastar</small>
           <Valor centavos={r.livre} className={r.livre < 0 ? 'negativo' : ''} />
         </div>
-        <div className="carteira-faixa">
+        <Link to="/nubank/detalhes" className="carteira-faixa">
+          <span className="carteira-faixa-nome">Cartão Nubank ›</span>
           <span>
             Gasto <b>{formatarReais(r.certos.total + r.outros + r.aParte)}</b>
           </span>
-          <span>
-            Recebido <b>{formatarReais(r.recebido)}</b>
-          </span>
-        </div>
+          <Logo aba="nubank" tamanho={22} />
+        </Link>
       </>
     )
   }
@@ -436,13 +443,14 @@ function SaldoCarteira({ aba }: { aba: Aba }) {
         <small>{c.modo === 'passado' ? `Sobrou em ${nomeDoMes(mes)}` : 'Saldo no Caju'}</small>
         <Valor centavos={c.saldo} className={c.saldo < 0 ? 'negativo' : ''} />
       </div>
-      <div className="carteira-faixa">
+      <Link to="/caju/detalhes" className="carteira-faixa">
         {c.carteiras.map((x) => (
           <span key={x.carteira}>
             {x.nome} <b className={x.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(x.saldo)}</b>
           </span>
         ))}
-      </div>
+        <Logo aba="caju" tamanho={22} />
+      </Link>
     </>
   )
 }
