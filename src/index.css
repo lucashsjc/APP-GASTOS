@@ -5313,3 +5313,136 @@ a.botao-secundario {
 .devolver-texto b {
   color: #fff;
 }
+
+/* ---------- Faculdade: Início ---------- */
+
+.faculdade-inicio .carteira-saldo {
+  margin: 4px 0 18px;
+}
+
+.faculdade-destaque {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.faculdade-sub {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.faculdade-inicio .carteira-gastos-topo .botao-texto {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pastel-azul);
+}
+
+.faculdade-inicio .carteira-gasto > .ponto-grande {
+  flex: none;
+}
+
+.faculdade-inicio .carteira-gasto > svg:last-child {
+  color: var(--texto-2);
+  flex: none;
+}
+
+.faculdade-inicio .carteira-gasto-valor strong small {
+  color: var(--texto-2);
+  font-weight: 500;
+}
+
+.faculdade-inicio .lista .linha-atividade {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.situacao-bom {
+  color: var(--verde) !important;
+}
+
+.situacao-atencao,
+.atencao-texto {
+  color: var(--ambar) !important;
+}
+
+.situacao-ruim {
+  color: var(--negativo) !important;
+}
+
+/* Pontos extras em vinho, como os cards de destaque. */
+.destaque-extra {
+  background: linear-gradient(100deg, #4a111c 0%, #26090f 70%, #1a0709 100%) !important;
+  border: 1px solid rgba(255, 92, 112, 0.18);
+  color: #fff !important;
+}
+
+.destaque-extra .destaque-extra-pontos {
+  color: #ff7a8a;
+}
+
+.destaque-extra small,
+.destaque-extra strong {
+  color: #fff !important;
+}
+
+.destaque-extra small {
+  opacity: 0.7;
+}
+
+.destaque-extra .botao-texto {
+  color: #ff7a8a !important;
+}
+
+/* Barra da Faculdade com 4 abas: mais compacta, para caber na tela do celular. */
+.barra-faculdade {
+  max-width: calc(100% - 24px);
+}
+
+.barra-faculdade a {
+  flex-direction: column;
+  gap: 2px;
+  padding: 6px 12px;
+  font-size: 11px;
+}
+
+.barra-faculdade .aba-icone {
+  width: 24px;
+  height: 24px;
+  background: none;
+}
+
+/* O título da Faculdade fica por cima do degradê vinho. */
+.pagina-faculdade > .topo {
+  position: relative;
+  z-index: 2;
+}
+
+/* Provas e entregas dentro do card, sem a caixa preta de cada linha. */
+.faculdade-inicio .carteira-gastos .lista {
+  gap: 0;
+}
+
+.faculdade-inicio .carteira-gastos .lista > li,
+.faculdade-inicio .carteira-gastos .linha-atividade {
+  background: transparent;
+}
+
+/* Dentro dos cards, a frente de cada linha deslizável tem a cor do card (some a caixa preta). */
+.carteira-gastos .deslizavel-frente {
+  background: var(--card);
+}
+
+.carteira-gastos .deslizavel {
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.carteira-gastos .deslizavel-frente {
+  border-radius: 0;
+}
+
+/* Os botões de editar/apagar só aparecem quando a linha é deslizada. */
+.carteira-gastos .deslizavel-acoes[aria-hidden="true"] {
+  visibility: hidden;
+}

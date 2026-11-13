@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Cabecalho } from './componentes/Cabecalho'
 import { BrowserRouter, Navigate, NavLink, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { IconeCalendario, IconeFaltas, IconeNotas, Logo } from './componentes/icones'
+import { IconeCalendario, IconeFaltas, IconeHoje, IconeNotas, Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
@@ -91,7 +91,8 @@ export default function App() {
               path="/faculdade"
               element={<Outlet />}
             >
-              <Route index element={<Navigate to="notas" replace />} />
+              <Route index element={<Navigate to="inicio" replace />} />
+              <Route path="inicio" element={<PaginaFaculdade secao="inicio" />} />
               <Route path="notas" element={<PaginaFaculdade secao="notas" />} />
               <Route path="faltas" element={<PaginaFaculdade secao="faltas" />} />
               <Route path="calendario" element={<PaginaFaculdade secao="calendario" />} />
@@ -146,6 +147,7 @@ function BarraFaculdade() {
   const { pathname } = useLocation()
   if (!pathname.startsWith('/faculdade')) return null
   const itens = [
+    { rota: '/faculdade/inicio', nome: 'Início', Icone: IconeHoje },
     { rota: '/faculdade/notas', nome: 'Notas', Icone: IconeNotas },
     { rota: '/faculdade/faltas', nome: 'Faltas', Icone: IconeFaltas },
     { rota: '/faculdade/calendario', nome: 'Calendário', Icone: IconeCalendario },

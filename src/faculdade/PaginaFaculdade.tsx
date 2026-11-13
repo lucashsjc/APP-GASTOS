@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { IconeAnterior, IconeCheck, IconeLivros, IconeMais, IconeProximo } from '../componentes/icones'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { IconeAnterior, IconeCalendario, IconeCheck, IconeFaltas, IconeLivros, IconeMais, IconeNotas, IconeProximo } from '../componentes/icones'
 import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { BotaoMenu } from '../componentes/MenuLateral'
 import { useEstado } from '../estado'
@@ -16,7 +17,9 @@ import {
   extrasDoBimestre,
   formatarNota,
   lerNota,
+  nomeDoSemestre,
   outrasNotas,
+  provasProximas,
   prazoAtividade,
   provaDoSemestre,
   resumoSemestre,
@@ -29,9 +32,9 @@ import {
 import { repoFaculdade } from './repo'
 import type { Atividade, Disciplina, Falta, Nota, PontoExtra } from './tipos'
 
-export type Secao = 'notas' | 'faltas' | 'calendario'
+export type Secao = 'inicio' | 'notas' | 'faltas' | 'calendario'
 
-const TITULOS: Record<Secao, string> = { notas: 'Notas por matéria', faltas: 'Faltas', calendario: 'Calendário' }
+const TITULOS: Record<Secao, string> = { inicio: 'Início', notas: 'Notas por matéria', faltas: 'Faltas', calendario: 'Calendário' }
 
 type FolhaAberta =
   | { tipo: 'disciplinas' }
@@ -47,14 +50,16 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
   const [folha, setFolha] = useState<FolhaAberta | null>(null)
   const fechar = () => setFolha(null)
   // A matéria aberta em Notas e o dia escolhido no calendário ficam entre as trocas de aba.
-  const [materia, setMateria] = useState<string | null>(null)
+  // A matéria pode vir do Início (?materia=id), ao tocar numa matéria da lista.
+  const [busca] = useSearchParams()
+  const [materia, setMateria] = useState<string | null>(busca.get('materia'))
   const materiaAberta = dados.disciplinas.find((d) => d.id === materia) ?? dados.disciplinas[0] ?? null
   const [dia, setDia] = useState(hoje)
 
   const adicionar = () => {
     if (!dados.disciplinas.length) return setFolha({ tipo: 'disciplinas' })
     if (secao === 'notas') return setFolha({ tipo: 'nota', disciplina: materiaAberta?.id })
-    if (secao === 'faltas') return setFolha({ tipo: 'falta' })
+    if (secao === 'faltas' || secao === 'inicio') return setFolha({ tipo: secao === 'inicio' ? 'nota' : 'falta' })
     setFolha({ tipo: 'nota', prova: true, data: dia })
   }
 
@@ -76,12 +81,14 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
             <IconeLivros />
           </button>
         </div>
-        <div className="topo-linha">
-          <h2 className="subtitulo">{TITULOS[secao]}</h2>
-          <button type="button" className="botao-mais botao-faculdade" onClick={adicionar} aria-label="Adicionar">
-            <IconeMais tamanho={20} />
-          </button>
-        </div>
+        {secao !== 'inicio' && (
+          <div className="topo-linha">
+            <h2 className="subtitulo">{TITULOS[secao]}</h2>
+            <button type="button" className="botao-mais botao-faculdade" onClick={adicionar} aria-label="Adicionar">
+              <IconeMais tamanho={20} />
+            </button>
+          </div>
+        )}
       </header>
 
       {erro ? (
@@ -99,6 +106,8 @@ export default function PaginaFaculdade({ secao }: { secao: Secao }) {
             Cadastrar disciplinas
           </button>
         </section>
+      ) : secao === 'inicio' ? (
+        <SecaoInicio abrir={setFolha} />
       ) : secao === 'notas' ? (
         materiaAberta && <SecaoNotas abrir={setFolha} aberta={materiaAberta} aoEscolher={setMateria} />
       ) : secao === 'faltas' ? (
@@ -129,6 +138,186 @@ function CabecalhoDisciplina({ d, children }: { d: Disciplina; children?: React.
   )
 }
 
+// ---------- Início ----------
+
+type SituacaoMateria = { texto: string; nivel: 'bom' | 'atencao' | 'ruim' | 'neutro' }
+
+/** O que mais importa da matéria agora: as faltas estourando, a média ou quanto precisa na prova que falta. */
+function situacaoDaMateria(d: Disciplina, notas: Nota[], faltas: Falta[], pontos: PontoExtra[]): SituacaoMateria {
+  const f = resumoFaltas(faltas, d.limite_faltas)
+  if (f.nivel === 'estourou') return { texto: 'Passou do limite de faltas', nivel: 'ruim' }
+  const r = resumoDaMateria(notas, d, pontos)
+  if (r.tipo === 'fechado') return r.passou ? { texto: `Média ${formatarNota(r.media)} · passou`, nivel: 'bom' } : { texto: `Média ${formatarNota(r.media)} · abaixo de ${formatarNota(d.media_minima)}`, nivel: 'ruim' }
+  if (r.tipo === 'impossivel') return { texto: `Não dá mais para passar na P${r.naProva}`, nivel: 'ruim' }
+  if (r.tipo === 'garantido') return { texto: `Já passou, mesmo com 0 na P${r.naProva}`, nivel: 'bom' }
+  if (r.tipo === 'precisa') return { texto: `Precisa de ${formatarNota(r.valor)} na P${r.naProva}`, nivel: r.valor > 7 ? 'atencao' : 'neutro' }
+  if (f.nivel === 'atencao') return { texto: `Só pode faltar mais ${f.restantes}`, nivel: 'atencao' }
+  return { texto: 'Sem notas ainda', nivel: 'neutro' }
+}
+
+/** Início da Faculdade: o semestre, os atalhos, as aulas de hoje, o que vem por aí e as matérias. */
+function SecaoInicio({ abrir }: { abrir: (f: FolhaAberta) => void }) {
+  const { dados, executar } = useFaculdade()
+  const { hoje, avisar } = useEstado()
+  const navegar = useNavigate()
+  const proxima = provasProximas(dados, hoje, 120)[0]
+  const proximos = proximosEventos(eventosCalendario(dados), hoje).slice(0, 4)
+  const hojeAulas = aulasDoDia(dados.aulas, hoje)
+  const faltouHoje = (id: string) => dados.faltas.some((f) => f.disciplina_id === id && f.data === hoje)
+
+  const faltarHoje = async (d: Disciplina) => {
+    const quantidade = aulasDaDisciplinaNoDia(dados.aulas, d.id, hoje) || 2
+    const ok = await executar(() => repoFaculdade.criar('faltas', { disciplina_id: d.id, data: hoje, quantidade }))
+    if (ok) avisar(`Falta registrada em ${d.nome} (${quantidade} ${quantidade === 1 ? 'aula' : 'aulas'}).`)
+  }
+
+  return (
+    <div className="tela-carteira faculdade-inicio">
+      <div className="carteira-fundo" aria-hidden="true" />
+
+      <div className="carteira-saldo">
+        <small>Semestre {nomeDoSemestre(hoje)}</small>
+        {proxima ? (
+          <>
+            <strong className="faculdade-destaque">{proxima.dias === 0 ? 'Prova hoje' : proxima.dias === 1 ? 'Prova amanhã' : `Prova em ${proxima.dias} dias`}</strong>
+            <span className="faculdade-sub">
+              {proxima.nota.descricao}
+              {proxima.disciplina && ` · ${proxima.disciplina.nome}`}
+              {proxima.precisa !== null && ` · precisa de ${formatarNota(proxima.precisa)}`}
+            </span>
+          </>
+        ) : (
+          <>
+            <strong className="faculdade-destaque">{dados.disciplinas.length} matérias</strong>
+            <span className="faculdade-sub">Nenhuma prova marcada por enquanto.</span>
+          </>
+        )}
+      </div>
+
+      <nav className="carteira-acoes" aria-label="Ações">
+        <button type="button" className="carteira-acao principal" onClick={() => abrir({ tipo: 'nota' })}>
+          <span>
+            <IconeNotas tamanho={20} />
+          </span>
+          Nota
+        </button>
+        <button type="button" className="carteira-acao" onClick={() => abrir({ tipo: 'falta' })}>
+          <span>
+            <IconeFaltas tamanho={20} />
+          </span>
+          Falta
+        </button>
+        <button type="button" className="carteira-acao" onClick={() => abrir({ tipo: 'nota', prova: true, data: hoje })}>
+          <span>
+            <IconeCalendario tamanho={20} />
+          </span>
+          Prova
+        </button>
+        <button type="button" className="carteira-acao" onClick={() => abrir({ tipo: 'atividade', data: hoje })}>
+          <span>
+            <IconeMais tamanho={20} />
+          </span>
+          Entrega
+        </button>
+      </nav>
+
+      <section className="card carteira-gastos">
+        <div className="carteira-gastos-topo">
+          <h2>Aulas de hoje</h2>
+          <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'horario' })}>
+            {dados.aulas.length ? 'Horário' : 'Montar horário'}
+          </button>
+        </div>
+        {!dados.aulas.length ? (
+          <p className="vazio">Monte o horário da semana para ver aqui as aulas do dia.</p>
+        ) : !hojeAulas.length ? (
+          <p className="vazio">Sem aulas hoje ({NOMES_DIAS[diaDaSemana(hoje) - 1].toLowerCase()}).</p>
+        ) : (
+          <ul>
+            {hojeAulas.map((a) => {
+              const d = dados.disciplinas.find((x) => x.id === a.disciplina_id)
+              if (!d) return null
+              return (
+                <li key={a.id} className="carteira-gasto">
+                  <i className="ponto ponto-grande" style={{ background: d.cor }} />
+                  <span className="carteira-gasto-texto">
+                    <strong>{d.nome}</strong>
+                    <small>
+                      {a.inicio ? `${a.inicio} · ` : ''}
+                      {a.quantidade} {a.quantidade === 1 ? 'aula' : 'aulas'}
+                    </small>
+                  </span>
+                  {faltouHoje(d.id) ? (
+                    <span className="prazo prazo-atrasada">Faltou</span>
+                  ) : (
+                    <button type="button" className="botao-faltei" onClick={() => faltarHoje(d)}>
+                      Faltei
+                    </button>
+                  )}
+                </li>
+              )
+            })}
+          </ul>
+        )}
+      </section>
+
+      <section className="card carteira-gastos">
+        <div className="carteira-gastos-topo">
+          <h2>Próximas provas e entregas</h2>
+          <Link to="/faculdade/calendario">Ver tudo</Link>
+        </div>
+        {proximos.length ? (
+          <ul className="lista">
+            {proximos.map((e) => (
+              <LinhaEvento key={chave(e)} e={e} abrir={abrir} />
+            ))}
+          </ul>
+        ) : (
+          <p className="vazio">Nada marcado. Use Prova ou Entrega lá em cima.</p>
+        )}
+      </section>
+
+      <section className="card carteira-gastos">
+        <div className="carteira-gastos-topo">
+          <h2>Matérias</h2>
+          <button type="button" className="botao-texto" onClick={() => abrir({ tipo: 'disciplinas' })}>
+            Editar
+          </button>
+        </div>
+        <ul>
+          {dados.disciplinas.map((d) => {
+            const notas = dados.notas.filter((n) => n.disciplina_id === d.id)
+            const faltas = dados.faltas.filter((f) => f.disciplina_id === d.id)
+            const f = resumoFaltas(faltas, d.limite_faltas)
+            const s = situacaoDaMateria(d, notas, faltas, dados.pontos_extras)
+            return (
+              <li key={d.id}>
+                <button type="button" className="carteira-gasto" onClick={() => navegar(`/faculdade/notas?materia=${d.id}`)}>
+                  <i className="ponto ponto-grande" style={{ background: d.cor }} />
+                  <span className="carteira-gasto-texto">
+                    <strong>{d.nome}</strong>
+                    <small className={`situacao-${s.nivel}`}>{s.texto}</small>
+                  </span>
+                  <span className="carteira-gasto-valor">
+                    <strong className={f.nivel === 'estourou' ? 'negativo-texto' : f.nivel === 'atencao' ? 'atencao-texto' : undefined}>
+                      {f.total}
+                      {f.limite !== null && <small>/{f.limite}</small>}
+                    </strong>
+                    <small>faltas</small>
+                  </span>
+                  <IconeProximo tamanho={16} />
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </section>
+
+      <PontosExtras abrir={abrir} />
+    </div>
+  )
+}
+
 // ---------- Notas ----------
 
 function SecaoNotas({
@@ -147,7 +336,6 @@ function SecaoNotas({
   const outras = outrasNotas(notas).sort((a, b) => (a.data ?? '').localeCompare(b.data ?? ''))
   return (
     <>
-      <PontosExtras abrir={abrir} />
       <div className="pilulas-materias" role="tablist" aria-label="Matérias">
         {dados.disciplinas.map((x) => {
           const atual = situacaoAtual(notasDe(x.id), x, dados.pontos_extras)
