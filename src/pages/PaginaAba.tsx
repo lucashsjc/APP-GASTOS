@@ -10,7 +10,6 @@ import { ItemDeslizavel } from '../componentes/ItemDeslizavel'
 import { LinhaGasto } from '../componentes/LinhaGasto'
 import { CardLimites, FolhaLimites } from '../componentes/Limites'
 import { CardTelemetria } from '../componentes/Telemetria'
-import { Topo } from '../componentes/Topo'
 import { Valor } from '../componentes/Valor'
 import { repo } from '../data/repo'
 import { definirPago } from '../data/acoes'
@@ -23,6 +22,7 @@ import {
   certosDoMes,
   depositosDoMes,
   outrosDoMes,
+  recebidoDoMes,
   resumoNubank,
   resumoPagamento,
   type Certo,
@@ -304,102 +304,194 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
     )
   }
 
+  // Os últimos gastos do mês (mais recentes primeiro) para o card da tela principal.
+  const ultimos = [...normais].sort((x, y) => y.data.localeCompare(x.data) || horaDoItem(y).localeCompare(horaDoItem(x))).slice(0, 5)
+  const abrir = (item: Certo | Gasto) => ('chave' in item ? acoesCerto.editar(item) : setFolha({ aba, gasto: item }))
+
   return (
-    <div className={`pagina pagina-${aba}`}>
-      <Topo aba={aba} titulo={NOMES[aba]} aoAdicionar={() => setFolha({ aba, origem: 'topo' })} detalhes={`/${aba}/detalhes`} />
+    <div className={`pagina pagina-${aba} tela-carteira`}>
+      <div className="carteira-fundo" aria-hidden="true" />
 
-      <ResumoSimples aba={aba} aoDepositar={() => setFolhaValor('deposito')} aoEditarRecebido={() => setFolhaValor('recebido')} />
+      <div className="carteira-linha">
+        <h1>{NOMES[aba]}</h1>
+        <SeletorMes />
+      </div>
 
-      <Link to={`/${aba}/extrato`} className="card link-extrato">
-        <span className="link-extrato-icone" aria-hidden="true">
-          <IconeExtrato tamanho={20} />
-        </span>
-        <span className="link-extrato-texto">
-          <strong>Extrato de {nomeDoMes(mes)}</strong>
-          <small>
-            {carregando
-              ? 'Carregando…'
-              : itens.length === 0
-                ? 'Nenhum gasto ainda'
-                : `${itens.length} ${itens.length === 1 ? 'gasto' : 'gastos'} · ${formatarReais(totalDoMes)}`}
-          </small>
-        </span>
-        <IconeProximo tamanho={18} />
-      </Link>
+      <SaldoCarteira aba={aba} />
+
+      <nav className="carteira-acoes" aria-label="Ações">
+        <button type="button" className="carteira-acao principal" onClick={() => setFolha({ aba, origem: 'topo' })}>
+          <span>
+            <IconeMais tamanho={22} />
+          </span>
+          Gasto
+        </button>
+        <Link to={`/${aba}/extrato`} className="carteira-acao">
+          <span>
+            <IconeExtrato tamanho={20} />
+          </span>
+          Extrato
+        </Link>
+        {aba === 'nubank' ? (
+          <Link to="/cofrinho" className="carteira-acao">
+            <span>
+              <IconePorquinho tamanho={20} />
+            </span>
+            Cofrinho
+          </Link>
+        ) : (
+          <button type="button" className="carteira-acao" onClick={() => setFolhaValor('deposito')}>
+            <span>
+              <IconeCarteiraAcao />
+            </span>
+            Depósito
+          </button>
+        )}
+        <Link to={`/${aba}/detalhes`} className="carteira-acao">
+          <span>
+            <IconeResumo tamanho={20} />
+          </span>
+          Detalhes
+        </Link>
+      </nav>
+
+      <AvisoCarteira aba={aba} aoDepositar={() => setFolhaValor('deposito')} aoEditarRecebido={() => setFolhaValor('recebido')} />
+
+      <section className="card carteira-gastos">
+        <div className="carteira-gastos-topo">
+          <h2>Últimos gastos</h2>
+          <Link to={`/${aba}/extrato`}>Ver tudo</Link>
+        </div>
+        {carregando ? (
+          <p className="vazio">Carregando…</p>
+        ) : ultimos.length === 0 ? (
+          <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque em Gasto para registrar.</p>
+        ) : (
+          <ul>
+            {ultimos.map((item) => (
+              <li key={'chave' in item ? item.chave : item.id}>
+                <button type="button" className="carteira-gasto" onClick={() => abrir(item)}>
+                  <span className="linha-icone" aria-hidden="true">
+                    <IconeCategoria nome={item.categoria} />
+                  </span>
+                  <span className="carteira-gasto-texto">
+                    <strong>{item.descricao}</strong>
+                    <small>
+                      {[dataCurta(item.data), horaDoItem(item)].filter(Boolean).join(' · ')}
+                    </small>
+                  </span>
+                  <span className="carteira-gasto-valor">
+                    <strong>−{formatarReais(item.valor_centavos)}</strong>
+                    <small>{aba === 'caju' ? nomeDaCarteira(item) : item.forma === 'debito' ? 'Débito' : 'Crédito'}</small>
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {folhas}
     </div>
   )
 }
 
-/** Topo da tela simples: o que ainda tem (pequeno) e, no Caju, quanto tem em cada carteira. */
-function ResumoSimples({ aba, aoDepositar, aoEditarRecebido }: { aba: Aba; aoDepositar: () => void; aoEditarRecebido: () => void }) {
+function horaDoItem(item: Certo | Gasto): string {
+  return 'chave' in item ? '' : (item.hora ?? '')
+}
+
+const IconeCarteiraAcao = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M12 4v11M7 10l5 5 5-5" />
+    <path d="M5 20h14" />
+  </svg>
+)
+
+/** O saldo grande e centralizado, com os centavos em cinza, e a faixa de baixo (carteiras ou gasto/recebido). */
+function SaldoCarteira({ aba }: { aba: Aba }) {
   const { dados, hoje, mes } = useEstado()
   if (aba === 'nubank') {
     const r = resumoNubank(dados, mes, hoje)
-    const totalGuardado = resumoCofrinho(dados, hoje).total
     return (
-      <section className="resumo-simples-card">
-        <div className="resumo-simples-total">
+      <>
+        <div className="carteira-saldo">
           <small>Livre para gastar</small>
-          <strong className={r.livre < 0 ? 'negativo-texto' : undefined}>{formatarReais(r.livre)}</strong>
+          <Valor centavos={r.livre} className={r.livre < 0 ? 'negativo' : ''} />
         </div>
-        {r.recebido > 0 ? (
-          <div className="resumo-simples-partes">
-            <div>
-              <small>Gasto</small>
-              <span>{formatarReais(r.certos.total + r.outros + r.aParte)}</span>
-            </div>
-            <div>
-              <small>Recebido</small>
-              <span>{formatarReais(r.recebido)}</span>
-            </div>
-          </div>
-        ) : (
-          <button type="button" className="botao-texto" onClick={aoEditarRecebido}>
-            Colocar o recebido do mês
-          </button>
-        )}
-        <Link to="/cofrinho" className="resumo-simples-cofrinho">
-          <IconePorquinho tamanho={18} />
+        <div className="carteira-faixa">
           <span>
-            Cofrinho <b>{formatarReais(totalGuardado)}</b>
-            {r.guardado !== 0 && (
-              <small>
-                {' '}
-                · {r.guardado > 0 ? `${formatarReais(r.guardado)} guardados` : `${formatarReais(-r.guardado)} retirados`} em{' '}
-                {nomeDoMes(mes)}
-              </small>
-            )}
+            Gasto <b>{formatarReais(r.certos.total + r.outros + r.aParte)}</b>
           </span>
-          <IconeProximo tamanho={16} />
-        </Link>
-      </section>
+          <span>
+            Recebido <b>{formatarReais(r.recebido)}</b>
+          </span>
+        </div>
+      </>
     )
   }
   const c = cardCaju(dados, mes, hoje)
-  const temDeposito = depositosDoMes(dados, mes).length > 0
   return (
-    <section className="resumo-simples-card">
-      <div className="resumo-simples-total">
+    <>
+      <div className="carteira-saldo">
         <small>{c.modo === 'passado' ? `Sobrou em ${nomeDoMes(mes)}` : 'Saldo no Caju'}</small>
-        <strong className={c.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(c.saldo)}</strong>
+        <Valor centavos={c.saldo} className={c.saldo < 0 ? 'negativo' : ''} />
       </div>
-      {temDeposito ? (
-        <div className="resumo-simples-partes">
-          {c.carteiras.map((x) => (
-            <div key={x.carteira}>
-              <small>{x.nome}</small>
-              <span className={x.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(x.saldo)}</span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <button type="button" className="botao-texto" onClick={aoDepositar}>
-          Registrar o depósito do mês
+      <div className="carteira-faixa">
+        {c.carteiras.map((x) => (
+          <span key={x.carteira}>
+            {x.nome} <b className={x.saldo < 0 ? 'negativo-texto' : undefined}>{formatarReais(x.saldo)}</b>
+          </span>
+        ))}
+      </div>
+    </>
+  )
+}
+
+/** Um card em destaque: o cofrinho no Nubank, ou o lembrete do recebido / depósito que falta. */
+function AvisoCarteira({ aba, aoDepositar, aoEditarRecebido }: { aba: Aba; aoDepositar: () => void; aoEditarRecebido: () => void }) {
+  const { dados, hoje, mes } = useEstado()
+  if (aba === 'nubank') {
+    if (recebidoDoMes(dados, mes) <= 0) {
+      return (
+        <button type="button" className="carteira-aviso" onClick={aoEditarRecebido}>
+          <span className="carteira-aviso-icone">
+            <IconeLapis tamanho={18} />
+          </span>
+          <span>
+            <strong>Coloque o recebido de {nomeDoMes(mes)}</strong>
+            <small>Para o app calcular o livre para gastar.</small>
+          </span>
         </button>
-      )}
-    </section>
+      )
+    }
+    const cofre = resumoCofrinho(dados, hoje)
+    return (
+      <Link to="/cofrinho" className="carteira-aviso">
+        <span className="carteira-aviso-icone">
+          <IconePorquinho tamanho={18} />
+        </span>
+        <span>
+          <strong>{formatarReais(cofre.total)} no cofrinho</strong>
+          <small>
+            {cofre.meta
+              ? `Meta do mês: ${formatarReais(Math.max(0, cofre.noMes))} de ${formatarReais(cofre.meta)}`
+              : 'Fora do livre para gastar. Toque para guardar ou retirar.'}
+          </small>
+        </span>
+      </Link>
+    )
+  }
+  if (depositosDoMes(dados, mes).length > 0) return null
+  return (
+    <button type="button" className="carteira-aviso" onClick={aoDepositar}>
+      <span className="carteira-aviso-icone">
+        <IconeCarteiraAcao />
+      </span>
+      <span>
+        <strong>Registre o depósito de {nomeDoMes(mes)}</strong>
+        <small>Com quanto entrou em Refeição e em Mobilidade.</small>
+      </span>
+    </button>
   )
 }
 

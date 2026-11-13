@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-const CORES = ['#2ee59d', '#19c46a', '#f1f5f6', '#9aa5aa', '#d7ff3a']
+const CORES = ['#ec3a52', '#ff7a8a', '#ffffff', '#6a1828', '#8d8d95']
 
 /** Chuva de confete por cima da tela, uma vez (some sozinha). Respeita "reduzir movimento". */
 export function Confete({ aoTerminar }: { aoTerminar?: () => void }) {
