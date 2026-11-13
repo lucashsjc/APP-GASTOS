@@ -17,6 +17,7 @@ const LUGARES: { regra: RegExp; sigla: string; fundo: string; cor?: string; imag
   { regra: /\bmercado livre\b/, sigla: 'ML', fundo: '#ffe600', cor: '#2d3277' },
   { regra: /\bshopee\b/, sigla: 'S', fundo: '#ee4d2d' },
   { regra: /\bporto\b/, sigla: 'P', fundo: '#0057b8', imagem: '/lugares/porto.png' },
+  { regra: /\bmango\b/, sigla: 'M', fundo: '#f39200', imagem: '/lugares/mango.png' },
   { regra: /\bgta\b|grand theft auto/, sigla: 'GTA', fundo: '#7b2d8f', imagem: '/lugares/gta.png' },
   { regra: /\bclaude\b/, sigla: 'C', fundo: '#d97757' },
   { regra: /\bsteam\b|\bpsn\b|\bplaystation\b/, sigla: '▶', fundo: '#1b2838' },

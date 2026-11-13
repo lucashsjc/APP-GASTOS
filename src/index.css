@@ -5607,7 +5607,8 @@ a.botao-secundario {
 
 /* Logos que não são redondos (Porto, GTA) ficam inteiros, sem cortar em círculo. */
 .icone-lugar.com-imagem img[src$='porto.png'],
-.icone-lugar.com-imagem img[src$='gta.png'] {
+.icone-lugar.com-imagem img[src$='gta.png'],
+.icone-lugar.com-imagem img[src$='mango.png'] {
   border-radius: 6px;
   object-fit: contain;
 }
