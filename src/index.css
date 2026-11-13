@@ -1,35 +1,37 @@
-/* Tema "equipe": fundo preto, cinzas escuros, verde-neon de destaque e cards escuros com brilho verde. */
+/* Tema "brasa": fundo cinza-azulado escuro, laranja de destaque e o card principal em degradê quente. */
 :root {
-  --fundo: #000;
-  --card: #121212;
-  --card-2: #1e1e1e;
-  --borda: #262626;
+  --fundo: #16181e;
+  --card: #1f222a;
+  --card-2: #2a2e38;
+  --borda: #333744;
   --texto: #fff;
-  --texto-2: #9a9aa3;
+  --texto-2: #9ca1ae;
   --verde: #3fd07a;
   --ambar: #ffc247;
   --negativo: #ff5148;
   /* Verde-neon escuro de destaque (botões, linha do topo); o texto em cima dele é preto. */
-  --vermelho: #19c46a;
-  --sobre-destaque: #000;
+  --vermelho: #ff6b2c;
+  --sobre-destaque: #fff;
   /* Estados ativos (pílulas, abas) em verde-neon claro, com texto preto. */
   --pastel-lilas: #fff;
-  --pastel-azul: #2ee59d;
+  --pastel-azul: #ff8a3d;
   --pastel-rosa: #fff;
-  --sobre-pastel: #000;
+  --sobre-pastel: #fff;
   --sobre-pastel-2: #4a4a52;
   --nubank: #8a05be;
   --caju: #e8195d;
   /* Cards de destaque: escuros, com um brilho verde (o Nubank e o Caju só aparecem no logo). */
-  --cartao-nubank: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
-  --cartao-caju: radial-gradient(120% 90% at 70% 20%, #123a2a 0, #07130e 55%, #000 100%);
+  --cartao-nubank: linear-gradient(135deg, #f6a93b 0%, #f2622c 48%, #c9213a 100%);
+  --cartao-caju: linear-gradient(135deg, #f6a93b 0%, #f2622c 48%, #c9213a 100%);
   --faculdade: #fff;
-  --raio: 18px;
+  --raio: 22px;
+  /* Cor do brilho (sombras e destaques), em R, G, B. */
+  --brilho: 255, 107, 44;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
 
   color-scheme: dark;
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
   font-feature-settings: 'tnum' 1;
   color: var(--texto);
   background: var(--fundo);
@@ -2517,7 +2519,7 @@ a.botao-secundario {
 
 .botao-mais {
   border-radius: 50%;
-  box-shadow: 0 6px 16px rgba(25, 196, 106, 0.35);
+  box-shadow: 0 6px 16px rgba(var(--brilho), 0.35);
 }
 
 /* O card principal vira o cartão: roxo no Nubank, laranja no Caju, com o outro cartão aparecendo atrás. */
@@ -2884,7 +2886,7 @@ a.botao-secundario {
 }
 
 .calendario-dia.com-prova {
-  background: rgba(25, 196, 106, 0.18);
+  background: rgba(var(--brilho), 0.18);
 }
 
 .calendario-dia.escolhido {
@@ -3282,7 +3284,7 @@ a.botao-secundario {
 
 .abertura-logo .logo-lk {
   display: block;
-  filter: drop-shadow(0 10px 30px rgba(25, 196, 106, 0.35));
+  filter: drop-shadow(0 10px 30px rgba(var(--brilho), 0.35));
 }
 
 /* Rastro de velocidade que passa por trás do logo. */
@@ -3442,7 +3444,7 @@ a.botao-secundario {
 .menu-resumo,
 .carrossel-card {
   background: var(--cartao-nubank);
-  box-shadow: inset 0 0 0 1px rgba(46, 229, 157, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(var(--brilho), 0.12);
 }
 
 .card-principal::before,
@@ -3454,7 +3456,7 @@ a.botao-secundario {
   width: 140px;
   height: 520px;
   border-radius: 0;
-  background: linear-gradient(90deg, transparent, rgba(46, 229, 157, 0.28), transparent);
+  background: linear-gradient(90deg, transparent, rgba(var(--brilho), 0.28), transparent);
   transform: rotate(35deg);
   pointer-events: none;
 }
@@ -3598,7 +3600,7 @@ a.botao-secundario {
 }
 
 .abertura-logo .logo-lk {
-  filter: drop-shadow(0 10px 30px rgba(46, 229, 157, 0.3));
+  filter: drop-shadow(0 10px 30px rgba(var(--brilho), 0.3));
 }
 
 /* ---------- Telemetria do mês e "Posso comprar?" ---------- */
@@ -3911,7 +3913,7 @@ a.botao-secundario {
 .card:active,
 .carrossel-card:active {
   scale: 0.982;
-  box-shadow: 0 0 0 1px rgba(46, 229, 157, 0.35), 0 0 28px rgba(46, 229, 157, 0.18);
+  box-shadow: 0 0 0 1px rgba(var(--brilho), 0.35), 0 0 28px rgba(var(--brilho), 0.18);
   transition-duration: 0.08s;
 }
 
@@ -4002,7 +4004,7 @@ a.botao-secundario {
   fill: none;
   stroke-width: 12;
   stroke-linecap: round;
-  filter: drop-shadow(0 0 6px rgba(46, 229, 157, 0.45));
+  filter: drop-shadow(0 0 6px rgba(var(--brilho), 0.45));
 }
 
 .velocimetro.ruim .velo-faixa {
@@ -4291,7 +4293,7 @@ a.botao-secundario {
   border-radius: 99px;
   font-size: 13px;
   font-weight: 800;
-  background: rgba(46, 229, 157, 0.12);
+  background: rgba(var(--brilho), 0.12);
 }
 
 .resumo-selo.ruim {
@@ -4421,7 +4423,7 @@ a.botao-secundario {
 
 .campo-busca:focus-within {
   border-color: var(--pastel-azul);
-  box-shadow: 0 0 0 3px rgba(46, 229, 157, 0.15);
+  box-shadow: 0 0 0 3px rgba(var(--brilho), 0.15);
 }
 
 .campo-busca input {
@@ -4766,7 +4768,7 @@ a.botao-secundario {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: rgba(46, 229, 157, 0.15);
+  background: rgba(var(--brilho), 0.15);
   color: var(--pastel-azul);
 }
 
@@ -4961,7 +4963,7 @@ a.botao-secundario {
   width: 42px;
   height: 42px;
   border-radius: 14px;
-  background: rgba(46, 229, 157, 0.12);
+  background: rgba(var(--brilho), 0.12);
   color: var(--pastel-azul);
 }
 
@@ -4985,4 +4987,85 @@ a.botao-secundario {
 .link-extrato > svg:last-child {
   color: var(--texto-2);
   flex: none;
+}
+
+
+/* ---------- Tema brasa: ajustes ---------- */
+
+/* Card do saldo (tela simples) no degradê quente, como um card de destaque. */
+.resumo-simples-card:not(.sem-total) {
+  background: var(--cartao-nubank);
+  box-shadow: 0 18px 40px rgba(201, 33, 58, 0.28);
+}
+
+.resumo-simples-card:not(.sem-total) .resumo-simples-total small,
+.resumo-simples-card:not(.sem-total) .resumo-simples-partes small,
+.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.resumo-simples-card:not(.sem-total) .resumo-simples-partes,
+.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho {
+  border-top-color: rgba(255, 255, 255, 0.28);
+}
+
+.resumo-simples-card:not(.sem-total) .resumo-simples-cofrinho > svg:first-child,
+.resumo-simples-card:not(.sem-total) .botao-texto {
+  color: #fff;
+}
+
+.resumo-simples-card:not(.sem-total) .negativo-texto {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Botões e pílulas: laranja com texto branco. */
+.botao-principal,
+.botao-lancar,
+.botao-mais {
+  color: #fff;
+}
+
+.card {
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Cabeçalho: a área ativa em laranja, sem a linha verde. */
+.cabecalho {
+  border-bottom-color: var(--borda);
+}
+
+.cabecalho-marca small {
+  color: var(--vermelho);
+}
+
+.cabecalho-nav a.ativo {
+  color: var(--vermelho);
+}
+
+/* Barra Nubank/Caju: vidro escuro, com a aba ativa em laranja. */
+.barra-abas {
+  background: rgba(31, 34, 42, 0.92);
+  border: 1px solid var(--borda);
+}
+
+.botao-detalhes svg,
+.link-extrato-icone,
+.atalho svg,
+.cofrinho-selo {
+  color: var(--vermelho);
+}
+
+.link-extrato-icone,
+.cofrinho-selo {
+  background: rgba(255, 107, 44, 0.14);
+}
+
+/* No card em degradê, a barra do gasto fica branca para aparecer. */
+.card-principal .barra span:first-child {
+  background: #fff;
+}
+
+.card-principal .barra {
+  background: rgba(255, 255, 255, 0.25);
 }
