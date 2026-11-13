@@ -12,7 +12,7 @@ export function LogoLK({ largura = 220 }: { largura?: number }) {
       </defs>
       <g fill="url(#lk-prata)" transform="translate(58 0) skewX(-32)">
         <path d="M0 0 H26 V58 Q26 72 40 72 H124 V100 H34 Q0 100 0 66 Z" />
-        <path d="M34 0 H42 V52 Q42 62 52 62 H124 V68 H50 Q34 68 34 52 Z" fill="#d4f03c" />
+        <path d="M34 0 H42 V52 Q42 62 52 62 H124 V68 H50 Q34 68 34 52 Z" fill="#ec3a52" />
         <path d="M138 0 H164 V100 H138 Z" />
         <path d="M164 52 L216 0 H252 L182 70 H164 Z" />
         <path d="M186 52 L252 100 H214 L166 66 Z" />

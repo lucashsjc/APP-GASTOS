@@ -1,32 +1,32 @@
-/* Tema "grafite": fundo preto, cards cinza-grafite em degradê suave e verde-limão de destaque. */
+/* Tema "vinho": fundo preto, degradê vinho no topo, cards grafite e vermelho de destaque. */
 :root {
-  --fundo: #0a0a0b;
-  --card: #18181a;
-  --card-2: #262629;
-  --borda: #2c2c30;
+  --fundo: #000;
+  --card: #141416;
+  --card-2: #222226;
+  --borda: #2a2a2f;
   --texto: #fff;
-  --texto-2: #8e8e95;
+  --texto-2: #8d8d95;
   --verde: #3fd07a;
   --ambar: #ffc247;
   --negativo: #ff5148;
-  /* Verde-limão de destaque (botões, +, linha do topo); o texto em cima dele é quase preto. */
-  --vermelho: #d4f03c;
-  --sobre-destaque: #111;
-  /* Estados ativos (pílulas, abas) em verde-limão, com texto quase preto. */
+  /* Vermelho de destaque (botão de gasto, +, links); o texto em cima dele é branco. */
+  --vermelho: #ec3a52;
+  --sobre-destaque: #fff;
+  /* Estados ativos (pílulas, abas): vermelho claro, com texto branco. */
   --pastel-lilas: #fff;
-  --pastel-azul: #d4f03c;
+  --pastel-azul: #ff5c70;
   --pastel-rosa: #fff;
-  --sobre-pastel: #111;
+  --sobre-pastel: #fff;
   --sobre-pastel-2: #4a4a52;
   --nubank: #8a05be;
   --caju: #e8195d;
-  /* Cards de destaque: grafite em degradê, mais claro em cima (o Nubank e o Caju só aparecem no logo). */
-  --cartao-nubank: linear-gradient(180deg, #2a2a2d 0%, #18181a 60%, #121213 100%);
-  --cartao-caju: linear-gradient(180deg, #2a2a2d 0%, #18181a 60%, #121213 100%);
+  /* Cards de destaque: vinho escuro em degradê (o Nubank e o Caju só aparecem no logo). */
+  --cartao-nubank: linear-gradient(135deg, #5c1522 0%, #2b0b12 60%, #160609 100%);
+  --cartao-caju: linear-gradient(135deg, #5c1522 0%, #2b0b12 60%, #160609 100%);
   --faculdade: #fff;
-  --raio: 26px;
+  --raio: 22px;
   /* Cor do brilho (sombras e destaques), em R, G, B. */
-  --brilho: 212, 240, 60;
+  --brilho: 236, 58, 82;
   --seguro-baixo: env(safe-area-inset-bottom, 0px);
   --seguro-topo: env(safe-area-inset-top, 0px);
 
@@ -4989,134 +4989,306 @@ a.botao-secundario {
   flex: none;
 }
 
-/* ---------- Tema grafite: ajustes ---------- */
 
-/* Cards em grafite com degradê suave e uma borda clara bem leve, como vidro escuro. */
-.card,
-.resumo-simples-card,
-.carrossel-card,
-.card-principal {
-  background: linear-gradient(180deg, #232326 0%, #161618 100%);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 40px rgba(0, 0, 0, 0.45);
+/* ---------- Tema vinho: tela do cartão como app de banco ---------- */
+
+/* Degradê vinho atrás do topo da tela, que some no preto. */
+.tela-carteira {
+  position: relative;
 }
 
-/* Títulos e números mais leves, como na referência. */
-h1 {
-  font-weight: 600;
-  letter-spacing: -0.02em;
+.carteira-fundo {
+  position: absolute;
+  inset: -120px -16px auto;
+  height: 520px;
+  background: radial-gradient(90% 70% at 50% 0%, rgba(122, 22, 40, 0.75) 0%, rgba(60, 10, 20, 0.45) 45%, transparent 75%);
+  pointer-events: none;
+  z-index: 0;
 }
 
-.secao h2,
-.resumo-titulo,
-.limites-topo h2 {
-  font-weight: 500;
+.tela-carteira > * {
+  position: relative;
+  z-index: 1;
 }
 
-.valor-grande,
-.resumo-simples-total strong {
-  font-weight: 700;
-  letter-spacing: -0.03em;
-}
-
-/* Botões principais: pílula verde-limão com texto escuro. */
-.botao-principal,
-.botao-lancar,
-.botao-mais,
-.botao-posso {
-  color: #111;
-  border-radius: 999px;
-}
-
-.botao-principal {
-  background: linear-gradient(180deg, #e2fb5a 0%, #c3e02c 100%);
-  box-shadow: 0 10px 30px rgba(212, 240, 60, 0.25);
-}
-
-.botao-secundario,
-.botao-detalhes,
-.atalho {
-  background: #232326;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 999px;
-}
-
-/* Selo verde-limão com bolinha, como o "30% Better". */
-.telemetria-selo {
-  display: inline-flex;
+.carteira-linha {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.carteira-linha h1 {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* Saldo grande e centralizado, com os centavos em cinza. */
+.carteira-saldo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-top: 14px;
+  text-align: center;
+}
+
+.carteira-saldo small {
+  font-size: 14px;
+  color: var(--texto-2);
+}
+
+.carteira-saldo .valor-grande {
+  font-size: 54px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+}
+
+.carteira-saldo .valor-grande .valor-moeda {
+  font-size: 22px;
+  color: var(--texto-2);
+  margin-right: 6px;
+}
+
+.carteira-saldo .valor-grande sup {
+  color: #5d5d64;
+  font-size: 54px;
+  vertical-align: baseline;
+  top: 0;
+}
+
+.carteira-saldo .valor-grande.negativo {
+  color: var(--negativo);
+}
+
+/* Faixa logo abaixo do saldo (carteiras do Caju ou gasto/recebido do Nubank), como a "My card". */
+.carteira-faixa {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 8px -26px;
+  padding: 12px 18px 34px;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(90deg, #6a1828 0%, #3e0e18 100%);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.carteira-faixa b {
+  margin-left: 4px;
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Fileira de botões redondos (o primeiro, vermelho), num card de vidro escuro. */
+.carteira-acoes {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px;
-  background: #232326 !important;
-  color: #fff !important;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 16px 10px 14px;
+  border-radius: 24px;
+  background: rgba(26, 22, 24, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
 }
 
-.telemetria-selo::before {
-  content: '';
-  width: 7px;
-  height: 7px;
+.carteira-acao {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #d4d4d8;
+}
+
+.carteira-acao > span {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
   border-radius: 50%;
-  background: var(--vermelho);
+  background: #2a2a2e;
+  color: #fff;
+  transition: scale 0.3s cubic-bezier(0.3, 1.6, 0.5, 1);
 }
 
-.telemetria-selo.ruim::before {
-  background: var(--negativo);
+.carteira-acao.principal > span {
+  background: linear-gradient(180deg, #ff5168 0%, #e0263f 100%);
+  box-shadow: 0 8px 22px rgba(236, 58, 82, 0.45);
 }
 
-/* Cabeçalho: área ativa em verde-limão, linha discreta. */
+.carteira-acao:active > span {
+  scale: 0.9;
+  transition-duration: 0.08s;
+}
+
+/* Card em destaque vinho (cofrinho ou lembrete), como o do cashback. */
+.carteira-aviso {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  border-radius: 22px;
+  background: linear-gradient(100deg, #4a111c 0%, #26090f 70%, #1a0709 100%);
+  border: 1px solid rgba(255, 92, 112, 0.18);
+  text-align: left;
+  color: #fff;
+}
+
+.carteira-aviso > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.carteira-aviso strong {
+  font-size: 15px;
+}
+
+.carteira-aviso small {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.carteira-aviso-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ff7a8a;
+}
+
+/* Card dos últimos gastos, com "Ver tudo" em vermelho. */
+.carteira-gastos {
+  padding: 16px 14px 6px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.carteira-gastos-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 0 4px 6px;
+}
+
+.carteira-gastos-topo h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.carteira-gastos-topo a {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--pastel-azul);
+}
+
+.carteira-gastos ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.carteira-gasto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 4px;
+  text-align: left;
+  color: #fff;
+}
+
+.carteira-gasto .linha-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: #222226;
+}
+
+.carteira-gasto-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.carteira-gasto-texto strong {
+  font-size: 15px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.carteira-gasto-texto small,
+.carteira-gasto-valor small {
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.carteira-gasto-valor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.carteira-gasto-valor strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Cabeçalho e barra de baixo combinando com o vinho. */
 .cabecalho {
-  border-bottom-color: var(--borda);
+  border-bottom-color: transparent;
 }
 
 .cabecalho-marca small {
-  color: var(--vermelho);
+  color: #ff7a8a;
 }
 
 .cabecalho-nav a.ativo {
   color: #fff;
-  box-shadow: inset 0 -2px 0 var(--vermelho);
 }
 
-/* Barra Nubank/Caju em vidro escuro, com a aba ativa em verde-limão. */
 .barra-abas {
-  background: rgba(24, 24, 26, 0.92);
+  background: rgba(24, 22, 23, 0.9);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.barra-abas a.active {
-  color: #111;
-}
-
-.botao-detalhes svg,
-.link-extrato-icone,
-.atalho svg,
-.cofrinho-selo,
-.resumo-simples-cofrinho > svg:first-child {
-  color: var(--vermelho);
+.botao-principal,
+.botao-lancar,
+.botao-mais {
+  color: #fff;
 }
 
 .link-extrato-icone,
 .cofrinho-selo {
-  background: rgba(212, 240, 60, 0.1);
+  background: rgba(236, 58, 82, 0.14);
+  color: #ff7a8a;
 }
 
-.linha-icone {
-  border-radius: 50%;
-  background: #232326;
+.tela-carteira > .carteira-fundo {
+  position: absolute;
+  z-index: 0;
 }
 
-/* Barras do mês no degradê verde-limão. */
-.card-principal .barra span:first-child,
-.limite-barra span {
-  background: linear-gradient(90deg, #c3e02c, #e2fb5a);
-}
-
-.card-principal .barra {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-/* Sem o brilho diagonal antigo nos cards de destaque. */
-.card-principal::before,
-.carrossel-card::before {
-  display: none;
+/* Aba ativa da barra de baixo: pílula grafite, como a "Home" da referência. */
+.barra-abas a.active,
+.barra-abas a.aba-nubank.active,
+.barra-abas a.aba-caju.active {
+  background: #2c2c31;
+  color: #fff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
