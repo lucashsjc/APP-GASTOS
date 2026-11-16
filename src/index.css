@@ -5655,3 +5655,10 @@ html,
 body {
   overscroll-behavior-y: none;
 }
+
+/* O botão de salvar fica no fim do formulário (aparece quando você desce a folha). */
+.form-gasto > .botao-principal:last-child {
+  position: static;
+  box-shadow: none;
+  margin-top: 8px;
+}
