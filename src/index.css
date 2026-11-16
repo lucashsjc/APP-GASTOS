@@ -5612,3 +5612,46 @@ a.botao-secundario {
   border-radius: 6px;
   object-fit: contain;
 }
+
+/* ---------- Celular: folhas por cima da barra e rolagem mais leve ---------- */
+
+/* Com uma folha aberta (novo gasto, editar…), a barra de baixo some e não cobre o botão de salvar. */
+body.com-folha .barra-principal {
+  display: none;
+}
+
+.folha-fundo {
+  z-index: 50;
+}
+
+/* A folha cabe na tela do iPhone mesmo com a barra do Safari aparecendo. */
+.folha {
+  max-height: 92vh;
+  max-height: 92dvh;
+  padding-bottom: calc(var(--seguro-baixo) + 28px);
+}
+
+/* Espaço no fim de cada tela para o último item não ficar atrás da barra de baixo. */
+.conteudo {
+  padding-bottom: calc(var(--seguro-baixo) + 130px);
+}
+
+/* Cards grandes não encolhem ao tocar: deixava a rolagem "travando" no celular.
+   Só os botões continuam reagindo ao toque. */
+.card:active,
+.carrossel-card:active {
+  scale: none;
+  box-shadow: none;
+}
+
+/* Desfoque mais leve na barra de baixo (o desfoque forte deixa a rolagem pesada no iPhone). */
+.barra-principal {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  background: rgba(24, 22, 24, 0.94);
+}
+
+html,
+body {
+  overscroll-behavior-y: none;
+}
