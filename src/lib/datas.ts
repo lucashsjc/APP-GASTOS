@@ -111,3 +111,10 @@ export function numeroDoMes(nome: string): number | null {
 export function semAcento(texto: string): string {
   return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
 }
+
+/** Dias entre duas datas AAAA-MM-DD (negativo se `ate` vem antes de `de`). */
+export function diasEntre(de: string, ate: string): number {
+  const [a1, m1, d1] = de.split('-').map(Number)
+  const [a2, m2, d2] = ate.split('-').map(Number)
+  return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / 86_400_000)
+}

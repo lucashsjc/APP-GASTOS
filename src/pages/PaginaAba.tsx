@@ -28,8 +28,9 @@ import {
   resumoPagamento,
   type Certo,
 } from '../lib/calculos'
-import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes } from '../lib/datas'
+import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes, somarMeses } from '../lib/datas'
 import { resumoCofrinho } from '../lib/cofrinho'
+import { faturaDoMes } from '../lib/fatura'
 import { formatarReais } from '../lib/dinheiro'
 
 const NOMES: Record<Aba, string> = { nubank: 'Nubank', caju: 'Caju' }
@@ -356,6 +357,8 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
         </Link>
       </nav>
 
+      {aba === 'nubank' && <CardFatura />}
+
       <AvisoCarteira aba={aba} aoDepositar={() => setFolhaValor('deposito')} aoEditarRecebido={() => setFolhaValor('recebido')} />
 
       <section className="card carteira-gastos">
@@ -452,6 +455,49 @@ function SaldoCarteira({ aba }: { aba: Aba }) {
         <Logo aba="caju" tamanho={22} />
       </Link>
     </>
+  )
+}
+
+/**
+ * A fatura do Nubank: a do mês aberto (fecha dia 1, vence dia 8 do mês seguinte). No mês atual, se a
+ * fatura do mês passado já fechou e ainda não foi paga nem venceu, ela aparece primeiro.
+ */
+function CardFatura() {
+  const { dados, hoje, mes } = useEstado()
+  const atual = faturaDoMes(dados, mes, hoje)
+  const anterior = mes === mesDe(hoje) ? faturaDoMes(dados, somarMeses(mes, -1), hoje) : null
+  const pendenteAnterior = anterior && anterior.total > 0 && !anterior.paga && anterior.diasParaVencer >= 0 ? anterior : null
+  const f = pendenteAnterior ?? atual
+  const estado = f.paga ? 'Paga' : f.fechada ? (f.diasParaVencer < 0 ? 'Vencida' : 'Fechada') : 'Aberta'
+  const detalhe = f.paga
+    ? `Venceu em ${dataCurta(f.vence)}`
+    : f.fechada
+      ? f.diasParaVencer === 0
+        ? 'Vence hoje'
+        : f.diasParaVencer > 0
+          ? `Vence em ${f.diasParaVencer} ${f.diasParaVencer === 1 ? 'dia' : 'dias'} (${dataCurta(f.vence)})`
+          : `Venceu em ${dataCurta(f.vence)}`
+      : `Fecha ${dataCurta(f.fecha)} · vence ${dataCurta(f.vence)}`
+  return (
+    <Link to="/nubank/extrato" className="card card-fatura">
+      <div className="card-fatura-topo">
+        <span>Fatura de {nomeDoMes(f.mes)}</span>
+        <span className={`fatura-estado fatura-${estado.toLowerCase()}`}>{estado}</span>
+      </div>
+      <strong className="card-fatura-valor">{formatarReais(f.total)}</strong>
+      <small>{detalhe}</small>
+      {pendenteAnterior ? (
+        <small className="card-fatura-proxima">
+          Fatura de {nomeDoMes(mes)} (aberta): {formatarReais(atual.total)}
+        </small>
+      ) : (
+        f.proxima > 0 && (
+          <small className="card-fatura-proxima">
+            Já lançado para a próxima ({nomeDoMes(somarMeses(f.mes, 1))}): {formatarReais(f.proxima)}
+          </small>
+        )
+      )}
+    </Link>
   )
 }
 

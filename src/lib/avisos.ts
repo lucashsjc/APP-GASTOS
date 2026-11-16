@@ -4,7 +4,8 @@
 import type { Aba, Dados } from '../data/types'
 import { depositosDoMes, recebidoDoMes } from './calculos'
 import { resumoCofrinho } from './cofrinho'
-import { diaDe, diasNoMes, mesDe } from './datas'
+import { dataCurta, diaDe, diasNoMes, mesDe, somarMeses } from './datas'
+import { faturaDoMes } from './fatura'
 import { formatarReais } from './dinheiro'
 import { usoDosLimites } from './extras'
 import { ritmoDoMes } from './ritmo'
@@ -70,6 +71,23 @@ export function avisosDinheiro(dados: Dados, hoje: string): AvisoDinheiro[] {
       texto: `Faltam ${formatarReais(cofre.meta - Math.max(0, cofre.noMes))} para a meta de guardar deste mês`,
       rota: '/cofrinho',
       grave: false,
+    })
+  }
+
+  // Fatura do Nubank fechada e não paga: avisa nos 5 dias antes de vencer (e se venceu).
+  const fatura = faturaDoMes(dados, somarMeses(mes, -1), hoje)
+  if (fatura.total > 0 && !fatura.paga && fatura.diasParaVencer <= 5 && fatura.diasParaVencer >= -3) {
+    avisos.push({
+      chave: 'fatura',
+      titulo: `Fatura do Nubank · ${formatarReais(fatura.total)}`,
+      texto:
+        fatura.diasParaVencer > 0
+          ? `Vence em ${fatura.diasParaVencer} ${fatura.diasParaVencer === 1 ? 'dia' : 'dias'} (${dataCurta(fatura.vence)})`
+          : fatura.diasParaVencer === 0
+            ? 'Vence hoje'
+            : `Venceu em ${dataCurta(fatura.vence)}. Já pagou? Marque os gastos como pagos.`,
+      rota: '/nubank',
+      grave: fatura.diasParaVencer <= 1,
     })
   }
 

@@ -5662,3 +5662,66 @@ body {
   box-shadow: none;
   margin-top: 8px;
 }
+
+/* ---------- Fatura do Nubank ---------- */
+
+.card-fatura {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-decoration: none;
+}
+
+.card-fatura-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.card-fatura-valor {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.card-fatura small {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.card-fatura-proxima {
+  margin-top: 6px;
+  padding-top: 8px;
+  border-top: 1px solid var(--borda);
+}
+
+.fatura-estado {
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #26262a;
+  color: #fff;
+}
+
+.fatura-fechada {
+  background: rgba(255, 194, 71, 0.15);
+  color: var(--ambar);
+}
+
+.fatura-vencida {
+  background: rgba(255, 81, 72, 0.15);
+  color: var(--negativo);
+}
+
+.fatura-paga {
+  background: rgba(63, 208, 122, 0.15);
+  color: var(--verde);
+}

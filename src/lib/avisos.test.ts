@@ -67,3 +67,12 @@ describe('avisos de dinheiro', () => {
     expect(avisosDinheiro(d, '2026-11-10')).toEqual([])
   })
 })
+
+describe('aviso da fatura', () => {
+  it('avisa nos 5 dias antes de vencer a fatura do mês passado', () => {
+    const d = dados()
+    // Fatura de novembro: fecha 01/12, vence 08/12.
+    expect(avisosDinheiro(d, '2026-12-04').find((a) => a.chave === 'fatura')?.texto).toBe('Vence em 4 dias (08/12)')
+    expect(avisosDinheiro(d, '2026-12-01').find((a) => a.chave === 'fatura')).toBeUndefined()
+  })
+})
