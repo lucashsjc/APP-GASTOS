@@ -14,7 +14,7 @@ import {
   lembrarPorDescricao,
   planejarEdicaoRecorrencia,
 } from '../lib/calculos'
-import { CATEGORIAS, sugerirCategoria, sugestoesDeCategoria } from '../lib/categorias'
+import { CATEGORIAS, sugerirCategoria } from '../lib/categorias'
 import { dataCurta, dataNoMes, diaDe, diasNoMes, horaSP, mesDe, nomeDoMes, somarMeses, tituloDoMes } from '../lib/datas'
 import { formatarReais, lerReais } from '../lib/dinheiro'
 import { Folha } from './Folha'
@@ -309,8 +309,6 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
           </div>
     ) : null
 
-  const sugestoesCat = sugestoesDeCategoria(descricao)
-
   const titulo = recEditada
     ? 'Editar gasto de todo mês'
     : gastoEditado
@@ -571,29 +569,8 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
 
         <div className="campo">
           <span>Categoria</span>
-          {sugestoesCat.length > 0 && (
-            <>
-              <small className="sugestoes-titulo">Sugestões para “{descricao.trim()}”</small>
-              <div className="chips chips-categorias chips-sugeridas">
-                {sugestoesCat.map((nome) => (
-                  <button
-                    key={nome}
-                    type="button"
-                    className={`chip chip-categoria chip-sugerida${categoria === nome ? ' ativo' : ''}`}
-                    onClick={() => {
-                      setCategoria(nome)
-                      setCategoriaEscolhida(true)
-                    }}
-                  >
-                    <IconeCategoria nome={nome} tamanho={15} /> {nome}
-                  </button>
-                ))}
-              </div>
-              <small className="sugestoes-titulo">Todas</small>
-            </>
-          )}
           <div className="chips chips-categorias">
-            {CATEGORIAS.filter((c) => !sugestoesCat.includes(c.nome)).map((c) => (
+            {CATEGORIAS.map((c) => (
               <button
                 key={c.nome}
                 type="button"

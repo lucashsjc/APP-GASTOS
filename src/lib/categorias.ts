@@ -15,13 +15,6 @@ export const CATEGORIAS: Categoria[] = [
   { nome: 'Saúde', cor: '#f5cbc6' },
   { nome: 'Lazer', cor: '#c6ecea' },
   { nome: 'Presentes', cor: '#f6dcc6' },
-  { nome: 'Vestuário', cor: '#e9c9f2' },
-  { nome: 'Acessórios', cor: '#f2e2b6' },
-  { nome: 'Eletrônicos', cor: '#c9d8f6' },
-  { nome: 'Educação', cor: '#cdeec0' },
-  { nome: 'Casa', cor: '#efd5c4' },
-  { nome: 'Beleza', cor: '#f6cfe0' },
-  { nome: 'Pets', cor: '#dfe8c4' },
   { nome: 'Outros', cor: '#d6d6db' },
 ]
 
@@ -49,32 +42,4 @@ const REGRAS: [RegExp, string][] = [
 export function sugerirCategoria(descricao: string): string {
   const texto = descricao.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
   return REGRAS.find(([regra]) => regra.test(texto))?.[1] ?? CATEGORIA_PADRAO
-}
-
-// Sugestões de categoria pelo nome do gasto: mais de uma opção para escolher (ex.: "Boné" →
-// Vestuário, Acessórios). Aparecem em destaque na hora de escolher a categoria.
-const SUGESTOES: [RegExp, string[]][] = [
-  [/\b(bone|chapeu|gorro|touca)\b/, ['Vestuário', 'Acessórios']],
-  [/\b(camiseta|camisa|blusa|moletom|jaqueta|casaco|calca|bermuda|short|roupa|meia|cueca|vestido|jaleco|uniforme)\b/, ['Vestuário']],
-  [/\b(tenis|sapato|chinelo|sandalia|bota)\b/, ['Vestuário', 'Acessórios']],
-  [/\b(relogio|oculos|pulseira|colar|anel|brinco|carteira|mochila|bolsa|cinto|capinha|case|pelicula)\b/, ['Acessórios']],
-  [/\b(fone|beats|airpods|celular|iphone|carregador|cabo|mouse|teclado|notebook|computador|monitor|ps5|playstation|xbox|controle|tablet|ipad|wi-?fi|roteador|tv|smartwatch|apple)\b/, ['Eletrônicos']],
-  [/\b(livro|apostila|curso|xerox|copia|caderno|caneta|lapis|faculdade|univap|mensalidade|material|matricula)\b/, ['Educação']],
-  [/\b(movel|cadeira|mesa|cama|travesseiro|lencol|toalha|panela|copo|prato|limpeza|lampada|cortina|decoracao)\b/, ['Casa']],
-  [/\b(perfume|shampoo|creme|maquiagem|barbearia|barbeiro|cabelo|corte|desodorante|skincare|hidratante)\b/, ['Beleza']],
-  [/\b(racao|pet|petshop|veterinario|vet|cachorro|gato)\b/, ['Pets']],
-  [/\b(presente|aniversario|lembranca)\b/, ['Presentes']],
-]
-
-/**
- * Até 3 categorias que combinam com o nome do gasto, da mais provável para a menos: as das
- * sugestões e a categoria automática (sem "Outros").
- */
-export function sugestoesDeCategoria(descricao: string): string[] {
-  const texto = descricao.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
-  if (texto.length < 2) return []
-  const lista: string[] = []
-  for (const [regra, cats] of SUGESTOES) if (regra.test(texto)) lista.push(...cats)
-  lista.push(sugerirCategoria(descricao))
-  return [...new Set(lista)].filter((c) => c !== CATEGORIA_PADRAO).slice(0, 3)
 }
