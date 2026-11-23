@@ -27,6 +27,7 @@ import {
   type Produto,
   type Resultado,
 } from './regras'
+import { sugerir_categorias } from './sugestoes'
 
 const CHAVE = 'stockpy'
 
@@ -153,6 +154,7 @@ export default function PaginaStockPy() {
 
       {folha === 'novo' && (
         <FolhaCadastro
+          categorias={[...new Set(estado.produtos.map((p) => p.categoria))]}
           aoFechar={() => setFolha(null)}
           aoSalvar={(p) => executar((e) => cadastrar_produto(e, p), `Produto '${p.nome}' cadastrado com sucesso!`)}
         />
@@ -160,6 +162,7 @@ export default function PaginaStockPy() {
       {folha && folha !== 'novo' && (
         <FolhaProduto
           produto={estado.produtos.find((p) => p.codigo === folha.codigo) ?? folha}
+          categorias={[...new Set(estado.produtos.map((p) => p.categoria))]}
           aoFechar={() => setFolha(null)}
           executar={executar}
         />
@@ -226,7 +229,33 @@ function AbaEstoque({ estado, abrir }: { estado: Estado; abrir: (p: Produto) => 
   )
 }
 
-function FolhaCadastro({ aoFechar, aoSalvar }: { aoFechar: () => void; aoSalvar: (p: Omit<Produto, 'vendidos'>) => boolean }) {
+/** Opções de categoria logo abaixo do campo: tocar preenche a categoria. */
+function OpcoesCategoria({ nome, atual, categorias, escolher }: { nome: string; atual: string; categorias: string[]; escolher: (c: string) => void }) {
+  const opcoes = sugerir_categorias(nome, categorias)
+  if (opcoes.length === 0) return null
+  return (
+    <div className="stockpy-opcoes">
+      <small>{nome.trim() ? `Opções para “${nome.trim()}”` : 'Categorias que você já usa'}</small>
+      <div className="chips">
+        {opcoes.map((op) => (
+          <button key={op} type="button" className={`chip${atual.trim().toLowerCase() === op.toLowerCase() ? ' ativo' : ''}`} onClick={() => escolher(op)}>
+            {op}
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function FolhaCadastro({
+  categorias,
+  aoFechar,
+  aoSalvar,
+}: {
+  categorias: string[]
+  aoFechar: () => void
+  aoSalvar: (p: Omit<Produto, 'vendidos'>) => boolean
+}) {
   const [c, setC] = useState({ codigo: '', nome: '', categoria: '', preco: '', quantidade: '0', minimo: '0' })
   const campo = (k: keyof typeof c, rotulo: string, modo: 'text' | 'numeric' | 'decimal' = 'text') => (
     <label className="campo">
@@ -255,6 +284,7 @@ function FolhaCadastro({ aoFechar, aoSalvar }: { aoFechar: () => void; aoSalvar:
         {campo('codigo', 'Código do produto', 'numeric')}
         {campo('nome', 'Nome do produto')}
         {campo('categoria', 'Categoria')}
+        <OpcoesCategoria nome={c.nome} atual={c.categoria} categorias={categorias} escolher={(cat) => setC({ ...c, categoria: cat })} />
         {campo('preco', 'Preço unitário de venda (R$)', 'decimal')}
         <div className="campos-lado">
           {campo('quantidade', 'Quantidade inicial', 'numeric')}
@@ -271,10 +301,12 @@ function FolhaCadastro({ aoFechar, aoSalvar }: { aoFechar: () => void; aoSalvar:
 /** Ficha do produto (requisito 3) com entrada no estoque (4), alterar (8) e excluir (9). */
 function FolhaProduto({
   produto,
+  categorias,
   aoFechar,
   executar,
 }: {
   produto: Produto
+  categorias: string[]
   aoFechar: () => void
   executar: (acao: (e: Estado) => Resultado, sucesso: string) => boolean
 }) {
@@ -311,6 +343,7 @@ function FolhaProduto({
                 <input value={c[k]} onChange={(e) => setC({ ...c, [k]: e.target.value })} />
               </label>
             ))}
+            <OpcoesCategoria nome={c.nome} atual={c.categoria} categorias={categorias} escolher={(cat) => setC({ ...c, categoria: cat })} />
             <div className="campos-lado">
               <label className="campo">
                 <span>Preço (R$)</span>

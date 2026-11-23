@@ -6167,3 +6167,7 @@ body {
 .pagina-stockpy .stockpy-entrada .botao-lancar {
   height: 48px;
 }
+
+/* StockPy: opções de categoria embaixo do campo */
+.stockpy-opcoes{display:flex;flex-direction:column;gap:6px;margin-top:-6px}
+.stockpy-opcoes small{color:var(--texto-suave, #9a9aa2);font-size:12px}
