@@ -5,6 +5,7 @@ import { ehAreaBanco } from '../lib/areas'
 import { resumoNubank, saldoCajuDoMes } from '../lib/calculos'
 import { mesDe } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
+import { escolherTela, useTela } from '../lib/tela'
 import {
   IconeAjustes,
   IconeBanco,
@@ -59,8 +60,10 @@ export function BotaoMenu() {
   )
 }
 
-function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
+/** O mesmo painel do menu: flutuante no celular, fixo ao lado no computador. */
+export function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
   const { pathname } = useLocation()
+  const tela = useTela()
   const { dados, hoje } = useEstado()
   const livre = resumoNubank(dados, mesDe(hoje), hoje).livre
   const saldoCaju = saldoCajuDoMes(dados, mesDe(hoje), hoje)
@@ -94,6 +97,32 @@ function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
           </li>
         ))}
       </ul>
+
+      <div className="menu-tela">
+        <small>Mostrar como</small>
+        <div className="segmentado pequeno" role="radiogroup" aria-label="Mostrar como">
+          {(
+            [
+              ['celular', 'Celular'],
+              ['pc', 'Computador'],
+            ] as const
+          ).map(([id, nome]) => (
+            <button
+              key={id}
+              type="button"
+              role="radio"
+              aria-checked={tela === id}
+              className={tela === id ? 'ativo' : ''}
+              onClick={() => {
+                escolherTela(id)
+                aoFechar()
+              }}
+            >
+              {nome}
+            </button>
+          ))}
+        </div>
+      </div>
 
       <Link to="/nubank" className="menu-resumo" onClick={aoFechar}>
         <small>Hoje</small>

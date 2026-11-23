@@ -15,6 +15,8 @@ import Busca from './pages/Busca'
 import Cofrinho from './pages/Cofrinho'
 import ProjetosUnivap from './pages/ProjetosUnivap'
 import PaginaStockPy from './stockpy/PaginaStockPy'
+import { PainelMenu } from './componentes/MenuLateral'
+import { useTela } from './lib/tela'
 import Desejos from './pages/Desejos'
 import ResumoMes from './pages/ResumoMes'
 import PaginaProjetos from './projetos/PaginaProjetos'
@@ -111,9 +113,21 @@ export default function App() {
         </main>
         <ErroEAviso />
         <BarraPrincipal />
+        <MenuFixo />
       </BrowserRouter>
       </ProvedorFaculdade>
     </ProvedorDeDados>
+  )
+}
+
+/** No modo computador o menu fica sempre aberto ao lado. */
+function MenuFixo() {
+  const tela = useTela()
+  if (tela !== 'pc') return null
+  return (
+    <aside className="menu-fixo">
+      <PainelMenu aoFechar={() => {}} />
+    </aside>
   )
 }
 

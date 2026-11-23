@@ -6172,3 +6172,89 @@ body {
 /* StockPy: opções de categoria embaixo do campo */
 .stockpy-opcoes{display:flex;flex-direction:column;gap:6px;margin-top:-6px}
 .stockpy-opcoes small{color:var(--texto-suave, #9a9aa2);font-size:12px}
+
+/* ---------- Mostrar como celular ou computador (escolha no menu) ---------- */
+
+.menu-tela {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: auto;
+  padding: 10px 4px 4px;
+}
+
+.menu-tela small {
+  color: var(--texto-suave, #9a9aa2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.menu-tela + .menu-resumo {
+  margin-top: 8px;
+}
+
+/* Computador: menu fixo à esquerda, conteúdo largo no resto da tela, sem a barra de baixo. */
+html[data-tela='pc'] body {
+  padding-left: 312px;
+}
+
+html[data-tela='pc'] .menu-fixo .menu-lateral {
+  position: fixed;
+  z-index: 15;
+  top: 12px;
+  bottom: 12px;
+  left: 12px;
+  width: 288px;
+  animation: none;
+  box-shadow: none;
+}
+
+html[data-tela='pc'] .conteudo {
+  max-width: 960px;
+  padding: 28px 32px 48px;
+}
+
+html[data-tela='pc'] .barra-principal,
+html[data-tela='pc'] .botao-menu {
+  display: none;
+}
+
+html[data-tela='pc'] .folha-fundo {
+  align-items: center;
+  padding-left: 312px;
+}
+
+html[data-tela='pc'] .folha {
+  max-width: 560px;
+  border-radius: 28px;
+  max-height: 88vh;
+}
+
+html[data-tela='pc'] .aviso-flutuante {
+  bottom: 32px;
+  left: calc(50% + 156px);
+}
+
+/* Computador: dois cards do Hoje lado a lado e o brilho vinho mais largo. */
+html[data-tela='pc'] .carrossel {
+  margin: 0;
+}
+
+html[data-tela='pc'] .carrossel-trilho {
+  padding: 0;
+}
+
+html[data-tela='pc'] .carrossel-card {
+  width: calc(50% - 6px);
+  scroll-snap-align: start;
+}
+
+html[data-tela='pc'] .carteira-fundo {
+  inset: -120px -240px auto;
+}
+
+/* Nas telas do Nubank e do Caju a folha (novo gasto) fica por cima de tudo, como nas outras telas. */
+.tela-carteira > .folha-fundo {
+  position: fixed;
+  z-index: 50;
+}
