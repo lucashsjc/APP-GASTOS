@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sugerirCategoria } from './categorias'
+import { sugerirCategoria, sugestoesDeCategoria } from './categorias'
 
 describe('categoria sugerida pelo nome', () => {
   it('reconhece os gastos mais comuns', () => {
@@ -30,5 +30,15 @@ describe('palavras novas (gastos do Lucas que caíam em Outros)', () => {
     expect(sugerirCategoria('Tauste')).toBe('Mercado')
     expect(sugerirCategoria('Boné')).toBe('Compras')
     expect(sugerirCategoria('Capinha')).toBe('Compras')
+  })
+})
+
+describe('sugestões de categoria pelo nome', () => {
+  it('dá mais de uma opção para escolher', () => {
+    expect(sugestoesDeCategoria('Boné')).toEqual(['Vestuário', 'Acessórios', 'Compras'])
+    expect(sugestoesDeCategoria('Fone bluetooth')).toEqual(['Eletrônicos'])
+    expect(sugestoesDeCategoria('Xerox')).toEqual(['Educação'])
+    expect(sugestoesDeCategoria('Uber')).toEqual(['Transporte'])
+    expect(sugestoesDeCategoria('Coisa qualquer')).toEqual([])
   })
 })

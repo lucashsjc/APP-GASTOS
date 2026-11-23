@@ -6167,3 +6167,20 @@ body {
 .pagina-stockpy .stockpy-entrada .botao-lancar {
   height: 48px;
 }
+
+/* Sugestões de categoria pelo nome do gasto. */
+.sugestoes-titulo {
+  display: block;
+  margin: 2px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--texto-2);
+}
+
+.chips-sugeridas {
+  margin-bottom: 10px;
+}
+
+.chip-sugerida:not(.ativo) {
+  border: 1px solid rgba(255, 92, 112, 0.45);
+}

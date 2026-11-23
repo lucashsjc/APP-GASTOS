@@ -136,6 +136,54 @@ export function IconeCategoria({ nome, tamanho = 20 }: { nome: string; tamanho?:
           <path d="M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9C10 5 6.5 5.5 7.5 8 8 9 12 9 12 9zM12 9c2-4 5.5-3.5 4.5-1-.5 1-4.5 1-4.5 1z" />
         </Svg>
       )
+    case 'Vestuário':
+      return (
+        <Svg {...p}>
+          <path d="M9 3 4 6l2 4 2-1v12h8V9l2 1 2-4-5-3c0 1.7-1.3 3-3 3S9 4.7 9 3z" />
+        </Svg>
+      )
+    case 'Acessórios':
+      return (
+        <Svg {...p}>
+          <circle cx="12" cy="12" r="5" />
+          <path d="M9.5 7.5 10 3h4l.5 4.5M9.5 16.5 10 21h4l.5-4.5M12 10v2l1.5 1" />
+        </Svg>
+      )
+    case 'Eletrônicos':
+      return (
+        <Svg {...p}>
+          <rect x="7" y="2.5" width="10" height="19" rx="2.5" />
+          <path d="M11 18.5h2" />
+        </Svg>
+      )
+    case 'Educação':
+      return (
+        <Svg {...p}>
+          <path d="M2 9l10-5 10 5-10 5zM6 11v5c3 2.5 9 2.5 12 0v-5M22 9v6" />
+        </Svg>
+      )
+    case 'Casa':
+      return (
+        <Svg {...p}>
+          <path d="M3 11 12 4l9 7M5 9.5V20h14V9.5M10 20v-6h4v6" />
+        </Svg>
+      )
+    case 'Beleza':
+      return (
+        <Svg {...p}>
+          <path d="M12 3l1.8 4.7L18.5 9l-4.7 1.8L12 15.5l-1.8-4.7L5.5 9l4.7-1.3zM18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z" />
+        </Svg>
+      )
+    case 'Pets':
+      return (
+        <Svg {...p}>
+          <circle cx="6" cy="10" r="1.8" />
+          <circle cx="10" cy="6" r="1.8" />
+          <circle cx="14" cy="6" r="1.8" />
+          <circle cx="18" cy="10" r="1.8" />
+          <path d="M12 12c-3 0-5.5 3.2-5.5 5.5 0 1.6 1.5 2.5 3 2 1.6-.5 3.4-.5 5 0 1.5.5 3-.4 3-2C17.5 15.2 15 12 12 12z" />
+        </Svg>
+      )
     case 'Depósito':
       return (
         <Svg {...p}>
