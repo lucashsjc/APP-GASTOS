@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Folha } from '../componentes/Folha'
 import { IconeMais } from '../componentes/icones'
 import { BotaoMenu } from '../componentes/MenuLateral'
@@ -69,6 +70,17 @@ export default function ProjetosUnivap() {
           ))}
         </nav>
       </header>
+
+      <Link to="/univap/stockpy" className="card cartao-app">
+        <span className="cartao-app-icone" aria-hidden="true">
+          📦
+        </span>
+        <span className="cartao-app-texto">
+          <strong>StockPy</strong>
+          <small>Desafio 2 · Algoritmos e Programação · abrir o app</small>
+        </span>
+        <span className="cartao-app-abrir">Abrir</span>
+      </Link>
 
       {carregando ? (
         <p className="vazio">Carregando…</p>

@@ -14,6 +14,7 @@ import Assinaturas from './pages/Assinaturas'
 import Busca from './pages/Busca'
 import Cofrinho from './pages/Cofrinho'
 import ProjetosUnivap from './pages/ProjetosUnivap'
+import PaginaStockPy from './stockpy/PaginaStockPy'
 import Desejos from './pages/Desejos'
 import ResumoMes from './pages/ResumoMes'
 import PaginaProjetos from './projetos/PaginaProjetos'
@@ -84,6 +85,7 @@ export default function App() {
             <Route path="/busca" element={<Busca />} />
             <Route path="/cofrinho" element={<Cofrinho />} />
             <Route path="/univap" element={<ProjetosUnivap />} />
+            <Route path="/univap/stockpy" element={<PaginaStockPy />} />
             <Route path="/compras-futuras" element={<Desejos />} />
             <Route path="/assinaturas" element={<Assinaturas />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />

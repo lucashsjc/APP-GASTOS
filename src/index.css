@@ -5859,3 +5859,311 @@ body {
   background: var(--vermelho);
   color: #fff;
 }
+
+/* ---------- StockPy (Desafio 2) ---------- */
+
+.cartao-app {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(100deg, #4a111c 0%, #26090f 70%, #1a0709 100%) !important;
+  border: 1px solid rgba(255, 92, 112, 0.18);
+}
+
+.cartao-app-icone {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 24px;
+}
+
+.cartao-app-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cartao-app-texto strong {
+  font-size: 17px;
+}
+
+.cartao-app-texto small {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.cartao-app-abrir {
+  flex: none;
+  padding: 7px 14px;
+  border-radius: 99px;
+  background: var(--vermelho);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.stockpy-sub {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.stockpy-mais {
+  background: var(--vermelho);
+  color: #fff;
+}
+
+.stockpy-abas {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.stockpy-abas .chip {
+  flex: none;
+}
+
+.stockpy-aviso {
+  padding: 10px 14px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.stockpy-aviso.ok {
+  background: rgba(63, 208, 122, 0.12);
+  color: var(--verde);
+}
+
+.stockpy-aviso.erro {
+  background: rgba(255, 81, 72, 0.12);
+  color: var(--negativo);
+}
+
+.stockpy-filtro {
+  font-size: 14px;
+}
+
+.stockpy-produto {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  text-align: left;
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stockpy-codigo {
+  flex: none;
+  min-width: 44px;
+  padding: 6px 8px;
+  border-radius: 10px;
+  background: #222226;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.stockpy-produto-texto {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stockpy-produto-texto strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.stockpy-produto-texto small {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.stockpy-produto-qtd {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.stockpy-produto-qtd strong {
+  font-size: 20px;
+}
+
+.stockpy-situacao {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.stockpy-situacao.ok {
+  color: var(--verde);
+}
+
+.stockpy-situacao.baixo {
+  color: var(--ambar);
+}
+
+.stockpy-situacao.sem {
+  color: var(--negativo);
+}
+
+.stockpy-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stockpy-ficha-linha {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 14px;
+}
+
+.stockpy-ficha-linha span {
+  color: var(--texto-2);
+}
+
+.stockpy-ficha-linha strong {
+  text-align: right;
+}
+
+.stockpy-entrada {
+  display: flex;
+  gap: 8px;
+}
+
+.stockpy-entrada input {
+  flex: 1;
+  min-width: 0;
+}
+
+.stockpy-venda {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stockpy-total {
+  font-size: 15px;
+}
+
+.stockpy-kpis {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stockpy-kpis div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stockpy-kpis small {
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.stockpy-kpis strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stockpy-matriz {
+  overflow-x: auto;
+  border-radius: 16px;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stockpy-matriz table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.stockpy-matriz th,
+.stockpy-matriz td {
+  padding: 9px 8px;
+  text-align: right;
+  border-bottom: 1px solid var(--borda);
+  white-space: nowrap;
+}
+
+.stockpy-matriz th:first-child,
+.stockpy-matriz td:first-child {
+  text-align: left;
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stockpy-matriz th {
+  color: var(--texto-2);
+  font-weight: 600;
+}
+
+.stockpy-matriz td.cheio {
+  color: #ff7a8a;
+  font-weight: 700;
+}
+
+.stockpy-matriz tfoot td {
+  font-weight: 700;
+  border-bottom: 0;
+}
+
+.stockpy-ranking {
+  padding: 0;
+}
+
+.stockpy-rodape {
+  display: flex;
+  justify-content: center;
+  gap: 22px;
+}
+
+.stockpy-rodape .botao-texto {
+  color: var(--texto-2);
+}
+
+/* Campos do StockPy com o mesmo visual dos formulários do app. */
+.pagina-stockpy input:not([type='checkbox']),
+.pagina-stockpy select {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--borda);
+  background: #18181b;
+  color: #fff;
+  font-size: 16px;
+  outline: none;
+}
+
+.pagina-stockpy input:focus,
+.pagina-stockpy select:focus {
+  border-color: #ff7a8a;
+}
+
+.pagina-stockpy .stockpy-entrada .botao-lancar {
+  height: 48px;
+}
