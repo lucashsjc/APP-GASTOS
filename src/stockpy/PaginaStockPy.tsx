@@ -35,9 +35,10 @@ function ler(): Estado {
     const salvo = localStorage.getItem(CHAVE)
     if (salvo) return { ...ESTADO_VAZIO, ...JSON.parse(salvo) }
   } catch {
-    // sem armazenamento: começa com a loja de exemplo
+    // sem armazenamento: começa vazio
   }
-  return exemploStockPy()
+  // Como o StockPy.py: começa sem nenhum produto (a lista `produtos = []`).
+  return structuredClone(ESTADO_VAZIO)
 }
 
 function gravar(e: Estado) {
@@ -130,10 +131,10 @@ export default function PaginaStockPy() {
             const e = exemploStockPy()
             setEstado(e)
             gravar(e)
-            setAviso({ texto: 'Loja de exemplo restaurada.', erro: false })
+            setAviso({ texto: 'Loja de exemplo carregada (5 produtos e algumas vendas).', erro: false })
           }}
         >
-          Restaurar exemplo
+          Carregar exemplo
         </button>
         <button
           type="button"
