@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { Repo } from './repo'
-import type { Deposito, Desejo, Gasto, Guardado, Limite, Recebido, Recorrencia } from './types'
+import type { Deposito, Desejo, Gasto, Guardado, Limite, ProjetoUnivap, Recebido, Recorrencia } from './types'
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined
 const chave = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined
@@ -184,6 +184,22 @@ export function criarRepoSupabase(): Repo {
     }
   }
 
+  /** Projetos da UNIVAP. Antes do 017_projetos_univap.sql a tabela não existe: vem vazio. */
+  async function lerProjetos(): Promise<ProjetoUnivap[]> {
+    const { data, error } = await db
+      .from('projetos_univap')
+      .select('id, nome, materia, grupo, status, entrega, observacao')
+      .order('criado_em')
+    if (error && tabelaFalta(error)) return []
+    erro(error)
+    return (data ?? []) as ProjetoUnivap[]
+  }
+
+  function erroDosProjetos(e: { code?: string; message: string } | null) {
+    if (tabelaFalta(e)) throw new Error('Para usar Projetos UNIVAP, rode o supabase/017_projetos_univap.sql no Supabase (e feche e abra o app).')
+    erro(e)
+  }
+
   function tabelaFalta(e: { code?: string } | null) {
     return e?.code === 'PGRST205' || e?.code === '42P01'
   }
@@ -202,13 +218,14 @@ export function criarRepoSupabase(): Repo {
 
   return {
     async carregar() {
-      const [gastos, recorrencias, recebidos, depositos, limites, cofrinho] = await Promise.all([
+      const [gastos, recorrencias, recebidos, depositos, limites, cofrinho, projetos] = await Promise.all([
         tudo<Gasto>('gastos'),
         tudo<Recorrencia>('recorrencias'),
         tudo<Recebido>('recebidos'),
         tudo<Deposito>('depositos'),
         lerLimites(),
         lerCofrinho(),
+        lerProjetos(),
       ])
       return {
         gastos: gastos.map((g) => ({ ...comPadroes(g), pago: g.pago ?? false, mes_conta: g.mes_conta ?? null, hora: g.hora ? g.hora.slice(0, 5) : null, carteira: g.carteira ?? null })),
@@ -219,6 +236,7 @@ export function criarRepoSupabase(): Repo {
         guardados: cofrinho.guardados,
         metaGuardar: cofrinho.meta,
         desejos: cofrinho.desejos,
+        projetos,
       }
     },
 
@@ -300,6 +318,17 @@ export function criarRepoSupabase(): Repo {
     async excluirDesejo(id) {
       const { error } = await db.from('desejos').delete().eq('id', id)
       erroDoCofrinho(error)
+    },
+
+    async salvarProjeto(dados, id) {
+      const { error } = id
+        ? await db.from('projetos_univap').update(dados).eq('id', id)
+        : await db.from('projetos_univap').insert(dados)
+      erroDosProjetos(error)
+    },
+    async excluirProjeto(id) {
+      const { error } = await db.from('projetos_univap').delete().eq('id', id)
+      erroDosProjetos(error)
     },
 
     async salvarLimite(aba, categoria, valorCentavos) {

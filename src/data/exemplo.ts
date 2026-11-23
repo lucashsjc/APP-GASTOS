@@ -170,6 +170,11 @@ export function dadosDeExemplo(hoje: string): Dados {
       { id: id(), mes: somarMeses(inicio, 0), valor_centavos: 25000, tipo: 'guardar' as const, descricao: 'Caixinha' },
     ],
     metaGuardar: 20000,
+    projetos: [
+      { id: id(), nome: 'Sistema de biblioteca', materia: 'Programação Web', grupo: 'Lucas, Ana, Pedro', status: 'andamento' as const, entrega: dataNoMes(somarMeses(atual, 1), 5), observacao: 'Front em React, eu fico com o login' },
+      { id: id(), nome: 'Relatório de laboratório', materia: 'Física I', grupo: 'Lucas, João', status: 'a_fazer' as const, entrega: dataNoMes(atual, 28), observacao: '' },
+      { id: id(), nome: 'Lista de exercícios em grupo', materia: 'Cálculo I', grupo: 'Lucas, Marina', status: 'entregue' as const, entrega: dataNoMes(atual, 3), observacao: '' },
+    ],
     desejos: [
       { id: id(), nome: 'Tênis de corrida', valor_centavos: 39990 },
       { id: id(), nome: 'Fone bluetooth', valor_centavos: 120000 },

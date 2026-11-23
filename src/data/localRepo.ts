@@ -116,6 +116,16 @@ export function criarRepoLocal(): Repo {
       alterar((d) => (d.desejos = (d.desejos ?? []).filter((x) => x.id !== id)))
     },
 
+    async salvarProjeto(dados, id) {
+      alterar((d) => {
+        const lista = d.projetos ?? []
+        d.projetos = id ? lista.map((x) => (x.id === id ? { ...x, ...dados } : x)) : [...lista, { ...dados, id: crypto.randomUUID() }]
+      })
+    },
+    async excluirProjeto(id) {
+      alterar((d) => (d.projetos = (d.projetos ?? []).filter((x) => x.id !== id)))
+    },
+
     async restaurarExemplo() {
       gravar(dadosDeExemplo(hojeSP()))
     },

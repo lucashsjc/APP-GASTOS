@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Cabecalho } from './componentes/Cabecalho'
 import { BrowserRouter, Link, Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom'
 import type { Session } from '@supabase/supabase-js'
-import { IconeFaculdade, IconeHoje, Logo } from './componentes/icones'
+import { IconeFaculdade, IconeHoje, IconeProjetos, Logo } from './componentes/icones'
 import { modoDemonstracao } from './data/repo'
 import { supabase } from './data/supabaseRepo'
 import { ProvedorDeDados, useEstado } from './estado'
@@ -13,6 +13,7 @@ import Ajustes from './pages/Ajustes'
 import Assinaturas from './pages/Assinaturas'
 import Busca from './pages/Busca'
 import Cofrinho from './pages/Cofrinho'
+import ProjetosUnivap from './pages/ProjetosUnivap'
 import Desejos from './pages/Desejos'
 import ResumoMes from './pages/ResumoMes'
 import PaginaProjetos from './projetos/PaginaProjetos'
@@ -82,6 +83,7 @@ export default function App() {
             <Route path="/caju/resumo" element={<ResumoMes aba="caju" />} />
             <Route path="/busca" element={<Busca />} />
             <Route path="/cofrinho" element={<Cofrinho />} />
+            <Route path="/univap" element={<ProjetosUnivap />} />
             <Route path="/compras-futuras" element={<Desejos />} />
             <Route path="/assinaturas" element={<Assinaturas />} />
             <Route path="/ajustes" element={<Ajustes email={sessao?.user.email ?? null} />} />
@@ -133,6 +135,7 @@ function BarraPrincipal() {
     { rota: '/nubank', nome: 'Nubank', ativo: doNubank, icone: <Logo aba="nubank" tamanho={24} /> },
     { rota: '/caju', nome: 'Caju', ativo: pathname.startsWith('/caju'), icone: <Logo aba="caju" tamanho={24} /> },
     { rota: '/faculdade', nome: 'Faculdade', ativo: pathname.startsWith('/faculdade'), icone: <IconeFaculdade tamanho={22} /> },
+    { rota: '/univap', nome: 'UNIVAP', ativo: pathname.startsWith('/univap'), icone: <IconeProjetos tamanho={22} /> },
   ]
   if (pathname.startsWith('/ajustes') || pathname.startsWith('/projetos') || pathname.startsWith('/trabalho')) return null
   return (

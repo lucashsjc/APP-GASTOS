@@ -20,6 +20,7 @@ import {
 const AREAS = [
   { rota: '/', nome: 'Hoje', Icone: IconeHoje },
   { rota: '/faculdade', nome: 'Faculdade', Icone: IconeFaculdade },
+  { rota: '/univap', nome: 'Projetos UNIVAP', Icone: IconeProjetos },
   { rota: '/trabalho', nome: 'Trabalho', Icone: IconeTrabalho },
   { rota: '/nubank', nome: 'Banco', Icone: IconeBanco },
   { rota: '/projetos', nome: 'Projetos', Icone: IconeProjetos },

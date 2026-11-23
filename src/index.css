@@ -5725,3 +5725,137 @@ body {
   background: rgba(63, 208, 122, 0.15);
   color: var(--verde);
 }
+
+/* ---------- Projetos UNIVAP ---------- */
+
+.barra-principal {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.barra-principal a {
+  font-size: 10.5px;
+}
+
+.univap-resumo {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin: 4px 0 2px;
+}
+
+.univap-resumo div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 12px 6px;
+  border-radius: 18px;
+  background: var(--card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.univap-resumo strong {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.univap-resumo small {
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.cartao-projeto {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.cartao-projeto.status-entregue {
+  opacity: 0.6;
+}
+
+.cartao-projeto-corpo {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  color: #fff;
+}
+
+.cartao-projeto-corpo strong {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.cartao-projeto-corpo small {
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.projeto-obs {
+  font-style: italic;
+}
+
+.projeto-prazo {
+  align-self: flex-start;
+  margin-top: 4px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #26262a;
+  color: #fff;
+}
+
+.projeto-prazo.prazo-perto {
+  background: rgba(255, 194, 71, 0.15);
+  color: var(--ambar);
+}
+
+.projeto-prazo.prazo-atrasado {
+  background: rgba(255, 81, 72, 0.15);
+  color: var(--negativo);
+}
+
+.projeto-prazo.prazo-feito {
+  background: rgba(63, 208, 122, 0.15);
+  color: var(--verde);
+}
+
+.projeto-status {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #26262a;
+  color: #fff;
+}
+
+.projeto-status.status-andamento {
+  background: rgba(236, 58, 82, 0.18);
+  color: #ff7a8a;
+}
+
+.projeto-status.status-entregue {
+  background: rgba(63, 208, 122, 0.15);
+  color: var(--verde);
+}
+
+.pagina-univap .pilulas-faculdade {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.pagina-univap .pilulas-faculdade .chip {
+  flex: none;
+  white-space: nowrap;
+}
+
+.pagina-univap .botao-mais {
+  background: var(--vermelho);
+  color: #fff;
+}

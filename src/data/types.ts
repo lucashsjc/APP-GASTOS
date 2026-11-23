@@ -128,6 +128,22 @@ export interface Guardado {
 
 export type NovoGuardado = Omit<Guardado, 'id'>
 
+export type StatusProjeto = 'a_fazer' | 'andamento' | 'entregue'
+
+/** Projeto da UNIVAP: nome, matéria, grupo, situação e a data de entrega. */
+export interface ProjetoUnivap {
+  id: string
+  nome: string
+  materia: string
+  grupo: string
+  status: StatusProjeto
+  /** AAAA-MM-DD, ou null sem data. */
+  entrega: string | null
+  observacao: string
+}
+
+export type NovoProjetoUnivap = Omit<ProjetoUnivap, 'id'>
+
 /** Compra futura (lista de desejos). */
 export interface Desejo {
   id: string
@@ -148,4 +164,6 @@ export interface Dados {
   metaGuardar?: number | null
   /** Compras futuras. Opcional: antes do supabase/016_cofrinho.sql, vem vazio. */
   desejos?: Desejo[]
+  /** Projetos da UNIVAP. Opcional: antes do supabase/017_projetos_univap.sql, vem vazio. */
+  projetos?: ProjetoUnivap[]
 }

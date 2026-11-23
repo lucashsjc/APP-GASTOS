@@ -1,4 +1,4 @@
-import type { Aba, Dados, Deposito, Gasto, NovaRecorrencia, NovoDeposito, NovoGasto, NovoGuardado, Recorrencia } from './types'
+import type { Aba, Dados, Deposito, Gasto, NovaRecorrencia, NovoDeposito, NovoGasto, NovoGuardado, NovoProjetoUnivap, Recorrencia } from './types'
 import { criarRepoLocal } from './localRepo'
 import { criarRepoSupabase, supabaseConfigurado } from './supabaseRepo'
 
@@ -32,6 +32,10 @@ export interface Repo {
   /** Compras futuras. */
   criarDesejo(nome: string, valorCentavos: number): Promise<void>
   excluirDesejo(id: string): Promise<void>
+
+  /** Projetos da UNIVAP. */
+  salvarProjeto(dados: NovoProjetoUnivap, id?: string): Promise<void>
+  excluirProjeto(id: string): Promise<void>
 
   /** Só no modo demonstração: volta aos dados de exemplo. */
   restaurarExemplo?(): Promise<void>
