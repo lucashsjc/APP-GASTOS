@@ -26,12 +26,13 @@ export interface Fatura {
   proxima: number
 }
 
-function doCredito(dados: Dados, mes: string, hoje: string) {
+/** O que entra na fatura do mês: tudo do Nubank no crédito (compras, parcelas e fixos). */
+export function itensDaFatura(dados: Dados, mes: string, hoje: string) {
   return [...certosDoMes(dados, 'nubank', mes, hoje), ...outrosDoMes(dados, 'nubank', mes)].filter((g) => g.forma !== 'debito')
 }
 
 export function faturaDoMes(dados: Dados, mes: string, hoje: string): Fatura {
-  const itens = doCredito(dados, mes, hoje)
+  const itens = itensDaFatura(dados, mes, hoje)
   const seguinte = somarMeses(mes, 1)
   const fecha = dataNoMes(seguinte, DIA_FECHA)
   const vence = dataNoMes(seguinte, DIA_VENCE)
@@ -44,6 +45,6 @@ export function faturaDoMes(dados: Dados, mes: string, hoje: string): Fatura {
     fechada: hoje >= fecha,
     diasParaVencer: diasEntre(hoje, vence),
     paga: itens.length > 0 && itens.every((g) => g.pago),
-    proxima: somar(doCredito(dados, seguinte, hoje).map((g) => g.valor_centavos)),
+    proxima: somar(itensDaFatura(dados, seguinte, hoje).map((g) => g.valor_centavos)),
   }
 }

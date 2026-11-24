@@ -7,6 +7,7 @@ import { mesDe } from '../lib/datas'
 import { formatarReais } from '../lib/dinheiro'
 import { escolherTela, useTela } from '../lib/tela'
 import {
+  Logo,
   IconeAjustes,
   IconeBanco,
   IconeFaculdade,
@@ -26,6 +27,16 @@ const AREAS = [
   { rota: '/nubank', nome: 'Banco', Icone: IconeBanco },
   { rota: '/projetos', nome: 'Projetos', Icone: IconeProjetos },
 ]
+
+// No computador não tem a barra de baixo: o Banco vira Nubank e Caju, para trocar com um clique.
+const AREAS_PC = AREAS.flatMap((a) =>
+  a.rota === '/nubank'
+    ? [
+        { rota: '/nubank', nome: 'Nubank', Icone: ({ tamanho }: { tamanho?: number }) => <Logo aba="nubank" tamanho={tamanho} /> },
+        { rota: '/caju', nome: 'Caju', Icone: ({ tamanho }: { tamanho?: number }) => <Logo aba="caju" tamanho={tamanho} /> },
+      ]
+    : [a],
+)
 
 /** Botão de três traços que abre o menu lateral com as áreas. */
 export function BotaoMenu() {
@@ -69,7 +80,11 @@ export function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
   const saldoCaju = saldoCajuDoMes(dados, mesDe(hoje), hoje)
 
   const ativa = (rota: string) =>
-    rota === '/' ? pathname === '/' : rota === '/nubank' ? ehAreaBanco(pathname) : pathname.startsWith(rota)
+    rota === '/'
+      ? pathname === '/'
+      : rota === '/nubank'
+        ? ehAreaBanco(pathname) && (tela !== 'pc' || !pathname.startsWith('/caju'))
+        : pathname.startsWith(rota)
 
   return (
     <nav className="menu-lateral" aria-label="Menu" onClick={(e) => e.stopPropagation()}>
@@ -86,7 +101,7 @@ export function PainelMenu({ aoFechar }: { aoFechar: () => void }) {
 
       <h2>Áreas</h2>
       <ul>
-        {AREAS.map(({ rota, nome, Icone }) => (
+        {(tela === 'pc' ? AREAS_PC : AREAS).map(({ rota, nome, Icone }) => (
           <li key={rota}>
             <NavLink to={rota} className={() => (ativa(rota) ? 'ativo' : '')} onClick={aoFechar}>
               <span className="menu-icone">

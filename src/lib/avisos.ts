@@ -85,7 +85,7 @@ export function avisosDinheiro(dados: Dados, hoje: string): AvisoDinheiro[] {
           ? `Vence em ${fatura.diasParaVencer} ${fatura.diasParaVencer === 1 ? 'dia' : 'dias'} (${dataCurta(fatura.vence)})`
           : fatura.diasParaVencer === 0
             ? 'Vence hoje'
-            : `Venceu em ${dataCurta(fatura.vence)}. Já pagou? Marque os gastos como pagos.`,
+            : `Venceu em ${dataCurta(fatura.vence)}. Já pagou? Toque em Paguei a fatura no Nubank.`,
       rota: '/nubank',
       grave: fatura.diasParaVencer <= 1,
     })

@@ -30,10 +30,14 @@ import {
 } from '../lib/calculos'
 import { dataCurta, dataNoMes, diaDe, mesDe, nomeDoMes, somarMeses } from '../lib/datas'
 import { resumoCofrinho } from '../lib/cofrinho'
-import { faturaDoMes } from '../lib/fatura'
+import { faturaDoMes, itensDaFatura } from '../lib/fatura'
 import { formatarReais } from '../lib/dinheiro'
 
 const NOMES: Record<Aba, string> = { nubank: 'Nubank', caju: 'Caju' }
+
+function semAcento(texto: string): string {
+  return texto.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+}
 
 function porcento(parte: number, todo: number): string {
   if (todo <= 0) return parte > 0 ? '100%' : '0%'
@@ -49,6 +53,7 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
   const [folha, setFolha] = useState<ModoGasto | null>(null)
   const [folhaValor, setFolhaValor] = useState<'recebido' | 'deposito' | null>(null)
   const [editandoLimites, setEditandoLimites] = useState(false)
+  const [busca, setBusca] = useState('')
 
   const certos = certosDoMes(dados, aba, mes, hoje)
   const outros = outrosDoMes(dados, aba, mes)
@@ -255,28 +260,39 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
     )
   }
 
+  // Busca do Extrato: pelo nome, categoria, anotação ou valor (ex.: "uber", "mercado", "19,90").
+  const termo = semAcento(busca.trim())
+  const casa = (i: Certo | Gasto) =>
+    !termo ||
+    semAcento([i.descricao, i.categoria, i.observacao ?? '', formatarReais(i.valor_centavos)].join(' ')).includes(termo)
+  const normaisVistos = normais.filter(casa)
+  const aParteVistos = aParte.filter(casa)
+
   const listas = (
     <>
         <section className="secao">
           <h2>
-            Gastos de {nomeDoMes(mes)} <span>{formatarReais(totalDoMes)}</span>
+            {termo ? `Achados em ${nomeDoMes(mes)}` : `Gastos de ${nomeDoMes(mes)}`}{' '}
+            <span>{formatarReais(termo ? somaDasContas(normaisVistos) : totalDoMes)}</span>
           </h2>
           {carregando ? (
             <p className="vazio">Carregando…</p>
           ) : normais.length === 0 ? (
             <p className="vazio">Nenhum gasto em {nomeDoMes(mes)}. Toque no + lá em cima para registrar o que comprou.</p>
+          ) : normaisVistos.length === 0 ? (
+            <p className="vazio">Nada com “{busca.trim()}” em {nomeDoMes(mes)}.</p>
           ) : (
-            <ListaPorDia itens={normais} linha={linha} />
+            <ListaPorDia itens={normaisVistos} linha={linha} />
           )}
           {itens.length > 0 && <p className="dica">Deslize um gasto para a esquerda para editar ou apagar.</p>}
         </section>
 
-        {aParte.length > 0 && (
+        {aParteVistos.length > 0 && (
           <section className="secao secao-a-parte">
             <h2>
-              À parte <span>{formatarReais(totalAParte)}</span>
+              À parte <span>{formatarReais(termo ? aParteVistos.reduce((t, i) => t + i.valor_centavos, 0) : totalAParte)}</span>
             </h2>
-            <ListaPorDia itens={aParte} linha={linha} />
+            <ListaPorDia itens={aParteVistos} linha={linha} />
             <p className="dica">Não somam com os gastos do mês, mas descontam do livre para gastar.</p>
           </section>
         )}
@@ -299,6 +315,10 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
               <IconeMais tamanho={20} />
             </button>
           </div>
+          <label className="busca-extrato">
+            <IconeBusca tamanho={16} />
+            <input type="search" value={busca} onChange={(e) => setBusca(e.target.value)} placeholder="Buscar no extrato (nome, categoria, valor)" aria-label="Buscar no extrato" />
+          </label>
         </header>
         {listas}
         {folhas}
@@ -463,10 +483,11 @@ function SaldoCarteira({ aba }: { aba: Aba }) {
  * fatura do mês passado já fechou e ainda não foi paga nem venceu, ela aparece primeiro.
  */
 function CardFatura() {
-  const { dados, hoje, mes } = useEstado()
+  const { dados, hoje, mes, executar, avisar } = useEstado()
+  const [confirmando, setConfirmando] = useState(false)
   const atual = faturaDoMes(dados, mes, hoje)
   const anterior = mes === mesDe(hoje) ? faturaDoMes(dados, somarMeses(mes, -1), hoje) : null
-  const pendenteAnterior = anterior && anterior.total > 0 && !anterior.paga && anterior.diasParaVencer >= 0 ? anterior : null
+  const pendenteAnterior = anterior && anterior.total > 0 && !anterior.paga && anterior.diasParaVencer >= -10 ? anterior : null
   const f = pendenteAnterior ?? atual
   const estado = f.paga ? 'Paga' : f.fechada ? (f.diasParaVencer < 0 ? 'Vencida' : 'Fechada') : 'Aberta'
   const detalhe = f.paga
@@ -478,26 +499,60 @@ function CardFatura() {
           ? `Vence em ${f.diasParaVencer} ${f.diasParaVencer === 1 ? 'dia' : 'dias'} (${dataCurta(f.vence)})`
           : `Venceu em ${dataCurta(f.vence)}`
       : `Fecha ${dataCurta(f.fecha)} · vence ${dataCurta(f.vence)}`
+  // O botão aparece quando a fatura já fechou (do dia 1 em diante) e ainda tem algo não pago.
+  const podePagar = f.fechada && !f.paga && f.total > 0
+
+  const pagar = async () => {
+    setConfirmando(false)
+    const pendentes = itensDaFatura(dados, f.mes, hoje).filter((i) => !i.pago)
+    const ok = await executar(async () => {
+      for (const item of pendentes) await definirPago(item, true)
+    })
+    if (ok) avisar(`Fatura de ${nomeDoMes(f.mes)} paga.`)
+  }
+
   return (
-    <Link to="/nubank/extrato" className="card card-fatura">
-      <div className="card-fatura-topo">
-        <span>Fatura de {nomeDoMes(f.mes)}</span>
-        <span className={`fatura-estado fatura-${estado.toLowerCase()}`}>{estado}</span>
-      </div>
-      <strong className="card-fatura-valor">{formatarReais(f.total)}</strong>
-      <small>{detalhe}</small>
-      {pendenteAnterior ? (
-        <small className="card-fatura-proxima">
-          Fatura de {nomeDoMes(mes)} (aberta): {formatarReais(atual.total)}
-        </small>
-      ) : (
-        f.proxima > 0 && (
+    <section className="card card-fatura">
+      <Link to="/nubank/extrato" className="card-fatura-link">
+        <div className="card-fatura-topo">
+          <span>Fatura de {nomeDoMes(f.mes)}</span>
+          <span className={`fatura-estado fatura-${estado.toLowerCase()}`}>{estado}</span>
+        </div>
+        <strong className="card-fatura-valor">{formatarReais(f.total)}</strong>
+        <small>{detalhe}</small>
+        {pendenteAnterior ? (
           <small className="card-fatura-proxima">
-            Já lançado para a próxima ({nomeDoMes(somarMeses(f.mes, 1))}): {formatarReais(f.proxima)}
+            Fatura de {nomeDoMes(mes)} (aberta): {formatarReais(atual.total)}
           </small>
-        )
-      )}
-    </Link>
+        ) : (
+          f.proxima > 0 && (
+            <small className="card-fatura-proxima">
+              Já lançado para a próxima ({nomeDoMes(somarMeses(f.mes, 1))}): {formatarReais(f.proxima)}
+            </small>
+          )
+        )}
+      </Link>
+      {podePagar &&
+        (confirmando ? (
+          <div className="confirmar-pagamento">
+            <span>
+              Pagou os {formatarReais(f.total)} da fatura de {nomeDoMes(f.mes)}? Todos os gastos dela ficam como pagos.
+            </span>
+            <div>
+              <button type="button" className="botao-texto" onClick={() => setConfirmando(false)}>
+                Não
+              </button>
+              <button type="button" className="botao-confirmar" onClick={pagar}>
+                Paguei
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button type="button" className="botao-pagar-fatura" onClick={() => setConfirmando(true)}>
+            Paguei a fatura
+          </button>
+        ))}
+    </section>
   )
 }
 

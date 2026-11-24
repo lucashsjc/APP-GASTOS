@@ -6258,3 +6258,93 @@ html[data-tela='pc'] .carteira-fundo {
   position: fixed;
   z-index: 50;
 }
+
+/* Fatura: o link ocupa o card e o botão "Paguei a fatura" fica embaixo. */
+.card-fatura-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.botao-pagar-fatura {
+  margin-top: 10px;
+  align-self: flex-start;
+  padding: 9px 16px;
+  border: 0;
+  border-radius: 99px;
+  background: var(--vermelho);
+  color: #fff;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.card-fatura .confirmar-pagamento {
+  margin-top: 10px;
+}
+
+/* Busca do Extrato */
+.busca-extrato {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: #141416;
+  border: 1px solid var(--borda);
+  color: var(--texto-2);
+}
+
+.busca-extrato input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 0;
+  border: 0;
+  background: none;
+  color: var(--texto);
+  font: inherit;
+  font-size: 15px;
+  outline: none;
+}
+
+/* Computador: Nubank e Caju em duas colunas (saldo, botões e fatura à esquerda; últimos gastos à direita). */
+html[data-tela='pc'] .tela-carteira {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: auto auto auto auto auto auto 1fr;
+  column-gap: 24px;
+  row-gap: 0;
+  align-items: start;
+}
+
+html[data-tela='pc'] .tela-carteira > * {
+  grid-column: 1;
+}
+
+html[data-tela='pc'] .tela-carteira > .carteira-linha,
+html[data-tela='pc'] .tela-carteira > .carteira-saldo {
+  grid-column: 1 / -1;
+}
+
+html[data-tela='pc'] .tela-carteira > .carteira-gastos {
+  grid-column: 2;
+  grid-row: 3 / -1;
+  margin-top: 0;
+}
+
+/* Computador: na tela Hoje, Avisos e Faculdade lado a lado embaixo dos cards. */
+html[data-tela='pc'] .pagina-hoje {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 32px;
+  align-items: start;
+}
+
+html[data-tela='pc'] .pagina-hoje > .topo,
+html[data-tela='pc'] .pagina-hoje > .carrossel {
+  grid-column: 1 / -1;
+}
