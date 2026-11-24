@@ -4,8 +4,9 @@
 import type { Aba, Dados } from '../data/types'
 import { depositosDoMes, recebidoDoMes } from './calculos'
 import { resumoCofrinho } from './cofrinho'
-import { dataCurta, diaDe, diasNoMes, mesDe, somarMeses } from './datas'
+import { dataCurta, diaDe, diasNoMes, mesDe, nomeDoMes, somarMeses } from './datas'
 import { faturaDoMes } from './fatura'
+import { sobraParaGuardar } from './fechamento'
 import { formatarReais } from './dinheiro'
 import { usoDosLimites } from './extras'
 import { ritmoDoMes } from './ritmo'
@@ -88,6 +89,18 @@ export function avisosDinheiro(dados: Dados, hoje: string): AvisoDinheiro[] {
             : `Venceu em ${dataCurta(fatura.vence)}. Já pagou? Toque em Paguei a fatura no Nubank.`,
       rota: '/nubank',
       grave: fatura.diasParaVencer <= 1,
+    })
+  }
+
+  // Fechamento: nos 10 primeiros dias, lembra de mandar a sobra do mês passado para o cofrinho.
+  const sobra = sobraParaGuardar(dados, hoje)
+  if (sobra) {
+    avisos.push({
+      chave: 'fechamento',
+      titulo: `Fechamento de ${nomeDoMes(sobra.mes)}`,
+      texto: `Sobraram ${formatarReais(sobra.valor)} no Nubank. Toque para guardar no cofrinho`,
+      rota: `/fechamento?mes=${sobra.mes}`,
+      grave: false,
     })
   }
 

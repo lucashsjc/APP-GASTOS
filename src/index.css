@@ -6348,3 +6348,88 @@ html[data-tela='pc'] .pagina-hoje > .topo,
 html[data-tela='pc'] .pagina-hoje > .carrossel {
   grid-column: 1 / -1;
 }
+
+/* ---------- Fechamento do mês ---------- */
+
+.fechamento-mes {
+  align-self: flex-start;
+  margin-top: 8px;
+}
+
+.fechamento-mes button:disabled {
+  opacity: 0.3;
+}
+
+.fechamento-aviso {
+  margin: 0 0 12px;
+}
+
+.fechamento-sobra {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fechamento-sobra .botao-principal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fechamento-sem {
+  font-size: 28px;
+  font-weight: 800;
+}
+
+.fechamento-bloco {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 18px;
+}
+
+.fechamento-bloco h2 {
+  margin: 0 0 4px;
+  font-size: 17px;
+}
+
+.fechamento-linha {
+  display: flex;
+  justify-content: space-between;
+  font-size: 15px;
+  color: var(--texto-2);
+}
+
+.fechamento-linha strong {
+  color: var(--texto);
+  font-variant-numeric: tabular-nums;
+}
+
+.fechamento-comparacao {
+  margin: 4px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.fechamento-comparacao.ruim {
+  color: var(--vermelho);
+}
+
+.fechamento-comparacao.bom {
+  color: var(--verde);
+}
+
+html[data-tela='pc'] .pagina-fechamento {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  column-gap: 20px;
+  align-items: start;
+}
+
+html[data-tela='pc'] .pagina-fechamento > .topo,
+html[data-tela='pc'] .pagina-fechamento > .fechamento-aviso,
+html[data-tela='pc'] .pagina-fechamento > .fechamento-sobra,
+html[data-tela='pc'] .pagina-fechamento > .link-fixos {
+  grid-column: 1 / -1;
+}

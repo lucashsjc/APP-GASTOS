@@ -13,6 +13,7 @@ import Ajustes from './pages/Ajustes'
 import Assinaturas from './pages/Assinaturas'
 import Busca from './pages/Busca'
 import Cofrinho from './pages/Cofrinho'
+import Fechamento from './pages/Fechamento'
 import ProjetosUnivap from './pages/ProjetosUnivap'
 import PaginaStockPy from './stockpy/PaginaStockPy'
 import { PainelMenu } from './componentes/MenuLateral'
@@ -86,6 +87,7 @@ export default function App() {
             <Route path="/caju/resumo" element={<ResumoMes aba="caju" />} />
             <Route path="/busca" element={<Busca />} />
             <Route path="/cofrinho" element={<Cofrinho />} />
+            <Route path="/fechamento" element={<Fechamento />} />
             <Route path="/univap" element={<ProjetosUnivap />} />
             <Route path="/univap/stockpy" element={<PaginaStockPy />} />
             <Route path="/compras-futuras" element={<Desejos />} />
@@ -145,7 +147,7 @@ function Transicao({ children }: { children: React.ReactNode }) {
 function BarraPrincipal() {
   const { pathname } = useLocation()
   // Telas do Nubank que ficam fora de /nubank (cofrinho, compras futuras, busca, assinaturas).
-  const doNubank = /^\/(nubank|cofrinho|compras-futuras|busca|assinaturas)(\/|$)/.test(pathname)
+  const doNubank = /^\/(nubank|cofrinho|fechamento|compras-futuras|busca|assinaturas)(\/|$)/.test(pathname)
   const itens = [
     { rota: '/', nome: 'Hoje', ativo: pathname === '/', icone: <IconeHoje tamanho={22} /> },
     { rota: '/nubank', nome: 'Nubank', ativo: doNubank, icone: <Logo aba="nubank" tamanho={24} /> },

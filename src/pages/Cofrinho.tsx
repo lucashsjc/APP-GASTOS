@@ -234,7 +234,7 @@ function FolhaDevolver({ g, aoFechar }: { g: Guardado; aoFechar: () => void }) {
 
 const reais = (centavos: number) => formatarReais(centavos).replace('R$ ', '')
 
-function FolhaGuardar({
+export function FolhaGuardar({
   tipo,
   mesInicial,
   valorInicial,

@@ -192,6 +192,12 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
           <IconeMais tamanho={16} />
           <span>Compras futuras</span>
         </Link>
+        {aba === 'nubank' && (
+          <Link to="/fechamento" className="atalho">
+            <IconeResumo tamanho={16} />
+            <span>Fechamento</span>
+          </Link>
+        )}
         <Link to={`/${aba}/resumo`} className="atalho">
             <IconeResumo tamanho={16} />
             <span>Resumo</span>
