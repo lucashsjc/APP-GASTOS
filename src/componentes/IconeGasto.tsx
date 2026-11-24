@@ -19,6 +19,7 @@ const LUGARES: { regra: RegExp; sigla: string; fundo: string; cor?: string; imag
   { regra: /\bporto\b/, sigla: 'P', fundo: '#0057b8', imagem: '/lugares/porto.png' },
   { regra: /\bmango\b/, sigla: 'M', fundo: '#f39200', imagem: '/lugares/mango.png' },
   { regra: /\bgta\b|grand theft auto/, sigla: 'GTA', fundo: '#7b2d8f', imagem: '/lugares/gta.png' },
+  { regra: /\bgasolina\b|\bposto br\b|\bpetrobras\b/, sigla: 'BR', fundo: '#00904c', imagem: '/lugares/br.png' },
   { regra: /\bclaude\b/, sigla: 'C', fundo: '#d97757', imagem: '/lugares/claude.png' },
   { regra: /\bsteam\b|\bpsn\b|\bplaystation\b/, sigla: '▶', fundo: '#1b2838' },
   { regra: /\bmc ?donalds\b/, sigla: 'M', fundo: '#da291c', cor: '#ffc72c' },

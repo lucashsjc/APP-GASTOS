@@ -5609,7 +5609,8 @@ a.botao-secundario {
 .icone-lugar.com-imagem img[src$='porto.png'],
 .icone-lugar.com-imagem img[src$='gta.png'],
 .icone-lugar.com-imagem img[src$='mango.png'],
-.icone-lugar.com-imagem img[src$='claude.png'] {
+.icone-lugar.com-imagem img[src$='claude.png'],
+.icone-lugar.com-imagem img[src$='br.png'] {
   border-radius: 6px;
   object-fit: contain;
 }
