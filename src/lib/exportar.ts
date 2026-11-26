@@ -5,6 +5,7 @@ import type { AbaXlsx } from './xlsx'
 
 const ABA = { nubank: 'Nubank', caju: 'Caju' }
 const FORMA = { credito: 'Crédito', debito: 'Débito' }
+const SITUACAO = { a_fazer: 'A fazer', andamento: 'Em andamento', entregue: 'Entregue' }
 const TIPO = { unico: 'Uma vez', certo_unico: 'Certo do mês', parcela: 'Parcela' }
 
 export function montarExportacao(dados: Dados): AbaXlsx[] {
@@ -58,14 +59,44 @@ export function montarExportacao(dados: Dados): AbaXlsx[] {
     },
     {
       nome: 'Depósitos (Caju)',
-      colunas: ['Data', 'Valor', 'Vale para'],
+      colunas: ['Data', 'Valor', 'Vale para', 'Carteira'],
       linhas: [...dados.depositos]
         .sort((a, b) => a.data.localeCompare(b.data))
         .map((d) => [
           { data: d.data },
           { centavos: d.valor_centavos },
           d.mes_conta ? `${d.mes_conta.slice(5)}/${d.mes_conta.slice(0, 4)}` : '',
+          d.carteira === 'mobilidade' ? 'Mobilidade' : 'Refeição',
         ]),
+    },
+    {
+      nome: 'Cofrinho',
+      colunas: ['Mês', 'Movimento', 'Valor', 'Descrição'],
+      linhas: [...(dados.guardados ?? [])]
+        .sort((a, b) => a.mes.localeCompare(b.mes))
+        .map((g) => [`${g.mes.slice(5)}/${g.mes.slice(0, 4)}`, g.tipo === 'guardar' ? 'Guardou' : 'Retirou', { centavos: g.valor_centavos }, g.descricao]),
+    },
+    {
+      nome: 'Limites',
+      colunas: ['Cartão', 'Categoria', 'Limite por mês'],
+      linhas: (dados.limites ?? []).map((l) => [ABA[l.aba], l.categoria, { centavos: l.valor_centavos }]),
+    },
+    {
+      nome: 'Compras futuras',
+      colunas: ['Nome', 'Valor'],
+      linhas: (dados.desejos ?? []).map((d) => [d.nome, { centavos: d.valor_centavos }]),
+    },
+    {
+      nome: 'Projetos UNIVAP',
+      colunas: ['Projeto', 'Matéria', 'Grupo', 'Situação', 'Entrega', 'Anotação'],
+      linhas: (dados.projetos ?? []).map((p) => [
+        p.nome,
+        p.materia,
+        p.grupo,
+        SITUACAO[p.status],
+        p.entrega ? { data: p.entrega } : '',
+        p.observacao,
+      ]),
     },
   ]
 }

@@ -436,6 +436,54 @@ export function descricoesMaisUsadas(dados: Dados, aba: Aba, quantas = 6): strin
     .map((c) => c.texto)
 }
 
+export interface GastoRepetido {
+  descricao: string
+  valor_centavos: number
+  categoria: string
+  forma: Forma | null
+  carteira: Carteira | null
+  vezes: number
+}
+
+/**
+ * Os gastos que você repete (mesmo nome e mesmo valor pelo menos 2 vezes nos últimos 4 meses), para
+ * salvar com um toque. Do mais repetido para o menos.
+ */
+export function gastosRepetidos(dados: Dados, aba: Aba, hoje: string, quantos = 4): GastoRepetido[] {
+  const desde = dataNoMes(somarMeses(mesDe(hoje), -3), 1)
+  const grupos = new Map<string, { g: Gasto; vezes: number }>()
+  for (const g of dados.gastos) {
+    if (g.aba !== aba || g.tipo !== 'unico' || g.data < desde || g.data > hoje) continue
+    const chave = `${normalizarDescricao(g.descricao)}|${g.valor_centavos}`
+    const atual = grupos.get(chave)
+    if (!atual) grupos.set(chave, { g, vezes: 1 })
+    else {
+      atual.vezes++
+      // Fica com a última vez (categoria, forma e carteira mais recentes).
+      if (g.data > atual.g.data) atual.g = g
+    }
+  }
+  // Um atalho por nome: o valor que mais se repete.
+  const porNome = new Map<string, { g: Gasto; vezes: number }>()
+  for (const item of grupos.values()) {
+    if (item.vezes < 2) continue
+    const nome = normalizarDescricao(item.g.descricao)
+    const atual = porNome.get(nome)
+    if (!atual || item.vezes > atual.vezes || (item.vezes === atual.vezes && item.g.data > atual.g.data)) porNome.set(nome, item)
+  }
+  return [...porNome.values()]
+    .sort((a, b) => b.vezes - a.vezes || b.g.data.localeCompare(a.g.data))
+    .slice(0, quantos)
+    .map(({ g, vezes }) => ({
+      descricao: g.descricao.trim(),
+      valor_centavos: g.valor_centavos,
+      categoria: g.categoria,
+      forma: g.forma,
+      carteira: g.carteira ?? null,
+      vezes,
+    }))
+}
+
 /** As observações mais usadas (em todos os cartões), para os chips de sugestão. */
 export function observacoesMaisUsadas(dados: Dados, quantas = 5): string[] {
   const contagem = new Map<string, { texto: string; vezes: number }>()

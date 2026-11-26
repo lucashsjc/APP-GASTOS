@@ -6434,3 +6434,164 @@ html[data-tela='pc'] .pagina-fechamento > .fechamento-sobra,
 html[data-tela='pc'] .pagina-fechamento > .link-fixos {
   grid-column: 1 / -1;
 }
+
+/* Novo gasto: gastos repetidos, salvos com um toque. */
+.repetidos {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.repetidos > small {
+  color: var(--texto-2);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.repetidos-lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.repetido {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 92, 112, 0.35);
+  border-radius: 14px;
+  background: rgba(236, 58, 82, 0.1);
+  color: var(--texto);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.repetido strong {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.repetido span {
+  font-size: 13px;
+  color: var(--texto-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.repetido:disabled {
+  opacity: 0.5;
+}
+
+/* ---------- Gráfico: gastos por mês ---------- */
+
+.grafico-meses {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 18px;
+}
+
+.grafico-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.grafico-topo h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.grafico-topo > span {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.grafico-topo small {
+  color: var(--texto-2);
+  font-size: 12px;
+}
+
+.grafico-topo strong {
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.grafico-area {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  align-items: end;
+  height: 150px;
+  border-bottom: 1px solid var(--borda);
+}
+
+.grafico-coluna {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.grafico-barra {
+  display: block;
+  width: min(28px, 60%);
+  border-radius: 4px 4px 0 0;
+  background: rgba(255, 92, 112, 0.35);
+  transition: background 0.15s ease;
+}
+
+.grafico-coluna.atual .grafico-barra {
+  background-image: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0 3px, transparent 3px 7px);
+}
+
+.grafico-coluna.ativo .grafico-barra {
+  background-color: var(--vermelho);
+}
+
+.grafico-media {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.grafico-media span {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  font-size: 11px;
+  color: var(--texto-2);
+}
+
+.grafico-eixo {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  text-align: center;
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.grafico-eixo .ativo {
+  color: var(--texto);
+  font-weight: 700;
+}
+
+.grafico-meses .nota {
+  margin: 0;
+}

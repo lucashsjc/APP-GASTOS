@@ -6,6 +6,8 @@ import { supabase } from '../data/supabaseRepo'
 import { useEstado } from '../estado'
 import { exportacaoFaculdade } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
+import { lerUltimoBackup, marcarBackup } from '../lib/backup'
+import { dataCurta } from '../lib/datas'
 import { montarExportacao } from '../lib/exportar'
 import { gerarXlsx } from '../lib/xlsx'
 
@@ -26,6 +28,7 @@ function baixar(bytes: Uint8Array, nome: string) {
 export default function Ajustes({ email }: { email: string | null }) {
   const { dados, hoje, executar, avisar } = useEstado()
   const [confirmandoRestaurar, setConfirmandoRestaurar] = useState(false)
+  const [ultimoBackup, setUltimoBackup] = useState(lerUltimoBackup)
 
   const exportar = async () => {
     const abas = montarExportacao(dados)
@@ -34,8 +37,10 @@ export default function Ajustes({ email }: { email: string | null }) {
     } catch {
       // Sem as tabelas da Faculdade ainda: exporta só os gastos.
     }
-    baixar(gerarXlsx(abas), `minha-rotina-${hoje}.xlsx`)
-    avisar('Planilha baixada.')
+    baixar(gerarXlsx(abas), `minha-rotina-backup-${hoje}.xlsx`)
+    marcarBackup(hoje)
+    setUltimoBackup(hoje)
+    avisar('Backup baixado. Guarde o arquivo no iCloud ou no Google Drive.')
   }
 
   return (
@@ -69,8 +74,11 @@ export default function Ajustes({ email }: { email: string | null }) {
           <li>
             <button type="button" onClick={exportar}>
               <span>
-                <strong>Exportar .xlsx</strong>
-                <small>Cópia de segurança de tudo: gastos e faculdade.</small>
+                <strong>Baixar backup (.xlsx)</strong>
+                <small>
+                  Cópia de segurança de tudo: gastos, cofrinho, limites, compras futuras, projetos e faculdade.
+                  {ultimoBackup ? ` Último: ${dataCurta(ultimoBackup)}.` : ' Ainda não baixou neste aparelho.'}
+                </small>
               </span>
               <IconeProximo />
             </button>

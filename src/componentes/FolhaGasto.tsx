@@ -8,6 +8,7 @@ import {
   CARTEIRAS,
   carteiraDe,
   descricoesMaisUsadas,
+  gastosRepetidos,
   observacoesMaisUsadas,
   dividirParcelas,
   gerarParcelas,
@@ -147,6 +148,38 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
   const valor = lerReais(valorTexto)
   const sugestoes = useMemo(() => descricoesMaisUsadas(dados, aba), [dados, aba])
   const sugestoesObs = useMemo(() => observacoesMaisUsadas(dados), [dados])
+  const repetidos = useMemo(() => (rapido ? gastosRepetidos(dados, aba, hoje) : []), [rapido, dados, aba, hoje])
+
+  /** Um toque num gasto repetido: salva igual à última vez, com a data e a hora de agora. */
+  const salvarRepetido = async (r: (typeof repetidos)[number]) => {
+    if (salvando) return
+    setSalvando(true)
+    const ok = await executar(() =>
+      repo.criarGastos([
+        {
+          aba,
+          forma: aba === 'nubank' ? (r.forma ?? 'credito') : null,
+          descricao: r.descricao,
+          categoria: r.categoria,
+          valor_centavos: r.valor_centavos,
+          data: hoje,
+          hora: horaSP(),
+          carteira: aba === 'caju' ? r.carteira : null,
+          tipo: 'unico',
+          recorrencia_id: null,
+          grupo_id: null,
+          parcela_numero: null,
+          parcela_total: null,
+          caiu_manual: null,
+        },
+      ]),
+    )
+    setSalvando(false)
+    if (!ok) return
+    avisar(`${r.descricao} · ${formatarReais(r.valor_centavos)} salvo.`)
+    aoSalvar?.()
+    aoFechar()
+  }
   const [observacao, setObservacao] = useState(inicial.observacao)
   const [separado, setSeparado] = useState(inicial.separado)
   const [dinheiroAParte, setDinheiroAParte] = useState(inicial.dinheiroAParte)
@@ -320,6 +353,26 @@ export function FolhaGasto({ modo, aoFechar, aoSalvar }: { modo: ModoGasto; aoFe
   return (
     <Folha titulo={titulo} aoFechar={aoFechar}>
       <form className="form-gasto" onSubmit={salvar} noValidate>
+        {repetidos.length > 0 && !completo && (
+          <div className="repetidos">
+            <small>Repetir com um toque</small>
+            <div className="repetidos-lista">
+              {repetidos.map((r) => (
+                <button
+                  key={`${r.descricao}-${r.valor_centavos}`}
+                  type="button"
+                  className="repetido"
+                  disabled={salvando}
+                  onClick={() => salvarRepetido(r)}
+                  title={`Salvar ${r.descricao} de ${formatarReais(r.valor_centavos)} agora`}
+                >
+                  <strong>{r.descricao}</strong>
+                  <span>{formatarReais(r.valor_centavos)}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <label className="campo-valor">
           <span>{tipo === 'parcelado' ? 'Total da compra' : 'Valor'}</span>
           <div>

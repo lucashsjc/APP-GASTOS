@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { etiquetaCerto, useAcoesCerto } from '../componentes/acoesCerto'
+import { GraficoMeses } from '../componentes/GraficoMeses'
 import { FolhaGasto, type ModoGasto } from '../componentes/FolhaGasto'
 import { FolhaDeposito } from '../componentes/FolhaDeposito'
 import { FolhaValor } from '../componentes/FolhaValor'
@@ -219,6 +220,8 @@ export default function PaginaAba({ aba, detalhado = false, extrato = false }: {
             <span>Buscar</span>
           </Link>
         </nav>
+
+        <GraficoMeses aba={aba} />
 
         <CardLimites aba={aba} aoEditar={() => setEditandoLimites(true)} />
 

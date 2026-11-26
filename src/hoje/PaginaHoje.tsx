@@ -5,7 +5,9 @@ import { useEstado } from '../estado'
 import { useFaculdade } from '../faculdade/estado'
 import { aulasDoDia, formatarNota, prazoAtividade, provasProximas } from '../faculdade/regras'
 import { repoFaculdade } from '../faculdade/repo'
+import { modoDemonstracao } from '../data/repo'
 import { avisosDinheiro } from '../lib/avisos'
+import { lerUltimoBackup, precisaBackup } from '../lib/backup'
 import { cardCaju, resumoNubank } from '../lib/calculos'
 import { dataCurta, mesDe } from '../lib/datas'
 import { formatarReais, partesDoValor } from '../lib/dinheiro'
@@ -25,6 +27,10 @@ export default function PaginaHoje() {
   // O aviso de nota não se repete quando a prova da matéria já aparece na lista.
   const comProva = new Set(provas.filter((p) => p.precisa !== null).map((p) => p.disciplina?.id))
   const avisos = avisosDinheiro(dados, hoje)
+  // Lembrete de backup (uma vez por mês), depois dos avisos de dinheiro.
+  if (!modoDemonstracao && precisaBackup(lerUltimoBackup(), hoje)) {
+    avisos.push({ chave: 'backup', titulo: 'Backup', texto: 'Baixe a cópia de segurança do mês (leva um segundo)', rota: '/ajustes', grave: false })
+  }
   const alertas = alertasFaculdade(faculdade.dados).filter((a) => !(a.tipo === 'nota' && comProva.has(a.disciplina.id)))
 
   // Os cards do carrossel: a próxima prova (se tiver), o livre do Nubank, o saldo do Caju e as aulas de hoje.
